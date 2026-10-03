@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "isFixture": true,
+  "generatedAt": "2026-10-03T08:00:00+08:00",
+  "entries": [
+    {
+      "id": "fixture-demo-0001",
+      "title": "【演示】示例热点线索一：占位数据用于版面校验",
+      "summary": "这是一条合成的演示条目，仅用于校验占位首页的版面、换行与两端视口表现，不代表任何真实事件，也不指向任何真实新闻页面。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-03T07:12:00+08:00",
+      "url": "https://example.com/overthecocoons-demo-1"
+    },
+    {
+      "id": "fixture-demo-0002",
+      "title": "【演示】示例热点线索二：验证标题折行",
+      "summary": "演示条目正文占位。真实条目的标题可能很长，此处用较长的合成标题验证 320px 视口下的折行表现：跳出茧房不按个人行为排序，公共时间线对所有人一致。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-03T06:45:00+08:00",
+      "url": "https://example.com/overthecocoons-demo-2"
+    },
+    {
+      "id": "fixture-demo-0003",
+      "title": "【演示】示例热点线索三",
+      "summary": "演示条目正文占位。本站当前展示的是热点线索而非已取得正文的新闻文章，详情以源站为准。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-02T21:30:00+08:00",
+      "url": "https://example.com/overthecocoons-demo-3"
+    },
+    {
+      "id": "fixture-demo-0004",
+      "title": "【演示】示例热点线索四：摘要长度样本",
+      "summary": "演示条目正文占位。摘要优先取源摘要，缺失时取源提供正文的纯文本，最多三百字；本条为验证摘要区块的样式与节奏而准备，内容本身为虚构。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-02T14:08:00+08:00",
+      "url": "https://example.com/overthecocoons-demo-4"
+    },
+    {
+      "id": "fixture-demo-0005",
+      "title": "【演示】示例热点线索五",
+      "summary": "演示条目正文占位。数据快照对全部访客一致；重复抓取不刷新首次收录时间。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-01T09:05:00+08:00",
+      "url": "https://example.com/overthecocoons-demo-5"
+    }
+  ]
+}

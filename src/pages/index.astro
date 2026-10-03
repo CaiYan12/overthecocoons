@@ -1,0 +1,85 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadSnapshot } from "../lib/snapshot.ts";
+import type { SnapshotEntry } from "../lib/snapshot.ts";
+
+const snapshot = loadSnapshot();
+
+const title = "跳出茧房 Over the cocoons";
+const description =
+  "拓宽视野为主、日常资讯为辅的公共信息阅读站点。公共时间线不按个人行为排序。";
+
+/** 构建期把 ISO 时间整理为 “YYYY-MM-DD HH:mm” 展示，不做时区换算。 */
+function formatTime(iso: string): string {
+  return iso.slice(0, 16).replace("T", " ");
+}
+
+const sorted = [...snapshot.entries].sort((a, b) =>
+  b.firstSeenAt.localeCompare(a.firstSeenAt),
+);
+---
+
+<BaseLayout title={title} description={description}>
+  <header class="border-b border-ink/15">
+    <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      <p class="text-xs tracking-widest text-ink/60">OVER THE COCOONS</p>
+      <h1 class="mt-2 text-3xl font-bold sm:text-4xl">跳出茧房</h1>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-ink/80 sm:text-base">
+        拓宽视野为主、日常资讯为辅。公共时间线按同一份数据快照与共同排序规则展示，
+        不按个人行为排序，无个性化、无登录、无广告、无阅读历史。
+      </p>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+    {
+      snapshot.isFixture && (
+        <aside
+          class="mb-6 rounded border border-accent/40 bg-accent/5 px-4 py-3 text-sm leading-relaxed"
+          role="note"
+          aria-label="演示数据说明"
+        >
+          <strong class="text-accent">演示数据</strong>
+          <span class="text-ink/80">
+            ：本页当前展示的是仓库内置的合成演示快照（不冒充真实新闻），用于工程骨架与版面校验。
+            数据注入方式见 docs/fixtures.md。
+          </span>
+        </aside>
+      )
+    }
+
+    <h2 class="mb-4 text-lg font-semibold sm:text-xl">公共时间线（占位）</h2>
+    <p class="mb-6 text-sm text-ink/60">
+      以下为演示条目，按首次收录时间倒序排列。完整时间线与主题筛选将在后续工单实现。
+    </p>
+
+    <ol class="space-y-4">
+      {
+        sorted.map((entry: SnapshotEntry) => (
+          <li class="rounded border border-ink/15 bg-white/60 p-4 sm:p-5">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink/60">
+              <span class="rounded bg-ink/10 px-2 py-0.5">{entry.topic}</span>
+              <time>{formatTime(entry.firstSeenAt)}</time>
+            </div>
+            <h3 class="mt-2 text-base font-semibold leading-snug sm:text-lg">
+              {entry.title}
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink/80">{entry.summary}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </main>
+
+  <footer class="border-t border-ink/15">
+    <div
+      class="mx-auto max-w-4xl px-4 py-6 text-xs leading-relaxed text-ink/60 sm:px-6"
+    >
+      <p>
+        跳出茧房 Over the cocoons · 代码以 MIT 许可发布（版权署名 CaiYan12）；
+        来源内容不因项目许可证而重新许可。
+      </p>
+      <p class="mt-1">工程骨架阶段（Ticket 01）：页面为占位框架，功能逐票补齐。</p>
+    </div>
+  </footer>
+</BaseLayout>
