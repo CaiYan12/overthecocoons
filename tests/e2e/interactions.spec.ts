@@ -290,6 +290,18 @@ test.describe("隐私断言（持久化仅限主题偏好）", () => {
     await wheelEntryToReadLine(page, 22);
     await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
 
+    // 详情页路径（审查修复环 R2-I1）：copy.ts 所在页面必须在断言捕获范围内——
+    // 进入详情页并点击复制按钮（未授予剪贴板权限，走 clipboard 或 execCommand 回退均可），
+    // 待复制流程播报完成后，在同一上下文断言存储状态。
+    await page.goto(`${BASE}items/${sorted[0]!.id}/`);
+    await waitClientReady(page);
+    const copyBtn = page.locator("[data-copy-link]");
+    await expect(copyBtn).toBeVisible();
+    await copyBtn.click();
+    await expect
+      .poll(async () => statusText(page), { timeout: 5_000 })
+      .toMatch(/链接已复制|复制未成功/);
+
     const storage = await page.evaluate(() => ({
       local: Object.keys(window.localStorage).map((key) => ({
         key,
@@ -299,7 +311,7 @@ test.describe("隐私断言（持久化仅限主题偏好）", () => {
     }));
     expect(
       storage.local.filter((item) => item.key !== THEME_KEY),
-      "除主题偏好外不得有任何 localStorage 写入",
+      "除主题偏好外不得有任何 localStorage 写入（含详情页交互后）",
     ).toEqual([]);
     const themeValue = storage.local.find((item) => item.key === THEME_KEY)?.value;
     expect(["light", "dark", "auto"]).toContain(themeValue);
