@@ -1,0 +1,31 @@
+{
+  "name": "overthecocoons",
+  "version": "0.1.0",
+  "private": true,
+  "description": "跳出茧房 Over the cocoons —— 面向公共信息阅读的来源聚合静态站点",
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@10.26.2",
+  "engines": {
+    "node": ">=24.18.0"
+  },
+  "scripts": {
+    "check": "astro check",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test:node": "node --test \"tests/unit/*.test.ts\"",
+    "test:e2e": "playwright test",
+    "test": "pnpm run check && pnpm run build && pnpm run test:node && pnpm run test:e2e"
+  },
+  "dependencies": {
+    "astro": "7.3.5",
+    "tailwindcss": "4.3.3",
+    "@tailwindcss/vite": "4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.19.1",
+    "typescript": "6.0.3"
+  }
+}
