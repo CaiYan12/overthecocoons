@@ -69,6 +69,8 @@ const description = entry.summary
           <a class="ext" href={entry.url} target="_blank" rel="noopener" data-cursor="LINK">
             查看百度搜索结果 ↗
           </a>
+          {/* 复制链接（Ticket 05）：静态层 hidden，脚本解除 hidden 后可用；无 JS 不出现死按钮 */}
+          <button class="ext" type="button" data-copy-link hidden>复制链接</button>
         </p>
       )
     }

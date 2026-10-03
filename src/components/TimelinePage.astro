@@ -11,7 +11,8 @@ import KEmpty from "./KEmpty.astro";
 import { loadSnapshot } from "../lib/snapshot.ts";
 import type { PublicEntry } from "../domain/contract.ts";
 import { monthEn, paginate, sortEntriesDesc, topicPagePath } from "../lib/timeline.ts";
-import { siteUrl } from "../lib/paths.ts";
+import { buildTimelineData, serializeClientData } from "../lib/client-data.ts";
+import { SITE_BASE, siteUrl } from "../lib/paths.ts";
 
 interface DayView {
   date: string;
@@ -49,6 +50,9 @@ slice.forEach((entry, index) => {
 
 const total = filtered.length;
 const hrefFor = (target: number) => siteUrl(topicPagePath(topic, target));
+// 客户端数据岛（Ticket 05）：全部条目最小字段集，供渐进增强脚本即时筛选分页；
+// `<` 已转义，内容不会闭合 script 标签；位于 .k-list 之外，客户端重渲染列表不影响。
+const kdataIsland = serializeClientData(buildTimelineData(snapshot, SITE_BASE));
 const title =
   topic === "全部"
     ? `公共时间线${currentPage > 1 ? ` · 第 ${currentPage} 页` : ""} — 跳出茧房 Over the cocoons`
@@ -71,7 +75,8 @@ const description =
     <KNav active="home" />
   </Fragment>
 
-  <div class="k-list" data-klist>
+  <script is:inline type="application/json" data-kdata set:html={kdataIsland}></script>
+  <div class="k-list" data-klist data-topic={topic} data-page={currentPage}>
     {
       total === 0 ? (
         <KEmpty topic={topic} />
@@ -94,7 +99,6 @@ const description =
       )
     }
   </div>
-  <p class="live-status" role="status" aria-live="polite" data-status></p>
   <KPager page={currentPage} totalPages={totalPages} hrefFor={hrefFor} />
 
   <Fragment slot="col-end">

@@ -83,12 +83,32 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     await context.close();
   });
 
-  test("页面不包含任何 <script> 标签（无 JS 可读的结构性保证）", async ({ page }) => {
+  test("禁用 JS 后关键内容存在（时间线/主题页/空主题/详情页）", async ({ browser }) => {
+    // Ticket 05 起站点包含渐进增强脚本；无 JS 语义改为：关键内容在无 JS 上下文仍可读。
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+
+    // 首页：Hero、条目、链接式分页（原「零 script 标签」断言的语义等价替换）
     await page.goto(BASE);
-    const scriptCount = await page.evaluate(
-      () => document.querySelectorAll("script").length,
-    );
-    expect(scriptCount, "时间线页不应包含脚本标签").toBe(0);
+    await expect(page.locator(".k-entry .k-headline a").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "第 2 页" })).toBeVisible();
+
+    // 主题页：新闻有内容
+    await page.goto(`${BASE}topics/news/`);
+    await expect(page.locator(".k-entry").first()).toBeVisible();
+    await expect(page.getByText("演示数据").first()).toBeVisible();
+
+    // 空主题：真实空态与「查看全部」
+    await page.goto(`${BASE}topics/philosophy/`);
+    await expect(page.getByText("「哲学」暂无内容")).toBeVisible();
+    await expect(page.getByRole("link", { name: "查看全部" })).toBeVisible();
+
+    // 详情页：标题与独立百度入口
+    const first = sortedEntries()[0]!;
+    await page.goto(`${BASE}items/${first.id}/`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(first.title);
+    await expect(page.getByRole("link", { name: /查看百度搜索结果/ })).toBeVisible();
+    await context.close();
   });
 
   test("详情页直达：/items/<64hex>/ 可达且内容齐备", async ({ page }) => {

@@ -1,6 +1,7 @@
 /**
- * 构建产物断言（Ticket 04）：直接读取 dist 文本，验证基路径、时间线倒序与分页结构、
- * 空主题真实空态、详情页与 404、长文页目录、来源页、隐私约束（无统计/广告/外部字体、零脚本）。
+ * 构建产物断言（Ticket 04 起，Ticket 05 演进）：直接读取 dist 文本，验证基路径、时间线倒序与分页结构、
+ * 空主题真实空态、详情页与 404、长文页目录、来源页、隐私约束（无统计/广告/外部字体；
+ * 脚本仅限本地打包模块与 JSON 数据岛）。
  *
  * 前置条件：先运行 `pnpm build`（`pnpm test` 的脚本顺序已保证 build 在 test:node 之前）。
  * 本测试不启动服务器、不访问网络；GitHub Pages 线上行为另行验收，不在此冒充。
@@ -33,6 +34,7 @@ function collectFiles(dir: string, ext: string, out: string[] = [], prefix = "")
 const readDist = (rel: string): string => readFileSync(join(DIST, rel), "utf-8");
 const htmlFiles = collectFiles(DIST, ".html");
 const cssFiles = collectFiles(DIST, ".css");
+const jsFiles = collectFiles(DIST, ".js");
 
 const snapshot: PublicSnapshot = JSON.parse(
   readFileSync(join(process.cwd(), "fixtures", "snapshot.json"), "utf-8"),
@@ -252,23 +254,71 @@ test("演示数据标注：数据型页面带「演示数据」标注", () => {
   assert.ok(readDist(`items/${firstEntry.id}/index.html`).includes("演示数据"));
 });
 
-test("隐私约束：全部页面零 <script>、无内联事件处理器、产物无 JS 资源", () => {
+test("脚本形态（Ticket 05 起允许渐进增强）：仅限本地打包模块与 JSON 数据岛，无内联事件处理器", () => {
+  assert.ok(jsFiles.length >= 1, "客户端增强应产出至少一个本地打包 JS 文件");
+  let moduleSrcCount = 0;
+  let islandCount = 0;
   for (const rel of htmlFiles) {
     const html = readDist(rel);
-    assert.ok(!/<script/i.test(html), `${rel} 不应包含脚本标签`);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} 不应包含内联事件处理器`);
+    for (const match of html.matchAll(/<script\b([^>]*)>/gi)) {
+      const attrs = match[1] ?? "";
+      const isIsland = /type="application\/json"/i.test(attrs) && /data-kdata/i.test(attrs);
+      const isModuleSrc =
+        /type="module"/i.test(attrs) &&
+        (() => {
+          const src = attrs.match(/src="([^"]+)"/i)?.[1] ?? "";
+          if (!src.startsWith(`${BASE}/`)) return false;
+          // src 必须真实存在于 dist（去掉基路径与查询串）
+          const relPath = src.slice(BASE.length + 1).replace(/\?.*$/, "");
+          return jsFiles.includes(relPath) || existsSync(join(DIST, relPath));
+        })();
+      assert.ok(
+        isIsland || isModuleSrc,
+        `${rel} 存在非允许形态的脚本：<script ${attrs}>（仅允许 type=module 的本地打包文件与 data-kdata JSON 数据岛）`,
+      );
+      if (isIsland) islandCount++;
+      if (isModuleSrc) moduleSrcCount++;
+    }
   }
-  const jsFiles = collectFiles(DIST, ".js");
-  assert.deepEqual(jsFiles, [], "静态层不产出任何 JS 资源文件");
+  assert.ok(moduleSrcCount >= 1, "应存在客户端增强模块脚本");
+  // 数据岛只出现在时间线页（需要客户端筛选分页的页面），说明页不携带
+  assert.ok(islandCount >= 1, "时间线页应内嵌客户端数据岛");
+  for (const page of ["about", "principles", "privacy", "sources"]) {
+    assert.ok(
+      !readDist(`${page}/index.html`).includes("data-kdata"),
+      `${page} 页不应携带数据岛`,
+    );
+  }
 });
 
-test("隐私约束：无统计/广告/外部字体/CDN 引用（HTML 与 CSS 一并检查）", () => {
+test("数据岛内容与构建快照一致（字段、条数、基路径）", () => {
+  for (const rel of ["index.html", "page/2/index.html", "topics/news/index.html"]) {
+    const html = readDist(rel);
+    const island = firstMatch(
+      html,
+      /<script[^>]*type="application\/json"[^>]*data-kdata[^>]*>([\s\S]*?)<\/script>/,
+    );
+    assert.ok(island, `${rel} 应包含数据岛`);
+    assert.ok(!island!.includes("<"), "数据岛内容不得包含裸 < 字符");
+    const parsed = JSON.parse(island!) as { base: string; isFixture: boolean; entries: PublicEntry[] };
+    assert.equal(parsed.base, BASE);
+    assert.equal(parsed.isFixture, snapshot.isFixture);
+    assert.equal(parsed.entries.length, snapshot.entries.length);
+    assert.deepEqual(
+      Object.keys(parsed.entries[0]!).sort(),
+      ["firstSeenAt", "id", "summary", "title", "topic", "url"],
+    );
+  }
+});
+
+test("隐私约束：无统计/广告/外部字体/CDN 引用（HTML、CSS 与本地 JS 一并检查）", () => {
   const forbidden = [
     "googletagmanager", "google-analytics", "gtag(", "hm.baidu.com", "cnzz",
     "adsbygoogle", "doubleclick", "fonts.googleapis.com", "fonts.gstatic.com",
     "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "unpkg.com", "gsap",
   ];
-  for (const rel of [...htmlFiles.map((f) => f), ...cssFiles]) {
+  for (const rel of [...htmlFiles.map((f) => f), ...cssFiles, ...jsFiles]) {
     const text = readDist(rel).toLowerCase();
     for (const marker of forbidden) {
       assert.ok(!text.includes(marker), `${rel} 不应包含 ${marker}`);

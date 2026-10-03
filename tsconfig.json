@@ -4,6 +4,7 @@
   "exclude": ["dist", "node_modules"],
   "compilerOptions": {
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "lib": ["dom", "dom.iterable", "ESNext"]
   }
 }

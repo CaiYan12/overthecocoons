@@ -376,6 +376,9 @@ dialog.k-menu::backdrop { background: transparent }
 .k-detail-back { margin: 0 0 28px; font-size: 14px }
 .k-detail-ext { margin: 20px 0 0; font-size: 15px }
 .k-detail .k-summary-empty { color: var(--muted) }
+/* 复制链接按钮（Ticket 05 渐进增强）：静态层 hidden 不占位，外观与相邻 .ext 文本一致 */
+button.ext { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer }
+.k-detail-ext .ext + .ext { margin-left: 18px }
 
 /* 404 空状态大标题（.empty 原样式面向 h3；404 页语义上需要 h1） */
 .empty h1 { font: 600 28px/1.35 var(--serif); margin: 0 0 8px }
