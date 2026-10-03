@@ -212,6 +212,28 @@ test("来源页：区分原始平台与 Feed 服务提供者，只写核实信�
   assert.ok(html.includes("成功获取时间"), "成功获取时间分字段（不混称更新成功）");
 });
 
+test("隔离表 URL 不可点击（审查修复环 R1-I1）：targetUrl 仅作 <code> 纯文本，全站锚点禁用危险协议", () => {
+  const html = readDist("sources/index.html");
+  // fixture 构造两条隔离记录：http 与协议不合法（javascript:）——按修复方案 a，两者都不可点击
+  assert.ok(html.includes("<code>javascript:alert(1)</code>"), "协议不合法 URL 以纯文本展示");
+  assert.ok(
+    html.includes("<code>https://example.com/s?wd=demo-quarantine</code>"),
+    "http 隔离 URL 同样仅纯文本展示",
+  );
+  assert.ok(!html.includes('<a href="javascript:'), "javascript: 不得成为可点击锚点");
+  assert.ok(
+    !html.includes('<a href="https://example.com/s?wd=demo-quarantine"'),
+    "隔离表 URL 不得成为可点击锚点",
+  );
+  // 全站兜底：任何页面不得输出 javascript:/data:/vbscript: 协议的锚点
+  for (const rel of htmlFiles) {
+    const text = readDist(rel);
+    for (const proto of ["javascript:", "data:", "vbscript:"]) {
+      assert.ok(!text.includes(`href="${proto}`), `${rel} 存在 ${proto} 协议锚点`);
+    }
+  }
+});
+
 test("长文页（关于/原则/隐私）：存在简版目录（锚点可跳，无 JS 可读）", () => {
   for (const page of ["about", "principles", "privacy"]) {
     const html = readDist(`${page}/index.html`);

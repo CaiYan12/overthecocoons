@@ -103,7 +103,10 @@ const snapTime = formatDateTime(snapshot.generatedAt);
               <tr>
                 <td>{record.originalTitle}</td>
                 <td>
-                  <a href={record.targetUrl} rel="noopener">{record.targetUrl}</a>
+                  {/* 隔离表语义是“展示去向供监督”，不是导航入口：targetUrl 由管线按原文记录
+                      （协议不合法的输入正是被隔离的对象，可能携带 javascript: 等危险协议，
+                      且契约层仅校验字符串），故只作纯文本展示、不可点击（审查修复环 R1-I1）。 */}
+                  <code>{record.targetUrl}</code>
                 </td>
                 <td>{record.reasonCategory}</td>
                 <td>{formatDateTime(record.quarantinedAt)}</td>

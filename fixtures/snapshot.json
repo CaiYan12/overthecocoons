@@ -9,6 +9,13 @@
       "targetUrl": "https://example.com/s?wd=demo-quarantine",
       "reasonCategory": "缺 GUID",
       "quarantinedAt": "2026-10-02T08:05:00+08:00"
+    },
+    {
+      "guid": null,
+      "originalTitle": "【演示】协议不合法的条目隔离示例（危险协议 URL 仅作纯文本展示）",
+      "targetUrl": "javascript:alert(1)",
+      "reasonCategory": "协议不合法",
+      "quarantinedAt": "2026-10-02T08:06:00+08:00"
     }
   ],
   "sources": [
