@@ -1,0 +1,35 @@
+{
+  "stage": "brief",
+  "track": "code-first",
+  "updated": "2026-10-03",
+  "history": [
+    {
+      "stage": "brief",
+      "date": "2026-10-03",
+      "outputs": [
+        "docs/ui-alignment.md",
+        "docs/ui-design.md",
+        "docs/design/brief-preview.html",
+        "docs/design/color-contrast-checks.json"
+      ]
+    }
+  ],
+  "outputs": {
+    "brief": "docs/ui-design.md",
+    "alignment": "docs/ui-alignment.md",
+    "preview": "docs/design/brief-preview.html"
+  },
+  "decisions": [
+    "User confirmed design style and asked to archive discussion results under docs.",
+    "Astro + TypeScript + Tailwind CSS + native browser interaction scripts.",
+    "Editorial paper/ink/dark-red visual direction; three-column desktop frame with one reading column.",
+    "Top temporary topic filters; left navigation or long-page table of contents; right source/status/principle/submission widgets.",
+    "Add short hotspot detail pages, theme preference, reading tools and same-visit in-memory position restoration.",
+    "Page Reveal, card Reveal + Stagger, mobile drawer Slide in + Fade in + Stagger; no replay on restored reading position.",
+    "User referenced /animation-vocabularly; no matching local skill found. Read actual animation-vocabulary as a reference.",
+    "Concrete typography, spacing and motion numbers are proposed engineering starting points, not runtime validation.",
+    "Archived state only; no root implementation state or application code created."
+  ],
+  "blocked": [],
+  "next": "SPEC: read docs/ui-alignment.md and docs/ui-design.md alongside CONTEXT.md."
+}

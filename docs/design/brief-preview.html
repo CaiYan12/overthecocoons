@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>跳出茧房 · 设计样本</title>
+<style>
+:root{color-scheme:light;--paper:#F8F5EC;--surface:#FFFDF7;--ink:#211E1B;--muted:#655F58;--rule:#9C9387;--accent:#8F262B}
+:root[data-theme=dark]{color-scheme:dark;--paper:#191816;--surface:#23211E;--ink:#F4EFE5;--muted:#BEB5A8;--rule:#716A61;--accent:#E18B86}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,sans-serif}
+main{max-width:1100px;margin:auto;padding:40px 24px}header{border-top:4px solid var(--ink);border-bottom:1px solid var(--rule);padding:16px 0 24px}
+h1,h2,h3{font-family:serif;line-height:1.2}h1{font-size:40px;margin:12px 0}h2{font-size:26px}h3{font-size:24px}p{max-width:70ch}
+small,.muted{color:var(--muted)}section{margin-top:48px}button{min-height:44px;padding:8px 16px;background:var(--surface);border:1px solid var(--muted);color:var(--ink);font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}button:hover{border-color:var(--accent)}
+a{color:var(--accent)}.swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.swatch{border:1px solid var(--rule);background:var(--surface)}
+.chip{height:72px;background:var(--chip)}.swatch p{padding:12px;margin:0;font-size:14px}
+.rulers{display:grid;gap:12px}.ruler{border-left:var(--size) solid var(--accent);padding-left:12px}
+.card{background:var(--surface);border-top:1px solid var(--muted);border-bottom:1px solid var(--rule);padding:16px 24px;display:grid;grid-template-columns:1fr 96px;gap:24px}
+.placeholder{align-self:start;aspect-ratio:4/3;border:1px solid var(--rule);display:grid;place-items:center;color:var(--muted);font-size:12px}
+.card h3{margin:0 0 12px}.card p{margin:8px 0}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.code{font:14px/1.5 monospace}.notice{border-left:3px solid var(--accent);padding-left:16px}
+@media(max-width:640px){main{padding:24px 16px}.swatches{grid-template-columns:repeat(2,1fr)}h1{font-size:32px}.card{padding:16px;gap:16px;grid-template-columns:1fr 72px}}
+</style></head>
+<body><main>
+<header><small>设计样本 · 2026-10-03 · 非线上站点</small><h1>跳出茧房 <span class="muted">Over the cocoons</span></h1><p>报刊编辑型 / 暖纸白、墨黑、暗红。此页展示色彩、字体、间距与静态组件，不包含真实热点或产品转场实现。</p><button id="theme" type="button">切换深色样本</button></header>
+<section><h2>01 · 配色</h2><div class="swatches" id="swatches"></div></section>
+<section><h2>02 · 字体与层级</h2><h1>公共时间线</h1><p>标题、简介与出处分层展示。读者可以了解热点线索，再主动打开百度搜索结果。</p><p class="code">2026-10-03 · system-ui / serif / monospace sample</p><p class="muted">这是设计文字示例，不是当前新闻数据。实际系统字体外观需跨设备检查。</p></section>
+<section><h2>03 · 间距起点</h2><div class="rulers"><div class="ruler" style="--size:16px">16px 内容内边距</div><div class="ruler" style="--size:24px">24px 栏间距 / 安全边距</div><div class="ruler" style="--size:48px">48px 区块间距</div></div></section>
+<section><h2>04 · 静态组件样本</h2><div class="card"><div><small>组件示例 · 非真实热点</small><h3>来源和收录时间清楚可辨</h3><p>此处展示简介排版，正文不因动画或装饰改变内容与时间顺序。</p><p class="muted">来源信息 / 收录时间 / 新闻 · 社会</p><a href="#notice">查看样本说明</a></div><div class="placeholder">暂无配图</div></div><p class="row"><button id="feedback" type="button">按钮反馈样本</button><span id="feedback-text" role="status" aria-live="polite"></span></p></section>
+<section class="notice" id="notice"><h2>样本边界</h2><p>本页不是产品实现或浏览器验收证明。页面揭幕、卡片遮罩错峰、菜单抽屉与真实数据需要在后续实现并验收。</p></section>
+</main>
+<script>
+const palette={light:{paper:"#F8F5EC",surface:"#FFFDF7",ink:"#211E1B",muted:"#655F58",rule:"#9C9387",accent:"#8F262B"},dark:{paper:"#191816",surface:"#23211E",ink:"#F4EFE5",muted:"#BEB5A8",rule:"#716A61",accent:"#E18B86"}};
+function renderSwatches(){const colors=palette[document.documentElement.dataset.theme];document.getElementById("swatches").replaceChildren(...Object.entries(colors).map(([name,color])=>{const box=document.createElement("div");box.className="swatch";const chip=document.createElement("div");chip.className="chip";chip.style.setProperty("--chip",color);const label=document.createElement("p");label.textContent=name+" "+color;box.append(chip,label);return box;}));}
+document.getElementById("theme").addEventListener("click",()=>{const dark=document.documentElement.dataset.theme!=="dark";document.documentElement.dataset.theme=dark?"dark":"light";document.getElementById("theme").textContent=dark?"切换浅色样本":"切换深色样本";renderSwatches();});
+document.getElementById("feedback").addEventListener("click",()=>{document.getElementById("feedback-text").textContent="按钮已响应；不访问网络、不保存偏好。";});renderSwatches();
+</script></body></html>
