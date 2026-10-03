@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "isFixture": true,
   "generatedAt": "2026-10-03T08:00:00+08:00",
+  "quarantined": [],
+  "sources": [
+    {
+      "sourceId": "baidu-hot-demo",
+      "lastAttemptedAt": "2026-10-03T08:00:00+08:00",
+      "lastSucceededAt": "2026-10-03T08:00:00+08:00",
+      "lastFailureAt": null,
+      "lastFailureReason": null
+    }
+  ],
   "entries": [
     {
       "id": "fixture-demo-0001",

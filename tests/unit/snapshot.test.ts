@@ -22,6 +22,8 @@ describe("loadSnapshot（构建期数据注入缝）", () => {
     assert.equal(snap.schemaVersion, 1);
     assert.equal(snap.isFixture, true, "仓库自带快照必须是演示数据");
     assert.ok(snap.entries.length > 0, "演示快照应包含至少一条条目");
+    assert.ok(Array.isArray(snap.quarantined), "公开快照必须携带隔离列表字段");
+    assert.ok(Array.isArray(snap.sources), "公开快照必须携带来源状态字段");
     for (const entry of snap.entries) {
       assert.equal(typeof entry.id, "string");
       assert.equal(typeof entry.title, "string");
@@ -39,6 +41,8 @@ describe("loadSnapshot（构建期数据注入缝）", () => {
         isFixture: false,
         generatedAt: "2026-10-03T00:00:00+08:00",
         entries: [],
+        quarantined: [],
+        sources: [],
       }),
     );
     const previous = process.env.SNAPSHOT_PATH;
@@ -72,6 +76,50 @@ describe("loadSnapshot（构建期数据注入缝）", () => {
       JSON.stringify({ schemaVersion: 1, isFixture: true, generatedAt: "2026-10-03T00:00:00+08:00" }),
     );
     assert.throws(() => loadSnapshotFrom(file2));
+  });
+
+  it("公开快照必须包含隔离列表与来源状态数组（Ticket 02 契约演进）", () => {
+    const withoutQuarantined = writeTempSnapshot(
+      JSON.stringify({
+        schemaVersion: 1,
+        isFixture: false,
+        generatedAt: "2026-10-03T00:00:00+08:00",
+        entries: [],
+        sources: [],
+      }),
+    );
+    assert.throws(() => loadSnapshotFrom(withoutQuarantined), /quarantined/);
+    const withoutSources = writeTempSnapshot(
+      JSON.stringify({
+        schemaVersion: 1,
+        isFixture: false,
+        generatedAt: "2026-10-03T00:00:00+08:00",
+        entries: [],
+        quarantined: [],
+      }),
+    );
+    assert.throws(() => loadSnapshotFrom(withoutSources), /sources/);
+  });
+
+  it("隔离条目公开字段（标题/链接/原因/时间）缺失时抛出错误", () => {
+    const file = writeTempSnapshot(
+      JSON.stringify({
+        schemaVersion: 1,
+        isFixture: false,
+        generatedAt: "2026-10-03T00:00:00+08:00",
+        entries: [],
+        quarantined: [
+          {
+            guid: null,
+            originalTitle: "t",
+            targetUrl: "https://example.com",
+            reasonCategory: "缺 GUID",
+          },
+        ],
+        sources: [],
+      }),
+    );
+    assert.throws(() => loadSnapshotFrom(file), /quarantinedAt/);
   });
 });
 

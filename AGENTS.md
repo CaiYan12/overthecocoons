@@ -4,7 +4,8 @@
 
 - 项目：跳出茧房 Over the cocoons。
 - 先读 `CONTEXT.md` 领域术语与 `docs/README.md` 文档索引，再读 `docs/mvp-decisions.md` / `docs/mvp-spec.md` 已确认规格、`docs/mvp-architecture.md` / `docs/mvp-implementation-plan.md` 实施建议，以及产品/UI基线。原始 `初版需求细化.md` 示例与未确认项不是实现证据；后续用户明确决定优先于旧记录。
-- Ticket 01 工程骨架已建立：Astro 7.3.5 + TypeScript 6.0.3 + Tailwind CSS 4.3.3（`@tailwindcss/vite`），pnpm 10.26.2 锁文件已提交；占位首页（基路径 `/overthecocoons`、无 JS 可读、标注“演示数据”）；四条命令 `pnpm run check` / `build` / `test:node` / `test:e2e` 已在本地全部通过（2026-10-03，Node 24.18.0）。演示数据机制见 `docs/fixtures.md`（`fixtures/` 目录 + `SNAPSHOT_PATH` 注入）。数据管线、真实页面、工作流与部署尚未实现。
+- Ticket 01 工程骨架已建立：Astro 7.3.5 + TypeScript 6.0.3 + Tailwind CSS 4.3.3（`@tailwindcss/vite`），pnpm 10.26.2 锁文件已提交；占位首页（基路径 `/overthecocoons`、无 JS 可读、标注“演示数据”）；四条命令 `pnpm run check` / `build` / `test:node` / `test:e2e` 已在本地全部通过（2026-10-03，Node 24.18.0）。演示数据机制见 `docs/fixtures.md`（`fixtures/` 目录 + `SNAPSHOT_PATH` 注入）。
+- Ticket 02 数据契约与身份规则已建立：`src/domain/contract.ts`（三文件契约 state/items/manifest、完整 SHA-256 稳定 ID＝来源 ID+NUL 分隔符+GUID、损坏校验）与 `src/domain/ingestion.ts`（可注入来源的纯函数合并管线：同 GUID 不重计首次收录、内容修订保留时间、wd 关键词冲突/缺 GUID/协议不合法/字段校验失败隔离、7 天窗口滚动、台账无限保留、失败降级保留旧快照、坏状态停写）；`src/lib/snapshot.ts` 公开快照校验随契约演进（新增 `quarantined`/`sources` 字段）。真实 RSS 获取/解析/指纹提取属 Ticket 03，工作流与部署尚未实现。
 - 产品目标：拓宽视野为主、日常资讯为辅。公共时间线不按个人行为排序；可靠发布时间优先，缺失或语义未知时使用固定首次收录时间并明确标注。
 - 核心约束：无个性化、无登录、无广告、无阅读历史、无第三方统计；不人工挑选、排序或推荐单条内容；允许来源准入和明确规则下的治理。
 - 首版可单源正式公开。用户指定 `https://rss.aishort.top/?type=baidu`，定位为百度热点线索，首版按本站首次收录时间排序，入口标为“查看百度搜索结果”，移除标题热度后缀，不展示或使用热度排序。
@@ -17,7 +18,7 @@
 - 首版接受全中文；90/10 仅作后续多源方向，不删减内容凑比例。默认固定 11 个主题，优先映射源明确分类，缺失时用来源默认主题。
 - UI 结构、风格与动效已在 `docs/ui-alignment.md` / `docs/ui-design.md` 对齐；后续核实来源使用说明、稳定身份和跨构建状态，并执行真实构建、浏览器、动效与部署验收。
 - 原文代码未经验证；实现时必须核对依赖/API、解析和日期异常、抓取失败、去重、内容安全与子路径行为，不能直接复制并宣称可用。
-- 产品、UI与MVP-Q1–Q22 已归档确认，规格、架构、依赖证据与实现计划已保存到 docs；MVP-Q13–Q22 于 2026-10-03 继续对齐后确认（初始化手动入口、损坏即停写停发人工恢复、台账无限保留、SHA-256 稳定 ID、三文件契约、并发冲突即失败、仅靠 data 分支历史恢复、wd 规则、隔离条目公开列出及八项工程方案固化）。建议和未验证项保持标注；工程骨架（应用、锁文件、LICENSE、.gitattributes、fixture 机制）已按 Ticket 01 建立并本地验证，GitHub Actions 工作流与部署尚未创建，未做线上验收；后续按用户授权推进。
+- 产品、UI与MVP-Q1–Q22 已归档确认，规格、架构、依赖证据与实现计划已保存到 docs；MVP-Q13–Q22 于 2026-10-03 继续对齐后确认（初始化手动入口、损坏即停写停发人工恢复、台账无限保留、SHA-256 稳定 ID、三文件契约、并发冲突即失败、仅靠 data 分支历史恢复、wd 规则、隔离条目公开列出及八项工程方案固化）。建议和未验证项保持标注；工程骨架与数据契约/身份规则（Ticket 01、02）已建立并本地验证，真实源接入（Ticket 03）、渲染（Ticket 04）、交互/动效（05/06）、工作流与部署（07/08）尚未实现，GitHub Actions 工作流与部署尚未创建，未做线上验收；后续按用户授权推进。
 
 ## Context7
 
