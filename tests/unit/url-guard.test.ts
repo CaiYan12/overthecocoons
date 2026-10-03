@@ -37,6 +37,11 @@ const BLOCKED: Array<[string, RegExp]> = [
   ["http://localhost:8080/feed.xml", /localhost|主机/],
   ["http://LOCALHOST/feed.xml", /localhost|主机/],
   ["http://my.localhost/feed.xml", /localhost|主机/],
+  // 尾点绕过 localhost 比对（审查修复环 R1，fail-closed 拒绝；%2E 经 WHATWG 解码为 "."）。
+  ["http://localhost./", /尾点|localhost|主机/],
+  ["http://sub.localhost./", /尾点|localhost|主机/],
+  ["http://localhost../", /尾点|localhost|主机/],
+  ["http://localhost%2e/", /尾点|localhost|主机/],
   // 环回 IPv4（整个 127/8）。
   ["http://127.0.0.1/", /环回|私有|保留|主机/],
   ["http://127.255.255.254/feed", /环回|私有|保留|主机/],

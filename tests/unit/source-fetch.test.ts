@@ -115,6 +115,17 @@ describe("fetchTextOnce：重定向逐跳复验（用户安全硬约束）", () 
       )) as typeof fetch;
     await assert.rejects(() => fetchTextOnce("https://start.example.test/r", { fetchImpl }), /localhost|环回/);
   });
+  it("重定向到尾点 localhost（localhost.）同样必须拒绝（审查修复环 R1）", async () => {
+    let calls = 0;
+    const fetchImpl = (() => {
+      calls += 1;
+      return Promise.resolve(
+        new Response(null, { status: 302, headers: { location: "http://localhost.:8080/feed" } }),
+      );
+    }) as typeof fetch;
+    await assert.rejects(() => fetchTextOnce("https://start.example.test/r", { fetchImpl }), /尾点|localhost/);
+    assert.equal(calls, 1, "第二跳必须在请求前被拒绝");
+  });
   it("超过 maxRedirects 报错", async () => {
     const fetchImpl = (() =>
       Promise.resolve(

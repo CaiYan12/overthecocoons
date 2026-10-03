@@ -41,6 +41,12 @@ function assertHostAllowed(hostname: string): void {
     throw new Error("URL 安全校验失败：主机名为空");
   }
   const lower = hostname.toLowerCase();
+  // 尾点主机名 fail-closed 拒绝（审查修复环 R1）：WHATWG URL 解析器保留域名形式主机名的
+  // 尾部点号且对 %2E 百分号解码，"localhost." 会绕过下方 localhost 比对，而本机
+  // dns.lookup("localhost.") 实测解析到环回（::1）。公网域名不需要尾点，一律拒绝。
+  if (lower.endsWith(".")) {
+    throw new Error(`URL 安全校验失败：拒绝以尾点结尾的主机名（fail-closed，防绕过 localhost 比对）：${hostname}`);
+  }
   if (lower === "localhost" || lower.endsWith(".localhost")) {
     throw new Error(`URL 安全校验失败：拒绝 localhost 主机名：${hostname}`);
   }
