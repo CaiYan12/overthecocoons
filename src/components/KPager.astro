@@ -1,0 +1,48 @@
+---
+// 分页器（静态层为链接式独立页面；客户端动态分页属 Ticket 05）。
+// 动态编辑场风化样式：Serif 数字、右对齐；当前页 aria-current=page。
+interface Props {
+  page: number;
+  totalPages: number;
+  hrefFor: (page: number) => string;
+}
+const { page, totalPages, hrefFor } = Astro.props;
+const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+---
+
+{
+  totalPages > 1 && (
+    <nav class="pager" data-pager aria-label="分页">
+      {page > 1 ? (
+        <a class="page-btn" data-page={page - 1} href={hrefFor(page - 1)} rel="prev" aria-label="上一页">
+          ‹
+        </a>
+      ) : (
+        <span class="page-btn" aria-disabled="true">
+          ‹
+        </span>
+      )}
+      {pages.map((p) => (
+        <a
+          class="page-btn"
+          data-page={p}
+          href={hrefFor(p)}
+          aria-current={p === page ? "page" : undefined}
+          aria-label={`第 ${p} 页`}
+        >
+          {String(p).padStart(2, "0")}
+        </a>
+      ))}
+      {page < totalPages ? (
+        <a class="page-btn" data-page={page + 1} href={hrefFor(page + 1)} rel="next" aria-label="下一页">
+          ›
+        </a>
+      ) : (
+        <span class="page-btn" aria-disabled="true">
+          ›
+        </span>
+      )}
+      <span class="of">第 {page} / {totalPages} 页</span>
+    </nav>
+  )
+}

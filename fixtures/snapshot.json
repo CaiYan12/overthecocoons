@@ -2,10 +2,18 @@
   "schemaVersion": 1,
   "isFixture": true,
   "generatedAt": "2026-10-03T08:00:00+08:00",
-  "quarantined": [],
+  "quarantined": [
+    {
+      "guid": null,
+      "originalTitle": "【演示】缺 GUID 的条目隔离示例",
+      "targetUrl": "https://example.com/s?wd=demo-quarantine",
+      "reasonCategory": "缺 GUID",
+      "quarantinedAt": "2026-10-02T08:05:00+08:00"
+    }
+  ],
   "sources": [
     {
-      "sourceId": "baidu-hot-demo",
+      "sourceId": "baidu-aishort",
       "lastAttemptedAt": "2026-10-03T08:00:00+08:00",
       "lastSucceededAt": "2026-10-03T08:00:00+08:00",
       "lastFailureAt": null,
@@ -14,44 +22,364 @@
   ],
   "entries": [
     {
-      "id": "fixture-demo-0001",
-      "title": "【演示】示例热点线索一：占位数据用于版面校验",
-      "summary": "这是一条合成的演示条目，仅用于校验占位首页的版面、换行与两端视口表现，不代表任何真实事件，也不指向任何真实新闻页面。",
+      "id": "aff6fcce5f41a17fc7d87f3c05d48d661ec57f3e2e2d378b625f7a78d748058d",
+      "title": "【演示】新能源车假日充电迎来大考",
+      "summary": "假期高速服务区充电排队现象受到关注，各地充电设施利用与调度安排成为讨论焦点。此条为合成演示数据，不代表真实新闻。",
       "topic": "新闻",
       "firstSeenAt": "2026-10-03T07:12:00+08:00",
-      "url": "https://example.com/overthecocoons-demo-1"
+      "url": "https://example.com/s?wd=demo-001"
     },
     {
-      "id": "fixture-demo-0002",
-      "title": "【演示】示例热点线索二：验证标题折行",
-      "summary": "演示条目正文占位。真实条目的标题可能很长，此处用较长的合成标题验证 320px 视口下的折行表现：跳出茧房不按个人行为排序，公共时间线对所有人一致。",
+      "id": "a790c2cb2df8526be91b48541835a1468a807ad3bce6913331668294977b3dd5",
+      "title": "【演示】多地景区迎来假日返程客流",
+      "summary": "假期后半段，部分热门景区与交通枢纽出现返程客流，出行提示与错峰安排受到关注。此条为演示数据。",
       "topic": "社会",
-      "firstSeenAt": "2026-10-03T06:45:00+08:00",
-      "url": "https://example.com/overthecocoons-demo-2"
+      "firstSeenAt": "2026-10-03T07:26:00+08:00",
+      "url": "https://example.com/s?wd=demo-002"
     },
     {
-      "id": "fixture-demo-0003",
-      "title": "【演示】示例热点线索三",
-      "summary": "演示条目正文占位。本站当前展示的是热点线索而非已取得正文的新闻文章，详情以源站为准。",
+      "id": "7c1de96d374becc93c831728b6473718801ddbb2d3e31ead5f27e91d75b5a145",
+      "title": "【演示】秋粮收购陆续展开",
+      "summary": "主产区仓容与收购资金准备情况受到报道，秋粮收购进度成为近期经济领域话题。此条为演示数据。",
       "topic": "新闻",
-      "firstSeenAt": "2026-10-02T21:30:00+08:00",
-      "url": "https://example.com/overthecocoons-demo-3"
+      "firstSeenAt": "2026-10-03T07:40:00+08:00",
+      "url": "https://example.com/s?wd=demo-003"
     },
     {
-      "id": "fixture-demo-0004",
-      "title": "【演示】示例热点线索四：摘要长度样本",
-      "summary": "演示条目正文占位。摘要优先取源摘要，缺失时取源提供正文的纯文本，最多三百字；本条为验证摘要区块的样式与节奏而准备，内容本身为虚构。",
+      "id": "98cae7247e06cbf4494f00c8081c77840968938c64434be73a6518d0c6f1cec4",
+      "title": "【演示】假日博物馆预约持续火热",
+      "summary": "多家博物馆假期预约名额紧张，公共文化服务供给与预约机制引发讨论。此条为演示数据。",
       "topic": "社会",
-      "firstSeenAt": "2026-10-02T14:08:00+08:00",
-      "url": "https://example.com/overthecocoons-demo-4"
+      "firstSeenAt": "2026-10-03T07:55:00+08:00",
+      "url": "https://example.com/s?wd=demo-004"
     },
     {
-      "id": "fixture-demo-0005",
-      "title": "【演示】示例热点线索五",
-      "summary": "演示条目正文占位。数据快照对全部访客一致；重复抓取不刷新首次收录时间。",
+      "id": "64a9fc7807dcc3b4dde8a20fc7665bb4667da334e17c554a044a83a5cf2e5a8e",
+      "title": "【演示】全国秋收进度过半",
+      "summary": "秋收生产进入关键阶段，各地收储与农机调度情况成为报道重点。此条为演示数据。",
       "topic": "新闻",
-      "firstSeenAt": "2026-10-01T09:05:00+08:00",
-      "url": "https://example.com/overthecocoons-demo-5"
+      "firstSeenAt": "2026-10-03T08:03:00+08:00",
+      "url": "https://example.com/s?wd=demo-005"
+    },
+    {
+      "id": "e8434a57fb7150b023d6c84555a7ab5380a9af64dc47f5c3d8363177b028dc65",
+      "title": "【演示】城市街头咖啡地图持续扩容",
+      "summary": "街头咖啡业态在多个城市继续扩张，社区商业形态变化受到本地生活讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-03T08:17:00+08:00",
+      "url": "https://example.com/s?wd=demo-006"
+    },
+    {
+      "id": "0bb94cc6a018bc872bc5cd2f0d47f94eaf67098e86755aaf6fa8a2ed8e0153a6",
+      "title": "【演示】新一轮冷空气将影响北方地区",
+      "summary": "",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-03T08:29:00+08:00",
+      "url": "https://example.com/s?wd=demo-007"
+    },
+    {
+      "id": "8e3631499694842f8731e4e44980eb10b6fe1ac2e4899393d0e6e8b72b7b2d1c",
+      "title": "【演示】假日图书销量稳步回升",
+      "summary": "假期图书消费数据受到关注，实体书店与线上渠道的销售结构成为话题。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-03T08:41:00+08:00",
+      "url": "https://example.com/s?wd=demo-008"
+    },
+    {
+      "id": "59a13d030fbd47db2dc7bdfc1fe8e5ad0c5ace0c507ad669af4e24de398fc330",
+      "title": "【演示】多部门部署冬季能源保供",
+      "summary": "冬季能源保障工作安排公布，电力、天然气供应准备情况受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-03T08:52:00+08:00",
+      "url": "https://example.com/s?wd=demo-009"
+    },
+    {
+      "id": "a2310faa8fda9ade48f7d3708ab2ee5ff586231fb48a5ee389beaa97c6cb268b",
+      "title": "【演示】老字号街区改造引入青年业态",
+      "summary": "多个城市的老字号街区在改造中引入新业态，商业更新与城市记忆的平衡引发讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-03T08:57:00+08:00",
+      "url": "https://example.com/s?wd=demo-010"
+    },
+    {
+      "id": "7629f3087f2ea6f86ac543ebe02b5c82e1baf7f1e8a27029439d44c6a133d820",
+      "title": "【演示】全国产销衔接机制进一步优化",
+      "summary": "产销衔接与流通效率提升举措受到报道，供应链话题受到关注。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-02T08:03:00+08:00",
+      "url": "https://example.com/s?wd=demo-011"
+    },
+    {
+      "id": "6cf63e9a601f2bbbdb0be51671d6c5b313d910c64672b082d31027a2e96fb884",
+      "title": "【演示】传统村落保护引入数字化记录",
+      "summary": "传统村落数字档案建设推进，文化遗产保护方式受到讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-02T09:15:00+08:00",
+      "url": "https://example.com/s?wd=demo-012"
+    },
+    {
+      "id": "f43457244619a93ce6ca4dea9cc27f70b20f0abf6abb6f6dfd7e2b5b34176842",
+      "title": "【演示】中欧班列开行保持稳定增长",
+      "summary": "中欧班列开行数据公布，国际物流通道运行情况受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-02T10:26:00+08:00",
+      "url": "https://example.com/s?wd=demo-013"
+    },
+    {
+      "id": "2f5c37edbb76947af74da27abf1267f1ef63fd9660323b4281ab9e6b0a5180a6",
+      "title": "【演示】社区体育设施开放时间延长",
+      "summary": "部分城市社区体育场馆延长开放时间，全民健身服务供给受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-02T11:40:00+08:00",
+      "url": "https://example.com/s?wd=demo-014"
+    },
+    {
+      "id": "6e2426239885d5bb44d1b06ad44124e2742ba34c19e46168222856578b960170",
+      "title": "【演示】北方港口秋冬季煤炭转运有序",
+      "summary": "",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-02T12:58:00+08:00",
+      "url": "https://example.com/s?wd=demo-015"
+    },
+    {
+      "id": "f69c6424b22003e8f0f0cf0afd62a3a212a6b0bfcb8a4e1238da92b8d5ad48c4",
+      "title": "【演示】城市夜校课程报名火爆",
+      "summary": "多地上班族夜校课程供不应求，公共文化服务新形态引发讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-02T14:12:00+08:00",
+      "url": "https://example.com/s?wd=demo-016"
+    },
+    {
+      "id": "c1d26f74cdf33329389205e0ab59306a11876eb76f4921a93a44765d432f9805",
+      "title": "【演示】快递业务进入旺季前准备期",
+      "summary": "快递行业旺季保障安排陆续就绪，末端配送能力受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-02T15:31:00+08:00",
+      "url": "https://example.com/s?wd=demo-017"
+    },
+    {
+      "id": "e8c188d4985ba917e74c5eb5a5ca1755ed80e50601ba3a9e1f58c2f35a7373df",
+      "title": "【演示】银发助餐服务覆盖面扩大",
+      "summary": "社区老年助餐点建设持续推进，养老服务供给话题受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-02T16:44:00+08:00",
+      "url": "https://example.com/s?wd=demo-018"
+    },
+    {
+      "id": "69b3a579cdb066736712eff6a0bae8177352353d90deb0f2095d1ad98c9d5ac9",
+      "title": "【演示】南方晚稻进入灌浆期",
+      "summary": "南方晚稻生产进入关键生长期，田间管理与气象条件受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-02T18:05:00+08:00",
+      "url": "https://example.com/s?wd=demo-019"
+    },
+    {
+      "id": "d337949e6517836d66ecd7296dd624d151606b2748a42cb20dbc2afbc639bd11",
+      "title": "【演示】部分城市试点地铁延时运营",
+      "summary": "为应对假日客流，部分城市地铁线路试行延长运营时间，公共交通服务调整受到讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-02T19:20:00+08:00",
+      "url": "https://example.com/s?wd=demo-020"
+    },
+    {
+      "id": "ca17900ec1d62b6768420491b19705550205940820f779c68ed5e4454a3ff068",
+      "title": "【演示】秋季招聘会陆续启动",
+      "summary": "多地秋季招聘活动开始，高校毕业生就业服务安排受到关注。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-02T20:33:00+08:00",
+      "url": "https://example.com/s?wd=demo-021"
+    },
+    {
+      "id": "800038cb7e710a0627ba630d524631500f292e48cea41b8ea9fa49fc50e5bf45",
+      "title": "【演示】科普场馆成为亲子出游新选择",
+      "summary": "假期科普类场馆客流上升，公众科学素养活动供给受到报道。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-02T21:48:00+08:00",
+      "url": "https://example.com/s?wd=demo-022"
+    },
+    {
+      "id": "902c27262849cd76d3fb0d54a9be41896f3a9c8777e2555582d4f0e0ed3102d7",
+      "title": "【演示】冬季能源保供预案陆续落地",
+      "summary": "多地公布冬季能源保障预案，供应准备与应急调度安排受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-01T08:11:00+08:00",
+      "url": "https://example.com/s?wd=demo-023"
+    },
+    {
+      "id": "e4ff6814e7c2cbb7e1b88a41a4ab62a6328c119b292056aa5dea91ee3179c75f",
+      "title": "【演示】社区养老助浴服务试点扩围",
+      "summary": "社区养老助浴服务试点范围扩大，居家养老服务供给受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-01T09:24:00+08:00",
+      "url": "https://example.com/s?wd=demo-024"
+    },
+    {
+      "id": "43c7c263ccfc98a19ed9e9df53edfd84a5286eab4fcf1e72f51384f70b51f00c",
+      "title": "【演示】港口冷链查验效率持续提升",
+      "summary": "口岸冷链货物查验流程优化，通关效率变化受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-01T10:37:00+08:00",
+      "url": "https://example.com/s?wd=demo-025"
+    },
+    {
+      "id": "62e48c216ad7ded3bfed1e1b8322395e4aa2d00a4a4c68da43ac38e39e345ecd",
+      "title": "【演示】城市绿道骑行客流上升",
+      "summary": "多条城市绿道骑行客流上升，公共运动空间供给受到讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-01T11:52:00+08:00",
+      "url": "https://example.com/s?wd=demo-026"
+    },
+    {
+      "id": "2feb4f0f66695b276101e1bb9748ab5f403177cfda38d3ab452acdb400966ec2",
+      "title": "【演示】秋冬季候鸟迁徙监测启动",
+      "summary": "候鸟迁徙季监测工作陆续启动，湿地保护措施受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-01T13:06:00+08:00",
+      "url": "https://example.com/s?wd=demo-027"
+    },
+    {
+      "id": "1c9cb1eeb7ccad7980e8ce14cc56603e27687a64175b85e31ae8efb9683b035e",
+      "title": "【演示】老小区加装电梯审批提速",
+      "summary": "部分城市老旧小区加装电梯审批流程提速，更新改造进度受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-01T14:20:00+08:00",
+      "url": "https://example.com/s?wd=demo-028"
+    },
+    {
+      "id": "3bbe5e6fbf4d0d1bf8052f171806c016b576a22701e80610a37ef7f50fee9f73",
+      "title": "【演示】海外仓布局密度持续增加",
+      "summary": "跨境电商海外仓建设加快，物流网络布局受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-01T15:33:00+08:00",
+      "url": "https://example.com/s?wd=demo-029"
+    },
+    {
+      "id": "f2a9ef9b9bd9c36cd39ff4c71421a5cb42b2500b9448a28e0f3f852dba2d2cf1",
+      "title": "【演示】夜间文化旅游节亮相多城",
+      "summary": "多城举办夜间文化旅游节，夜间消费场景受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-01T16:47:00+08:00",
+      "url": "https://example.com/s?wd=demo-030"
+    },
+    {
+      "id": "cd64d7dc54fe45653622439e100210db9859f660f5cf91fea59d34ae09fc2409",
+      "title": "【演示】农产品冷链物流建设提速",
+      "summary": "农产品冷链物流设施建设提速，产地保鲜能力受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-01T18:01:00+08:00",
+      "url": "https://example.com/s?wd=demo-031"
+    },
+    {
+      "id": "a18222091e0d562e387437d8a710a8519f3ba618f4dc63c2848510d9f3c35340",
+      "title": "【演示】制造业数字化转型提速",
+      "summary": "制造业企业数字化改造项目增多，转型升级进展受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-09-30T08:05:00+08:00",
+      "url": "https://example.com/s?wd=demo-032"
+    },
+    {
+      "id": "768ab1e06611c894117f355e334d8e79b544224cc123d24abe5542c420e26eee",
+      "title": "【演示】城市马拉松赛事报名启动",
+      "summary": "多场城市马拉松公布赛程并开启报名，参赛组织安排受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-09-30T09:18:00+08:00",
+      "url": "https://example.com/s?wd=demo-033"
+    },
+    {
+      "id": "b96992628e648205fa080e4f4d392584c878d68f920c527a7c5a56b9273d96c4",
+      "title": "【演示】海上风电项目并网发电",
+      "summary": "多个海上风电项目陆续并网发电，清洁能源建设进展受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-09-30T10:31:00+08:00",
+      "url": "https://example.com/s?wd=demo-034"
+    },
+    {
+      "id": "3c1c2be43b688de3a3070755d8bab1226e54de31d29056377d14f9ce126ff5d0",
+      "title": "【演示】社区食堂错峰就餐受青睐",
+      "summary": "社区食堂推出错峰就餐安排，助餐服务运营受到讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-09-30T11:44:00+08:00",
+      "url": "https://example.com/s?wd=demo-035"
+    },
+    {
+      "id": "651efdc8918c1bdfd799e3c7818ddbaaf6c35d1393773eda83207349f959072e",
+      "title": "【演示】秋茶采摘进入高峰期",
+      "summary": "主要产区秋茶采摘进入高峰，产量与品质情况受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-09-30T12:57:00+08:00",
+      "url": "https://example.com/s?wd=demo-036"
+    },
+    {
+      "id": "78160698bb85f9e9edd8e3988e1ba07177cef8af478cee9eb192a7b873830fd6",
+      "title": "【演示】中小学课后服务课程扩容",
+      "summary": "多地中小学课后服务课程种类扩容，素质教育供给受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-09-30T14:10:00+08:00",
+      "url": "https://example.com/s?wd=demo-037"
+    },
+    {
+      "id": "466f3c32b6186f49543a8cb96af544271423c4f7141fb9e2949f667d45fe88ae",
+      "title": "【演示】智能网联汽车测试区扩容",
+      "summary": "智能网联汽车测试示范区范围扩大，产业化进展受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-09-30T15:23:00+08:00",
+      "url": "https://example.com/s?wd=demo-038"
+    },
+    {
+      "id": "e30c3485816011b0524a683fc273a5212825eff807090faf1b4b283af196f35a",
+      "title": "【演示】历史文化街区夜间开放延长",
+      "summary": "多条历史文化街区延长夜间开放时间，文旅融合方式受到讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-09-30T16:36:00+08:00",
+      "url": "https://example.com/s?wd=demo-039"
+    },
+    {
+      "id": "01bf812d62627559db8ad5632a09e06bf3319dbff6979699f3d8a999f8f96661",
+      "title": "【演示】粮食主产区秋播准备就绪",
+      "summary": "粮食主产区秋播物资与农机准备就绪，播种进度受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-09-29T08:09:00+08:00",
+      "url": "https://example.com/s?wd=demo-040"
+    },
+    {
+      "id": "336367099d8b3aa327c7e3a9fe080b32780c0b191f1133ba48216b9b602780fe",
+      "title": "【演示】城市公园无障碍设施改造推进",
+      "summary": "多个城市公园推进无障碍设施改造，公共服务细节受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-09-29T09:22:00+08:00",
+      "url": "https://example.com/s?wd=demo-041"
+    },
+    {
+      "id": "4ade0eb1a1107b899126c4de0343760e5e4ea045829f427b98074b4a9a0e472a",
+      "title": "【演示】自动化码头作业效率提升",
+      "summary": "港口自动化码头作业效率数据公布，智慧物流建设受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-09-29T10:35:00+08:00",
+      "url": "https://example.com/s?wd=demo-042"
+    },
+    {
+      "id": "f7ceedd09c2758ab230ee227ff36c5668989f3c61951e21be3d0dadece669bbe",
+      "title": "【演示】青年驿站为求职者提供住宿支持",
+      "summary": "多地青年驿站为异地求职者提供短期住宿，就业服务受到关注。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-09-29T11:48:00+08:00",
+      "url": "https://example.com/s?wd=demo-043"
+    },
+    {
+      "id": "07ec0a1b6b2dd69290bf50e36eb82cbe120de45493d0ac03fe6a2e83296894ed",
+      "title": "【演示】再生水利用规模稳步扩大",
+      "summary": "城市再生水利用规模稳步扩大，水资源循环利用受到报道。此条为演示数据。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-09-29T13:02:00+08:00",
+      "url": "https://example.com/s?wd=demo-044"
+    },
+    {
+      "id": "45fc09cc79a2d5c13afee515ec3becbbfaac923f5a28fe64ae332db30901fc05",
+      "title": "【演示】非遗工坊进商圈受关注",
+      "summary": "非遗工坊入驻商圈开展展示展销，传统工艺传承方式受到讨论。此条为演示数据。",
+      "topic": "社会",
+      "firstSeenAt": "2026-09-29T14:15:00+08:00",
+      "url": "https://example.com/s?wd=demo-045"
     }
   ]
 }

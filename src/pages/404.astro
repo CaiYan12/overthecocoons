@@ -1,0 +1,25 @@
+---
+// 自定义 404：条目已过期或不存在 + 返回入口。
+// 不宣称能区分「曾存在已过期」与「从未存在」（docs/mvp-architecture.md）；线上 404 行为另行部署验收。
+import KSite from "../components/KSite.astro";
+import KNav from "../components/KNav.astro";
+import { siteUrl } from "../lib/paths.ts";
+---
+
+<KSite
+  title="条目已过期或不存在 — 跳出茧房"
+  description="页面不存在，或条目已超出最近 7 天公开窗口。"
+  isFixture={false}
+  activeTopic="全部"
+  activeNav="home"
+>
+  <Fragment slot="col-start">
+    <KNav active="home" />
+  </Fragment>
+
+  <div class="empty k-404">
+    <h1>条目已过期或不存在</h1>
+    <p>本站仅保留最近 7 天窗口内的内容；过期条目不保留页面。</p>
+    <a class="page-btn" href={siteUrl("/")}>返回公共时间线</a>
+  </div>
+</KSite>

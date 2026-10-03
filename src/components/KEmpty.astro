@@ -1,0 +1,15 @@
+---
+// 空主题真实空态（规格：空主题可点、显示真实空状态及查看全部）。
+import { siteUrl } from "../lib/paths.ts";
+
+interface Props {
+  topic: string;
+}
+const { topic } = Astro.props;
+---
+
+<div class="empty">
+  <h3>「{topic}」暂无内容</h3>
+  <p>首源为百度热点线索，当前仅映射到「新闻」与「社会」主题。这里显示真实空状态。</p>
+  <a class="page-btn" data-all href={siteUrl("/")}>查看全部</a>
+</div>

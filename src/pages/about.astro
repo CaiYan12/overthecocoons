@@ -1,0 +1,60 @@
+---
+// 关于页（长文页框架：左栏目录 + 正文；内容只写已确认事实）。
+import Longform from "../components/Longform.astro";
+
+const toc = [
+  { id: "what", label: "这是什么" },
+  { id: "goal", label: "产品目标" },
+  { id: "constraints", label: "边界与约束" },
+  { id: "license", label: "许可与署名" },
+  { id: "status", label: "当前状态" },
+  { id: "submit", label: "提交新来源" },
+];
+---
+
+<Longform
+  title="关于 — 跳出茧房 Over the cocoons"
+  description="跳出茧房是什么：面向公共信息阅读的静态站点，拓宽视野为主、日常资讯为辅。"
+  heading="关于"
+  lede="跳出茧房（Over the cocoons）是一个面向公共信息阅读的静态站点：所有人看到同一份公共时间线，没有个性化。"
+  activeNav="about"
+  toc={toc}
+>
+  <section id="what">
+    <h2>这是什么</h2>
+    <p>
+      本站提供一条公共时间线：按同一份数据快照、同一条排序规则向所有访客展示。当前首版只有一个来源——百度热点线索
+      （经由 aishort.top 的订阅转换服务），条目外链指向百度搜索结果页，详见<a href="/overthecocoons/sources/">来源页</a>。
+    </p>
+  </section>
+  <section id="goal">
+    <h2>产品目标</h2>
+    <p>拓宽视野为主、日常资讯为辅。公共时间线不按个人行为排序；可靠发布时间优先，缺失或语义未知时使用固定首次收录时间并明确标注。</p>
+  </section>
+  <section id="constraints">
+    <h2>边界与约束</h2>
+    <ul>
+      <li>无个性化、无登录、无广告、无阅读历史、无第三方统计。</li>
+      <li>不人工挑选、排序或推荐单条内容；允许来源准入和明确规则下的治理（见<a href="/overthecocoons/principles/">收录原则</a>）。</li>
+      <li>公共时间线不使用热度：不展示推荐分、点击量或任何热度排序。</li>
+    </ul>
+  </section>
+  <section id="license">
+    <h2>许可与署名</h2>
+    <p>本站代码以 MIT 许可发布，版权署名 CaiYan12。来源内容不因项目许可证而重新许可，其使用边界以来源页说明为准。</p>
+  </section>
+  <section id="status">
+    <h2>当前状态</h2>
+    <p>
+      本站处于 MVP 阶段：时间线、主题筛选、条目详情、来源页与说明页已可静态阅读；动效、显示偏好等交互增强逐步落地。
+      当前展示的数据若标注「演示数据」，即为仓库内置的合成演示快照，不代表真实新闻。
+    </p>
+  </section>
+  <section id="submit">
+    <h2>提交新来源</h2>
+    <p>
+      新来源通过 GitHub Issue 模板提交，人工治理，不自动采纳。入口：
+      <a href="https://github.com/CaiYan12/overthecocoons/issues" target="_blank" rel="noopener">GitHub Issues ↗</a>
+    </p>
+  </section>
+</Longform>

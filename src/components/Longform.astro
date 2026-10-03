@@ -1,0 +1,54 @@
+---
+// 长文页（关于/原则/隐私）：左栏本页目录（简版、锚点可跳、无 JS 可读）、正文、右栏内容态 HUD。
+// 当前章节高亮属 Ticket 06；目录结构与锚点 id 在静态层完整可用。
+import KSite from "./KSite.astro";
+import KHud from "./KHud.astro";
+import { loadSnapshot } from "../lib/snapshot.ts";
+
+export interface TocItem {
+  id: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  lede: string;
+  activeNav: string;
+  toc: TocItem[];
+}
+const { title, description, heading, lede, activeNav, toc } = Astro.props;
+const snapshot = loadSnapshot();
+---
+
+<KSite
+  title={title}
+  description={description}
+  isFixture={false}
+  activeTopic="全部"
+  activeNav={activeNav}
+>
+  <Fragment slot="col-start">
+    <aside class="k-toccol" aria-label="本页目录">
+      <p class="k-navhead">本页目录 · TOC</p>
+      <nav class="k-toc" data-toc>
+        <ol>
+          {toc.map((item) => (
+            <li><a href={`#${item.id}`}>{item.label}</a></li>
+          ))}
+        </ol>
+      </nav>
+    </aside>
+  </Fragment>
+
+  <article class="k-doc">
+    <h1>{heading}</h1>
+    <p class="k-doc-lede">{lede}</p>
+    <slot />
+  </article>
+
+  <Fragment slot="col-end">
+    <KHud variant="content" snapshotGeneratedAt={snapshot.generatedAt} isFixture={snapshot.isFixture} />
+  </Fragment>
+</KSite>

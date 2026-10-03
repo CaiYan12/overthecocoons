@@ -1,0 +1,41 @@
+---
+// Hero 静态构图：ghost 英文、尺规线、双行大字标题、幽灵日期（取最新条目日期）、元信息与滚动提示。
+// GSAP 动效属 Ticket 06；DOM/类名/data-* 挂点与原型一致。
+import { monthEn } from "../lib/timeline.ts";
+
+interface Props {
+  isFixture: boolean;
+  /** 最新条目的首次收录时间（ISO）；快照为空时传 null，日期区退化为占位。 */
+  latestFirstSeenAt: string | null;
+}
+const { isFixture, latestFirstSeenAt } = Astro.props;
+const day = latestFirstSeenAt ? latestFirstSeenAt.slice(8, 10) : "--";
+const month = latestFirstSeenAt ? monthEn(latestFirstSeenAt.slice(5, 7)) : "";
+const year = latestFirstSeenAt ? latestFirstSeenAt.slice(0, 4) : "";
+---
+
+<section class="k-hero" data-hero>
+  <p class="k-hero-en" aria-hidden="true" data-heroen>OVER THE COCOONS</p>
+  <div class="k-hero-rule" data-herorule aria-hidden="true"></div>
+  <h1 class="k-hero-title" data-herotitle>
+    <span class="line">跳　出</span>
+    <span class="line l2">茧　房</span>
+  </h1>
+  <div class="k-hero-date" aria-hidden="true" data-herodate>
+    <span class="d" data-herodate-d>{day}</span>
+    <span class="m">{month} {year}</span>
+  </div>
+  <ul class="k-hero-meta" data-herometa>
+    <li><b>公共时间线</b>PUBLIC TIMELINE</li>
+    <li><b>NO PERSONAL RANKING</b>不按个人行为排序</li>
+    <li><b>NO ADS</b>无广告</li>
+    <li><b>NO READING HISTORY</b>无阅读历史</li>
+  </ul>
+  <p class="k-hero-note">
+    首源：百度热点线索 · 按本站首次收录时间排序{isFixture && " · 以下均为演示数据"}
+  </p>
+  <div class="k-scrollhint" aria-hidden="true" data-hint>
+    <span>SCROLL TO EXPLORE</span>
+    <i></i>
+  </div>
+</section>

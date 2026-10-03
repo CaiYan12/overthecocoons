@@ -1,0 +1,66 @@
+---
+// 站点外壳（v-kinetic）：背景材质、紧凑 header、可选 Hero、三栏（左右栏经插槽注入）、
+// 页脚、返回顶部与 Ticket 06 动效挂点（过渡面板/自定义光标，静态层不可见）。
+import BaseLayout from "../layouts/BaseLayout.astro";
+import KHeader from "./KHeader.astro";
+import KMenu from "./KMenu.astro";
+import SiteFooter from "./SiteFooter.astro";
+import { formatDateTime, latestDayStats, sortEntriesDesc } from "../lib/timeline.ts";
+import { loadSnapshot } from "../lib/snapshot.ts";
+
+interface Props {
+  title: string;
+  description: string;
+  /** 数据页传快照 isFixture（页脚标注演示数据）；纯说明页传 false。 */
+  isFixture: boolean;
+  /** 当前激活主题（header tab / 菜单主题列）。 */
+  activeTopic?: string;
+  /** 当前激活的站点导航项。 */
+  activeNav?: string;
+}
+const { title, description, isFixture, activeTopic = "全部", activeNav } = Astro.props;
+
+// 构建期读取快照，仅为 header/菜单/页脚提供时间基准与当日条数；页面主体数据由各页自行渲染。
+const snapshot = loadSnapshot();
+const snapTime = formatDateTime(snapshot.generatedAt);
+const { count: todayCount } = latestDayStats(sortEntriesDesc(snapshot.entries));
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="v-kinetic" data-kinetic>
+    <div class="k-grain" aria-hidden="true"></div>
+    <KHeader activeTopic={activeTopic} />
+    <slot name="hero" />
+    <div class="k-cols">
+      <slot name="col-start" />
+      <main class="k-main" id="main" data-kmain>
+        <slot />
+      </main>
+      <slot name="col-end" />
+    </div>
+    <SiteFooter isFixture={isFixture} active={activeNav} />
+    <button class="k-top" type="button" data-ktop aria-label="返回顶部">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <circle class="track" cx="30" cy="30" r="26"></circle>
+        <circle class="prog" data-ring cx="30" cy="30" r="26"></circle>
+      </svg>
+      <span class="arr" aria-hidden="true">↑</span>
+    </button>
+    <KMenu
+      activeTopic={activeTopic}
+      activeNav={activeNav}
+      snapTime={snapTime}
+      isFixture={isFixture}
+      todayCount={todayCount}
+    />
+    <!-- 页面过渡面板：Ticket 06 挂点，静态层保持隐藏空壳（原型的桩文案不再渲染） -->
+    <div class="k-transition" data-ktrans aria-hidden="true">
+      <div class="k-trans-num" data-ktrans-num></div>
+      <div class="k-trans-label" data-ktrans-label></div>
+    </div>
+    <div class="k-cursor" data-kcursor aria-hidden="true">
+      <span class="k-cursor-ring" data-kcursor-ring><span class="k-cursor-label" data-kcursor-label></span></span>
+      <span class="k-cursor-dot" data-kcursor-dot></span>
+    </div>
+  </div>
+</BaseLayout>

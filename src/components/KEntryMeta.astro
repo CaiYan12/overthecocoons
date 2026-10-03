@@ -1,0 +1,26 @@
+---
+// 条目元信息行：来源 · 主题 · 收录时间 · 独立「查看百度搜索结果」外链（url 缺失时省略外链，不编造）。
+interface Props {
+  topic: string;
+  /** 已格式化的收录时间（YYYY-MM-DD HH:mm）。 */
+  collected: string;
+  /** 条目目标链接；空串表示来源未提供。 */
+  url: string;
+}
+const { topic, collected, url } = Astro.props;
+---
+
+<p class="k-meta">
+  百度热点 <span class="sep">·</span> <span class="tpc">{topic}</span> <span class="sep">·</span> 收录 {collected}
+  {
+    url && (
+      <Fragment>
+        {" "}
+        <span class="sep">·</span>{" "}
+        <a class="ext" href={url} target="_blank" rel="noopener" data-cursor="LINK">
+          查看百度搜索结果 ↗
+        </a>
+      </Fragment>
+    )
+  }
+</p>

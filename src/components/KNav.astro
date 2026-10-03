@@ -1,0 +1,34 @@
+---
+// 左栏功能导航。原型 NAV_ITEMS 含「热点详情」桩；真实站点无对应列表页，移除（桩语义由真实详情路由取代）。
+// 返回主站链接保留（ui-alignment：主站 https://caiyan12.github.io/，原生跳转）。
+import { siteUrl } from "../lib/paths.ts";
+
+interface Props {
+  /** 当前激活项：home | sources | about | principles | privacy。 */
+  active?: string;
+}
+const { active } = Astro.props;
+
+const links = [
+  { key: "home", label: "时间线", href: siteUrl("/") },
+  { key: "sources", label: "来源", href: siteUrl("/sources/") },
+  { key: "about", label: "关于", href: siteUrl("/about/") },
+  { key: "principles", label: "原则", href: siteUrl("/principles/") },
+  { key: "privacy", label: "隐私", href: siteUrl("/privacy/") },
+];
+---
+
+<aside class="k-nav" aria-label="功能导航">
+  <p class="k-navhead">导航 · INDEX</p>
+  <nav data-knav>
+    <span class="k-marker" aria-hidden="true" data-kmarker></span>
+    {
+      links.map((link, index) => (
+        <a data-nav={index} href={link.href} aria-current={active === link.key ? "page" : undefined}>
+          {link.label}
+        </a>
+      ))
+    }
+  </nav>
+  <p class="k-navfoot"><a href="https://caiyan12.github.io/" rel="noopener">↩ 返回主站</a></p>
+</aside>

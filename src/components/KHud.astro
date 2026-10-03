@@ -1,0 +1,56 @@
+---
+// 右栏 Editorial HUD：来源 / 快照状态 / （时间线页）当前阅读位与阅读进度 / 项目入口。
+// NOW READING 与 READING PROGRESS 的动态行为属 Ticket 06，静态层输出初始值。
+import { formatDateTime } from "../lib/timeline.ts";
+import { siteUrl } from "../lib/paths.ts";
+
+interface Props {
+  /** timeline=时间线页（含阅读进度）；content=长文/详情页（省略阅读区）。 */
+  variant?: "timeline" | "content";
+  snapshotGeneratedAt: string;
+  isFixture: boolean;
+  /** 当前主题口径的条目总数（NOW READING 分母，静态层为该页总数）。 */
+  total?: number;
+}
+const { variant = "timeline", snapshotGeneratedAt, isFixture, total = 0 } = Astro.props;
+const snapTime = formatDateTime(snapshotGeneratedAt);
+const totalText = String(total).padStart(2, "0");
+---
+
+<aside class="k-hud" aria-label="来源与数据状态" data-khud>
+  <div class="sec">
+    <p class="h">SOURCE</p>
+    <p class="big">百度热点</p>
+    <p class="dim">BAIDU HOT · 热点线索</p>
+  </div>
+  <div class="sec">
+    <p class="h">STATUS</p>
+    <p><span class="k-dot" aria-hidden="true"></span>LIVE · 快照 {snapTime}{isFixture && "（演示）"}</p>
+  </div>
+  {
+    variant === "timeline" && (
+      <Fragment>
+        <div class="sec">
+          <p class="h">NOW READING</p>
+          <p class="big k-count">
+            <span class="k-roll"><span data-rollin>01</span></span> / <span data-total>{totalText}</span>
+          </p>
+        </div>
+        <div class="sec sec-readbar">
+          <p class="h">READING PROGRESS</p>
+          <p class="big k-pct" data-readpct>0%</p>
+          <div class="k-readbar"><i data-readbar></i></div>
+        </div>
+      </Fragment>
+    )
+  }
+  <div class="sec">
+    <p class="h">PROJECT</p>
+    <p><a class="k-link" href={siteUrl("/principles/")}>阅读收录原则</a></p>
+    <p>
+      <a class="k-link" href="https://github.com/CaiYan12/overthecocoons/issues" target="_blank" rel="noopener">
+        提交新来源（GitHub Issue）↗
+      </a>
+    </p>
+  </div>
+</aside>

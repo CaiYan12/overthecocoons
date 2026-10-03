@@ -1,0 +1,121 @@
+---
+// 来源页：区分原始平台与 Feed 服务提供者，只写核实信息；公开来源状态与隔离条目列表（MVP-Q20/Q22）。
+import KSite from "../components/KSite.astro";
+import KNav from "../components/KNav.astro";
+import KHud from "../components/KHud.astro";
+import { loadSnapshot } from "../lib/snapshot.ts";
+import { formatDateTime } from "../lib/timeline.ts";
+
+const snapshot = loadSnapshot();
+const snapTime = formatDateTime(snapshot.generatedAt);
+---
+
+<KSite
+  title="来源 — 跳出茧房 Over the cocoons"
+  description="跳出茧房当前唯一来源：原始平台、Feed 服务提供者、数据状态与隔离条目列表。"
+  isFixture={snapshot.isFixture}
+  activeTopic="全部"
+  activeNav="sources"
+>
+  <Fragment slot="col-start">
+    <KNav active="sources" />
+  </Fragment>
+
+  {
+    snapshot.isFixture && (
+      <aside class="k-notice" role="note" aria-label="演示数据说明">
+        <strong>演示数据</strong>：本页数据状态与隔离列表为仓库内置的合成演示数据，不代表真实抓取结果。
+      </aside>
+    )
+  }
+
+  <article class="k-doc">
+    <h1>来源</h1>
+    <p class="k-doc-lede">首版仅一个来源。本页只记录已核实信息，未核实事项如实标注。</p>
+
+    <h2 id="providers">原始平台与 Feed 服务提供者</h2>
+    <dl>
+      <dt>原始平台</dt>
+      <dd>百度。本站展示的是百度热点线索，条目外链指向百度搜索结果页，不是已取得原文正文的新闻文章。</dd>
+      <dt>Feed 服务提供者</dt>
+      <dd>
+        aishort.top 的订阅转换服务。源地址：
+        <a href="https://rss.aishort.top/?type=baidu" target="_blank" rel="noopener">https://rss.aishort.top/?type=baidu ↗</a>
+      </dd>
+    </dl>
+    <p class="dim">
+      该 feed 本身已是热搜筛选结果；本站不宣称上游没有算法筛选，也不展示或使用热度排序。
+    </p>
+
+    <h2 id="unverified">尚未核实的事项</h2>
+    <ul>
+      <li>feed 日期的业务语义尚未核实，本站不将其作为新闻发布时间使用，排序一律采用本站首次收录时间。</li>
+      <li>源内容的公开使用许可尚未核实。</li>
+      <li>2026-10-03 核查：该 feed 未提供图片、内容分类、全文与可靠的商业内容标记。</li>
+    </ul>
+
+    <h2 id="status">数据状态</h2>
+    <p>快照时间：{snapTime}（时间按记录值展示，不做时区换算；尝试、成功获取、失败时间分字段记录，不混称“更新成功”）</p>
+    {
+      snapshot.sources.map((source) => (
+        <dl>
+          <dt>来源 ID</dt>
+          <dd><code>{source.sourceId}</code></dd>
+          <dt>尝试时间</dt>
+          <dd>{formatDateTime(source.lastAttemptedAt)}</dd>
+          <dt>成功获取时间</dt>
+          <dd>{source.lastSucceededAt ? formatDateTime(source.lastSucceededAt) : "—"}</dd>
+          {source.lastFailureAt && (
+            <Fragment>
+              <dt>最近失败时间</dt>
+              <dd>{formatDateTime(source.lastFailureAt)}</dd>
+            </Fragment>
+          )}
+          {source.lastFailureReason && (
+            <Fragment>
+              <dt>最近失败原因</dt>
+              <dd>{source.lastFailureReason}</dd>
+            </Fragment>
+          )}
+        </dl>
+      ))
+    }
+
+    <h2 id="quarantine">隔离条目</h2>
+    <p>
+      隔离不是删除：被隔离的输入不进入公开时间线，但记录随身份台账无限保留；隔离列表随 7 天公开窗口滚动。
+    </p>
+    {
+      snapshot.quarantined.length === 0 ? (
+        <p class="dim">当前窗口内没有隔离条目。</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">原始标题</th>
+              <th scope="col">目标链接</th>
+              <th scope="col">隔离原因</th>
+              <th scope="col">隔离时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            {snapshot.quarantined.map((record) => (
+              <tr>
+                <td>{record.originalTitle}</td>
+                <td>
+                  <a href={record.targetUrl} rel="noopener">{record.targetUrl}</a>
+                </td>
+                <td>{record.reasonCategory}</td>
+                <td>{formatDateTime(record.quarantinedAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </article>
+
+  <Fragment slot="col-end">
+    <KHud variant="content" snapshotGeneratedAt={snapshot.generatedAt} isFixture={snapshot.isFixture} />
+  </Fragment>
+</KSite>

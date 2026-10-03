@@ -1,0 +1,71 @@
+---
+// 原则页（长文页框架）：收录与排序原则，内容与 docs/mvp-spec.md 已确认规则一致。
+import Longform from "../components/Longform.astro";
+
+const toc = [
+  { id: "ordering", label: "排序与时间" },
+  { id: "sources", label: "来源准入与治理" },
+  { id: "window", label: "窗口与过期" },
+  { id: "summary", label: "摘要规则" },
+  { id: "heat", label: "热度与商业标记" },
+  { id: "quarantine", label: "隔离公开" },
+];
+---
+
+<Longform
+  title="原则 — 跳出茧房 Over the cocoons"
+  description="跳出茧房的收录与排序原则：公共时间线、首次收录时间、7 天窗口、摘要规则与隔离公开。"
+  heading="原则"
+  lede="本页记录时间线的收录与排序原则。原则之外的临时调整不会出现；规则变化会先落到这里。"
+  activeNav="principles"
+  toc={toc}
+>
+  <section id="ordering">
+    <h2>排序与时间</h2>
+    <ul>
+      <li>时间线按本站首次收录时间倒序；同一时间的条目以稳定 ID 作确定性次序。</li>
+      <li>首次收录时间在校验通过并保存权威状态后固定，重复抓取不刷新。</li>
+      <li>来源声称的原始时间在业务语义未核实前不使用；可靠发布时间优先的规则不变。</li>
+      <li>公共时间线不按个人行为排序，也没有个性化。</li>
+    </ul>
+  </section>
+  <section id="sources">
+    <h2>来源准入与治理</h2>
+    <ul>
+      <li>首版可单源正式公开：百度热点线索（Feed 服务提供者为 aishort.top 订阅转换服务）。</li>
+      <li>来源自身已作热搜筛选，本站不宣称上游没有算法筛选。</li>
+      <li>新来源经 GitHub Issue 模板提交、人工治理，不自动采纳。</li>
+    </ul>
+  </section>
+  <section id="window">
+    <h2>窗口与过期</h2>
+    <ul>
+      <li>公开内容采用成功构建快照的最近 7 天窗口。</li>
+      <li>保留窗口内的历史条目，不每天只用来源当前列表覆盖。</li>
+      <li>过期条目不保留内容页面：访问相应 /items/ 链接会看到「条目已过期或不存在」。</li>
+      <li>身份记录不因内容过期而删除，防止旧条目被当作新条目再次收录。</li>
+    </ul>
+  </section>
+  <section id="summary">
+    <h2>摘要规则</h2>
+    <ul>
+      <li>摘要优先取源摘要；缺失时取源提供正文的纯文本。</li>
+      <li>摘要最多 300 字；两者都没有时不编造。</li>
+      <li>本站不抓取网页补图或正文全文，详情不转载全文。</li>
+    </ul>
+  </section>
+  <section id="heat">
+    <h2>热度与商业标记</h2>
+    <ul>
+      <li>移除标题热度后缀；不展示推荐分、点击量或热度，也不用热度排序。</li>
+      <li>仅排除来源明确标记的商业内容；当前来源没有可靠的商业标记，本站不承诺所有上游内容均无商业关系。</li>
+    </ul>
+  </section>
+  <section id="quarantine">
+    <h2>隔离公开</h2>
+    <p>
+      身份缺失或冲突、协议不合法等输入会被隔离而不是静默丢弃：原始标题、目标链接、隔离原因类别与隔离时间在
+      <a href="/overthecocoons/sources/">来源页</a>公开列出；隔离记录随身份台账无限保留，隔离列表随 7 天公开窗口滚动。
+    </p>
+  </section>
+</Longform>

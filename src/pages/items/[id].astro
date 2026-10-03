@@ -1,0 +1,80 @@
+---
+// 条目详情页 /items/<64hex>/：仅为当前快照窗口内条目生成（过期条目不生成页面，访问走 404）。
+// 内容：标题/简介/来源/收录时间/主题/数据版画占位图 + 独立「查看百度搜索结果」入口；不转载全文。
+import KSite from "../../components/KSite.astro";
+import KNav from "../../components/KNav.astro";
+import KHud from "../../components/KHud.astro";
+import KEntryMedia from "../../components/KEntryMedia.astro";
+import { loadSnapshot } from "../../lib/snapshot.ts";
+import type { PublicEntry } from "../../domain/contract.ts";
+import { EN_LABEL, formatClock, formatDateTime, topicPagePath } from "../../lib/timeline.ts";
+import { siteUrl } from "../../lib/paths.ts";
+
+export function getStaticPaths() {
+  const snapshot = loadSnapshot();
+  return snapshot.entries.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: PublicEntry;
+}
+const { entry } = Astro.props;
+
+const snapshot = loadSnapshot();
+const isFixture = snapshot.isFixture;
+const lab = EN_LABEL[entry.topic] ?? "INDEX";
+const clock = formatClock(entry.firstSeenAt);
+const summaryText = entry.summary || "来源未提供摘要，本站不编造。";
+const description = entry.summary
+  ? entry.summary.slice(0, 120)
+  : "本条目详情：来源、收录时间与主题信息。";
+---
+
+<KSite
+  title={`${entry.title} — 跳出茧房`}
+  description={description}
+  isFixture={isFixture}
+  activeTopic={entry.topic}
+  activeNav="home"
+>
+  <Fragment slot="col-start">
+    <KNav active="home" />
+  </Fragment>
+
+  {
+    isFixture && (
+      <aside class="k-notice" role="note" aria-label="演示数据说明">
+        <strong>演示数据</strong>：本条目为仓库内置的合成演示条目，不代表真实新闻。
+      </aside>
+    )
+  }
+
+  <article class="k-detail layout-c" data-detail-page>
+    <p class="k-detail-back">
+      <a href={siteUrl(topicPagePath(entry.topic, 1))}>← 返回时间线</a>
+    </p>
+    <h1 class="k-headline">{entry.title}</h1>
+    <KEntryMedia lab={lab} clock={clock} num="00" />
+    <p class={`k-summary${entry.summary ? "" : " k-summary-empty"}`}>{summaryText}</p>
+    <p class="k-meta">
+      百度热点 <span class="sep">·</span> <span class="tpc">{entry.topic}</span> <span class="sep">·</span> 收录{" "}
+      <time datetime={entry.firstSeenAt}>{formatDateTime(entry.firstSeenAt)}</time>
+    </p>
+    {
+      entry.url && (
+        <p class="k-detail-ext">
+          <a class="ext" href={entry.url} target="_blank" rel="noopener" data-cursor="LINK">
+            查看百度搜索结果 ↗
+          </a>
+        </p>
+      )
+    }
+  </article>
+
+  <Fragment slot="col-end">
+    <KHud variant="content" snapshotGeneratedAt={snapshot.generatedAt} isFixture={isFixture} />
+  </Fragment>
+</KSite>

@@ -1,0 +1,108 @@
+---
+// 时间线页（主题 × 页码）：Hero、左右栏、日期组时间线、aria-live 播报与链接式分页。
+// 排序/分组/分页口径与原型 renderKineticList 一致：先按主题筛选，再按首次收录时间倒序，每页 20 条。
+import KSite from "./KSite.astro";
+import KHero from "./KHero.astro";
+import KNav from "./KNav.astro";
+import KHud from "./KHud.astro";
+import KEntry from "./KEntry.astro";
+import KPager from "./KPager.astro";
+import KEmpty from "./KEmpty.astro";
+import { loadSnapshot } from "../lib/snapshot.ts";
+import type { PublicEntry } from "../domain/contract.ts";
+import { monthEn, paginate, sortEntriesDesc, topicPagePath } from "../lib/timeline.ts";
+import { siteUrl } from "../lib/paths.ts";
+
+interface DayView {
+  date: string;
+  items: Array<{ entry: PublicEntry; gi: number; di: number }>;
+}
+
+interface Props {
+  topic: string;
+  page: number;
+}
+const { topic, page } = Astro.props;
+
+const snapshot = loadSnapshot();
+const isFixture = snapshot.isFixture;
+const sortedAll = sortEntriesDesc(snapshot.entries);
+const filtered = topic === "全部" ? sortedAll : sortedAll.filter((entry) => entry.topic === topic);
+const { page: currentPage, totalPages, start, slice } = paginate(filtered, page);
+if (currentPage !== page) {
+  throw new Error(
+    `页码越界：主题「${topic}」第 ${page} 页不存在（共 ${totalPages} 页）——getStaticPaths 与渲染口径不一致`,
+  );
+}
+
+// 组内全局序号（跨页连续）与日内序号（权重三档），与原型 gi/di 语义一致
+const groups: DayView[] = [];
+slice.forEach((entry, index) => {
+  const date = entry.firstSeenAt.slice(0, 10);
+  const last = groups[groups.length - 1];
+  if (last && last.date === date) {
+    last.items.push({ entry, gi: start + index, di: last.items.length });
+  } else {
+    groups.push({ date, items: [{ entry, gi: start + index, di: 0 }] });
+  }
+});
+
+const total = filtered.length;
+const hrefFor = (target: number) => siteUrl(topicPagePath(topic, target));
+const title =
+  topic === "全部"
+    ? `公共时间线${currentPage > 1 ? ` · 第 ${currentPage} 页` : ""} — 跳出茧房 Over the cocoons`
+    : `公共时间线 · ${topic}${currentPage > 1 ? ` · 第 ${currentPage} 页` : ""} — 跳出茧房`;
+const description =
+  "拓宽视野为主、日常资讯为辅的公共信息阅读站点。公共时间线按同一份数据快照与共同排序规则展示，不按个人行为排序。";
+---
+
+<KSite
+  title={title}
+  description={description}
+  isFixture={isFixture}
+  activeTopic={topic}
+  activeNav="home"
+>
+  <Fragment slot="hero">
+    <KHero isFixture={isFixture} latestFirstSeenAt={sortedAll[0]?.firstSeenAt ?? null} />
+  </Fragment>
+  <Fragment slot="col-start">
+    <KNav active="home" />
+  </Fragment>
+
+  <div class="k-list" data-klist>
+    {
+      total === 0 ? (
+        <KEmpty topic={topic} />
+      ) : (
+        groups.map((group) => (
+          <section class="k-day" data-day={group.date}>
+            <div class="k-line" aria-hidden="true" />
+            <div class="k-progress" aria-hidden="true" />
+            <header class="k-day-head">
+              <h2 class="k-day-big">{monthEn(group.date.slice(5, 7))} {group.date.slice(8, 10)}</h2>
+              <p class="k-day-sub">
+                {group.date.slice(0, 4)} · 按收录时间排序{isFixture && "（演示数据）"}
+              </p>
+            </header>
+            {group.items.map(({ entry, gi, di }) => (
+              <KEntry entry={entry} gi={gi} di={di} />
+            ))}
+          </section>
+        ))
+      )
+    }
+  </div>
+  <p class="live-status" role="status" aria-live="polite" data-status></p>
+  <KPager page={currentPage} totalPages={totalPages} hrefFor={hrefFor} />
+
+  <Fragment slot="col-end">
+    <KHud
+      variant="timeline"
+      snapshotGeneratedAt={snapshot.generatedAt}
+      isFixture={isFixture}
+      total={total}
+    />
+  </Fragment>
+</KSite>

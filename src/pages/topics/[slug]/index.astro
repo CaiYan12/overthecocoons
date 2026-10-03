@@ -1,0 +1,19 @@
+---
+// 主题页第 1 页（/topics/<slug>/）：11 个主题全量生成，空主题渲染真实空态。
+import TimelinePage from "../../../components/TimelinePage.astro";
+import { TOPICS, TOPIC_SLUGS } from "../../../lib/timeline.ts";
+
+export function getStaticPaths() {
+  return TOPICS.filter((topic) => topic !== "全部").map((topic) => ({
+    params: { slug: TOPIC_SLUGS[topic] },
+    props: { topic },
+  }));
+}
+
+interface Props {
+  topic: string;
+}
+const { topic } = Astro.props;
+---
+
+<TimelinePage topic={topic} page={1} />

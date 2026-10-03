@@ -1,0 +1,26 @@
+---
+// 数据版画占位图（无图条目的本站占位）：网格底纹 + 色块时间 + 竖排主题词 + 出血大序号。
+// 结构与原型 .k-media/.k-media-tilt/.k-media-art 三层一致（Tilt 动效属 Ticket 06）。
+interface Props {
+  /** 竖排英文主题词。 */
+  lab: string;
+  /** 色块时间（HH:mm）。 */
+  clock: string;
+  /** 出血大序号（两位）。 */
+  num: string;
+}
+const { lab, clock, num } = Astro.props;
+---
+
+<div class="k-media" data-cursor="OPEN">
+  <div class="k-media-tilt">
+    <div class="k-media-art" role="img" aria-label={`编辑占位图：${lab}`}>
+      <span class="tag" aria-hidden="true">
+        <i></i>
+        <span class="tm">{clock}</span>
+      </span>
+      <span class="lab" aria-hidden="true">{lab}</span>
+      <span class="num" aria-hidden="true">{num}</span>
+    </div>
+  </div>
+</div>

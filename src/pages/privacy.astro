@@ -1,0 +1,60 @@
+---
+// 隐私页（长文页框架）：只描述本站实际做法与已确认约束，不承诺未实现的能力。
+import Longform from "../components/Longform.astro";
+
+const toc = [
+  { id: "collected", label: "我们收集什么" },
+  { id: "storage", label: "本地存储" },
+  { id: "server", label: "服务器与托管" },
+  { id: "third-party", label: "第三方" },
+  { id: "data", label: "数据来源与权利" },
+];
+---
+
+<Longform
+  title="隐私 — 跳出茧房 Over the cocoons"
+  description="跳出茧房的隐私做法：无账户、无统计、无广告、无阅读历史；仅显示偏好本地保存。"
+  heading="隐私"
+  lede="本站不认识你，也不想知道你是谁。本页只描述本站的实际做法。"
+  activeNav="privacy"
+  toc={toc}
+>
+  <section id="collected">
+    <h2>我们收集什么</h2>
+    <p>
+      不收集。本站无账户系统、无登录，不做行为统计，不放广告，不记录阅读历史；
+      你的浏览行为不会在本站形成任何个人画像。
+    </p>
+  </section>
+  <section id="storage">
+    <h2>本地存储</h2>
+    <ul>
+      <li>显示偏好（浅色 / 深色 / 跟随系统）仅保存在你的浏览器本地。</li>
+      <li>阅读位置只在当前访问的内存中，用于返回原位置；不写入 localStorage/sessionStorage 等持久存储。</li>
+      <li>刷新或重新打开后，筛选、页码与阅读位置都会重置。</li>
+    </ul>
+  </section>
+  <section id="server">
+    <h2>服务器与托管</h2>
+    <p>
+      本站是纯静态站点，托管于 GitHub Pages：没有后端、没有数据库，也没有本站侧的访问日志。
+      托管平台自身的基础设施日志不在本站控制范围内。
+    </p>
+  </section>
+  <section id="third-party">
+    <h2>第三方</h2>
+    <ul>
+      <li>无统计 SDK、无广告、无外部字体（使用系统字体栈）。</li>
+      <li>当前来源未提供图片，本站使用本站占位图，不向来源站请求图片。</li>
+      <li>点击「查看百度搜索结果」等外链后，你将离开本站，适用目标站点的隐私政策。</li>
+    </ul>
+  </section>
+  <section id="data">
+    <h2>数据来源与权利</h2>
+    <p>
+      本站展示的内容来自公开来源的快照（详见<a href="/overthecocoons/sources/">来源页</a>）。
+      源内容的公开使用许可尚未核实；如你是内容权利人并希望条目从本站消失，最可靠的方式是通过来源上游处理，
+      也可以在 <a href="https://github.com/CaiYan12/overthecocoons/issues" target="_blank" rel="noopener">GitHub Issues ↗</a> 提出。
+    </p>
+  </section>
+</Longform>

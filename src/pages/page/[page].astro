@@ -1,0 +1,23 @@
+---
+// 「全部」主题第 2 页起的静态分页（/page/N/）。
+import TimelinePage from "../../components/TimelinePage.astro";
+import { loadSnapshot } from "../../lib/snapshot.ts";
+import { paginate, sortEntriesDesc } from "../../lib/timeline.ts";
+
+export async function getStaticPaths() {
+  const snapshot = loadSnapshot();
+  const sorted = sortEntriesDesc(snapshot.entries);
+  const { totalPages } = paginate(sorted, 1);
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
+    params: { page: String(index + 2) },
+    props: { page: index + 2 },
+  }));
+}
+
+interface Props {
+  page: number;
+}
+const { page } = Astro.props;
+---
+
+<TimelinePage topic="全部" page={page} />

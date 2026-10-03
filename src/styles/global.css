@@ -1,20 +1,3 @@
+/* Tailwind 仅作预检与工具类基座（Ticket 04 起页面不再使用工具类排版）；
+   站点视觉 token、字体与版面样式统一在 kinetic.css（基准：docs/design/prototype-timeline.html v-kinetic）。 */
 @import "tailwindcss";
-
-/* 项目设计基调：暖纸白、墨黑、暗红（docs/ui-design.md 基线；本票仅取基础色板） */
-@theme {
-  --color-paper: #faf6ef;
-  --color-ink: #1c1917;
-  --color-accent: #8c2f2f;
-}
-
-html {
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  font-family:
-    "Source Han Serif SC", "Noto Serif SC", "SimSun", "Georgia", serif;
-  -webkit-text-size-adjust: 100%;
-}
-
-a {
-  color: var(--color-accent);
-}

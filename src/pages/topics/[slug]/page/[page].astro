@@ -1,0 +1,27 @@
+---
+// 主题页第 2 页起（/topics/<slug>/page/N/）：仅为有内容的主题生成对应页数。
+import TimelinePage from "../../../../components/TimelinePage.astro";
+import { loadSnapshot } from "../../../../lib/snapshot.ts";
+import { paginate, sortEntriesDesc, TOPICS, TOPIC_SLUGS } from "../../../../lib/timeline.ts";
+
+export function getStaticPaths() {
+  const snapshot = loadSnapshot();
+  const sorted = sortEntriesDesc(snapshot.entries);
+  return TOPICS.filter((topic) => topic !== "全部").flatMap((topic) => {
+    const filtered = sorted.filter((entry) => entry.topic === topic);
+    const { totalPages } = paginate(filtered, 1);
+    return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
+      params: { slug: TOPIC_SLUGS[topic], page: String(index + 2) },
+      props: { topic, page: index + 2 },
+    }));
+  });
+}
+
+interface Props {
+  topic: string;
+  page: number;
+}
+const { topic, page } = Astro.props;
+---
+
+<TimelinePage topic={topic} page={page} />

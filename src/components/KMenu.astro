@@ -1,0 +1,64 @@
+---
+// 全屏导航（原生 dialog 结构保留为 Ticket 06 挂点；静态层内为真实链接，
+// 无 JS 时由左栏导航、主题 tab 与页脚导航承担可读可导航）。
+import { EN_LABEL, TOPICS, topicPagePath } from "../lib/timeline.ts";
+import { siteUrl } from "../lib/paths.ts";
+
+interface Props {
+  activeTopic: string;
+  /** 当前激活的站点导航项：home | sources | about | principles | privacy。 */
+  activeNav?: string;
+  /** 快照时间（已格式化）。 */
+  snapTime: string;
+  isFixture: boolean;
+  /** 最新收录日期的当日条数（菜单右半数据列）。 */
+  todayCount: number;
+}
+const { activeTopic, activeNav, snapTime, isFixture, todayCount } = Astro.props;
+
+const links = [
+  { key: "home", label: "时间线", href: siteUrl("/") },
+  { key: "sources", label: "来源", href: siteUrl("/sources/") },
+  { key: "about", label: "关于", href: siteUrl("/about/") },
+  { key: "principles", label: "原则", href: siteUrl("/principles/") },
+  { key: "privacy", label: "隐私", href: siteUrl("/privacy/") },
+];
+---
+
+<dialog class="k-menu" data-kmenu aria-label="全屏导航菜单">
+  <div class="k-menu-inner">
+    <button class="k-menu-close" type="button" data-kmenu-close>关闭 ✕</button>
+    <div class="k-menu-grid">
+      <div class="k-menu-list">
+        {
+          links.map((link, index) => (
+            <a class="k-mi" data-nav={index} href={link.href} aria-current={activeNav === link.key ? "page" : undefined}>
+              <span class="no">{String(index + 1).padStart(2, "0")}</span>
+              <span class="lb">{link.label}</span>
+            </a>
+          ))
+        }
+      </div>
+      <div class="k-menu-data" aria-hidden="true">
+        <span class="ghost" data-menu-topic>{EN_LABEL[activeTopic] ?? "INDEX"}</span>
+        <span class="row" data-menu-count>今日 {todayCount} 条 · 当前主题 {activeTopic}</span>
+        <span class="row">快照 {snapTime}{isFixture && "（演示）"}</span>
+      </div>
+    </div>
+    <div class="k-menu-topics" role="tablist" aria-label="主题筛选">
+      {
+        TOPICS.map((topic) => (
+          <a
+            class="tab"
+            role="tab"
+            aria-current={topic === activeTopic ? "true" : "false"}
+            data-topic={topic}
+            href={siteUrl(topicPagePath(topic, 1))}
+          >
+            {topic}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</dialog>
