@@ -91,8 +91,21 @@ describe("场景二：内容修订保留首次收录时间（规格内容规则 
     );
   });
 
-  it("仅原始时间字段变化视为内容修订（originalTime 属可读内容之外，不单独验证）", () => {
-    // 占位：originalTime 在 MVP 首源恒为 null（feed 日期语义未核实），此处不额外断言。
+  it("仅原始时间字段变化不视为内容修订：首次收录时间与内容版本均不变", () => {
+    // originalTime 属原始时间字段（语义未核实前不使用），不是可读内容；
+    // 其变化不得触发条目内容版本或公开内容版本变化（MVP-Q21 第 8 项）。
+    const run1 = firstRun([makeEntry({ guid: "g1", originalTime: null })]);
+    const run2 = ingest(
+      { state: run1.state, items: run1.items },
+      okRun(T1, [makeEntry({ guid: "g1", originalTime: "2026-10-03T07:00:00+08:00" })]),
+    );
+    assert.equal(run2.items.items[0]!.firstSeenAt, T0, "首次收录时间不得刷新");
+    assert.equal(run2.items.items[0]!.contentVersion, 1, "条目内容版本不得递增");
+    assert.equal(
+      run2.state.publicContentVersion,
+      run1.state.publicContentVersion,
+      "公开内容版本不得递增",
+    );
   });
 });
 
@@ -335,6 +348,61 @@ describe("停写语义：坏状态/损坏输入不自动造台账（MVP-Q13）",
       ],
     };
     assert.throws(() => ingest({ state: run.state, items: alien }, okRun(T1, [])), /台账/);
+  });
+});
+
+describe("运行时间基准统一为成功获取时间（审查修复环 R1）", () => {
+  const T0_SUCCEEDED = "2026-10-03T09:00:00+08:00";
+  const T2_ATTEMPTED = "2026-10-03T08:30:00+08:00";
+  const T2_SUCCEEDED = "2026-10-03T10:00:00+08:00";
+
+  it("succeededAt > attemptedAt 的运行：状态时间/首次收录/快照基准一致取 succeededAt", () => {
+    const run1 = ingest(
+      { state: initializeState(SOURCE, T0), items: { schemaVersion: 1, items: [] } },
+      {
+        ok: true,
+        sourceId: SOURCE,
+        attemptedAt: T0,
+        succeededAt: T0_SUCCEEDED,
+        entries: [makeEntry({ guid: "g1" })],
+      },
+    );
+    assert.equal(run1.state.stateTakenAt, T0_SUCCEEDED, "状态时间取成功获取时间");
+    assert.equal(run1.items.items[0]!.firstSeenAt, T0_SUCCEEDED);
+    assert.equal(run1.snapshot.generatedAt, T0_SUCCEEDED, "快照基准取成功获取时间");
+    // 产出的状态不得自相矛盾：内部复核（未来时间检查）必须能接受它自己。
+    assert.doesNotThrow(() =>
+      ingest(
+        { state: run1.state, items: run1.items },
+        { ok: true, sourceId: SOURCE, attemptedAt: T0_SUCCEEDED, succeededAt: T0_SUCCEEDED, entries: [] },
+      ),
+    );
+  });
+
+  it("succeededAt > attemptedAt 的运行之后，下一次 attemptedAt 更早（但自身成功时间更晚）的运行不触发未来时间停写", () => {
+    const run1 = ingest(
+      { state: initializeState(SOURCE, T0), items: { schemaVersion: 1, items: [] } },
+      {
+        ok: true,
+        sourceId: SOURCE,
+        attemptedAt: T0,
+        succeededAt: T0_SUCCEEDED,
+        entries: [makeEntry({ guid: "g1" })],
+      },
+    );
+    const run2 = ingest(
+      { state: run1.state, items: run1.items },
+      {
+        ok: true,
+        sourceId: SOURCE,
+        attemptedAt: T2_ATTEMPTED,
+        succeededAt: T2_SUCCEEDED,
+        entries: [],
+      },
+    );
+    assert.equal(run2.state.stateTakenAt, T2_SUCCEEDED);
+    assert.equal(run2.items.items.length, 1, "旧条目仍在窗口内");
+    assert.equal(run2.items.items[0]!.firstSeenAt, T0_SUCCEEDED, "首次收录时间不刷新");
   });
 });
 

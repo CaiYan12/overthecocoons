@@ -210,16 +210,21 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
   const previousItems = assertItemsFile(previous.items);
   requireSourceId(result.sourceId);
 
-  // 运行时间基准 = 本次尝试时间；成功获取时间必须不早于尝试时间。
+  // 成功获取时间必须不早于尝试时间。
   const attemptedMs = parseIsoTime(result.attemptedAt, "attemptedAt");
   if (result.ok) {
     if (parseIsoTime(result.succeededAt, "succeededAt") < attemptedMs) {
       throw new Error("管线输入错误：succeededAt 早于 attemptedAt");
     }
   }
-  const runAt = result.attemptedAt;
+  // 运行基准统一取 succeededAt（成功运行）或 attemptedAt（失败运行，无成功时间可取）：
+  // 首次收录时间以 succeededAt 记账（内容规则 4），状态时间/窗口/快照基准必须不早于它，
+  // 否则产出状态内部自相矛盾（firstSeenAt 晚于 stateTakenAt），可能被下一次运行误判为未来时间而停写。
+  // 前置校验已保证 succeededAt >= attemptedAt，故成功运行的基准即 max(attemptedAt, succeededAt)。
+  const runAt = result.ok ? result.succeededAt : result.attemptedAt;
+  const runBaseMs = parseIsoTime(runAt, "runAt");
 
-  // 旧数据可信性校验：结构（assert* 已做）+ 台账一致性 + 无未来时间。任何失败都停写。
+  // 旧数据可信性校验：结构（assert* 已做）+ 台账一致性 + 无未来时间（以本次运行基准比较）。任何失败都停写。
   const identityIds = new Set(state.identities.map((identity) => identity.stableId));
   for (const item of previousItems.items) {
     if (!identityIds.has(item.stableId)) {
@@ -228,7 +233,7 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
       );
     }
   }
-  rejectFutureStateTimes(state, attemptedMs);
+  rejectFutureStateTimes(state, runBaseMs);
 
   const identities: LedgerIdentity[] = [...state.identities];
   const identityIndex = new Map(identities.map((identity) => [identity.stableId, identity]));
@@ -274,7 +279,8 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
         quarantine("协议不合法", raw, null);
         continue;
       }
-      // 原始时间：无效或晚于本次尝试即字段校验失败（语义未核实前不使用）。
+      // 原始时间：无效或晚于本次尝试（attemptedAt，条目被观察的时刻）即字段校验失败；
+      // 故意不用运行基准比较——尝试时刻已是未来的原始时间必然不可信（语义未核实前不使用）。
       if (raw.originalTime !== null) {
         let timeValid = false;
         try {
@@ -370,7 +376,8 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
   }
 
   // 7 天窗口清理：首次收录时间在窗口内的条目保留，其余移出（台账不受影响）。
-  const windowStartMs = attemptedMs - WINDOW_MS;
+  // 窗口基准与快照基准一致（成功运行为 succeededAt，失败运行为 attemptedAt）。
+  const windowStartMs = runBaseMs - WINDOW_MS;
   const visibleItems = [...itemsById.values()]
     .filter((item) => Date.parse(item.firstSeenAt) >= windowStartMs)
     .sort((a, b) => {
