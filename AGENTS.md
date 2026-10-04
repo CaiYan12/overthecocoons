@@ -11,7 +11,7 @@
 - 产品目标：拓宽视野为主、日常资讯为辅。公共时间线不按个人行为排序；可靠发布时间优先，缺失或语义未知时使用固定首次收录时间并明确标注。
 - 核心约束：无个性化、无登录、无广告、无阅读历史、无第三方统计；不人工挑选、排序或推荐单条内容；允许来源准入和明确规则下的治理。
 - 首版可单源正式公开。用户指定 `https://rss.aishort.top/?type=baidu`，定位为百度热点线索，首版按本站首次收录时间排序，入口标为“查看百度搜索结果”，移除标题热度后缀，不展示或使用热度排序。
-- 首源本身有热搜筛选，不得宣称上游没有算法筛选；feed 时间语义和源内容公开使用许可尚未核实。图片、分类、全文和可靠商业标记在本次 feed 核查中缺失，不得臆造。
+- 首源本身有热搜筛选，不得宣称上游没有算法筛选；feed 时间语义尚未核实。源内容公开使用许可已于 2026-10-04 由维护者本人核查裁定（非商业、获取信息目的，依据与署名见站内 sources 页「使用许可与署名」段，证据留档台账）。图片、分类、全文和可靠商业标记在本次 feed 核查中缺失，不得臆造。
 - 数据采用成功构建快照的最近 7 天窗口；重复抓取不刷新首次收录时间。每页最多 20 条，主题单选并可选“全部”，筛选后分页，刷新重置；首源默认主题为“新闻”“社会”。
 - 摘要优先取源摘要、缺失时取源提供正文的纯文本，最多 300 字；当前首源不额外抓网页补图或正文。缺图或失败保留图片区域，用本站占位图；明确禁止外链时不请求源图。
 - MVP 含时间线、主题筛选、来源页、关于／原则／隐私、图片与占位、每日更新、来源提交 Issue 模板；随机漫游、搜索、订阅输出和多源对照留到后续。
@@ -22,7 +22,8 @@
 - 原文代码未经验证；实现时必须核对依赖/API、解析和日期异常、抓取失败、去重、内容安全与子路径行为，不能直接复制并宣称可用。
 - 产品、UI与MVP-Q1–Q22 已归档确认，规格、架构、依赖证据与实现计划已保存到 docs；MVP-Q13–Q22 于 2026-10-03 继续对齐后确认（初始化手动入口、损坏即停写停发人工恢复、台账无限保留、SHA-256 稳定 ID、三文件契约、并发冲突即失败、仅靠 data 分支历史恢复、wd 规则、隔离条目公开列出及八项工程方案固化）。
 - **Ticket 01–08 全部实现完毕并已上线**（2026-10-04）：main 历史于 2026-10-04 重写（`git filter-branch` 抹除 15 张设计评审截图，`.git` 4.94 MB→0.47 MB；**重写前记录的所有 main SHA 一律失效**，data 分支 `444afba` 不受影响，定位用 `git log --oneline`），站点 https://caiyan12.github.io/overthecocoons/ 以**真实源数据**运行（data 分支 `444afba`：100 条真实条目、隔离 0、主题全部映射为「新闻」，「社会」为真实空态），页面不再标注「演示数据」。发布接线已实证：`update-data` 成功推送 data 后发 `repository_dispatch data-updated` → `build-deploy` 读取 data 固定提交、`verifyManifest` 摘要校验、生成 7 天窗口快照、`SNAPSHOT_PATH` 注入构建 → Pages 部署（注意：data 分支 push 本身不触发工作流——push 事件取被推送分支上的工作流文件版本，而 data 分支只有三文件）。动效库 GSAP 3.13.0 已自托管于 `public/vendor/`（T08 裁定，站点运行期零外链请求，SRI 由 dist 内文件实测断言）。本地 HEAD 全量 `pnpm test` 通过：check 0 error、Node 244/244、e2e 50/50。台账 `.superpowers/sdd/mvp-tickets/progress.md` 与各票报告 `task-01..08-report.md` 为实施与验收记录；两轮独立复审已完成（T08 复审 APPROVED；全分支终审 CHANGES REQUIRED 的两条 Important 已修：契约层交叉校验 `identity.stableId`、锁定构建时间基准为 `state.stateTakenAt`），其余 40+ 条 minor 已分诊并 deferred。
-- **仍未完成（如实标注，不得宣称通过）**：① **来源公开展示许可未核实**——发布闸门第 1 项红线，需维护者本人完成，站内 `/sources/` 已标注未核实项；② 手机实机、跨浏览器（仅 Chromium）、Lighthouse/性能测量均未验证，模拟视口与面板视口不算实机；③ Action 按 tag 钉版（`checkout@v7.0.1`/`setup-node@v7.0.0`/`pnpm/action-setup@v6.1.0`/`upload-pages-artifact@v5.0.0`/`deploy-pages@v5.0.1`），第三方 action 钉 commit SHA 属 deferred minor；④ 台账内各票 deferred minor 未清理。
+- **来源公开展示许可已完成**（2026-10-04）：维护者本人核查裁定为非商业、获取信息目的使用，依据与署名落在 `/sources/` 「使用许可与署名」段，证据留档台账 `.superpowers/sdd/mvp-tickets/progress.md`；feed 日期语义仍属未核实项。
+- **仍未完成（如实标注，不得宣称通过）**：① 手机实机、跨浏览器（仅 Chromium）、Lighthouse/性能测量均未验证，模拟视口与面板视口不算实机；② Action 按 tag 钉版（`checkout@v7.0.1`/`setup-node@v7.0.0`/`pnpm/action-setup@v6.1.0`/`upload-pages-artifact@v5.0.0`/`deploy-pages@v5.0.1`），第三方 action 钉 commit SHA 属 deferred minor；③ 台账内各票 deferred minor 未清理。
 
 ## Context7
 

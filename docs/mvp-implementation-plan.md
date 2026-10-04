@@ -76,7 +76,7 @@
 
 > 2026-10-04（Ticket 08）正式执行。逐项证据见 `.superpowers/sdd/mvp-tickets/task-08-report.md` 第六节；站点已部署于 https://caiyan12.github.io/overthecocoons/ 。
 
-- [ ] **未完成（红线）** 来源公开展示范围有核查记录。—— 源内容公开使用许可至今未核实，需维护者本人完成；站内 `/sources/` 已如实标注未核实项。不得宣称通过。
+- [x] **完成（2026-10-04）** 来源公开展示范围有核查记录。—— 维护者本人核查裁定：非商业、以获取信息为目的，可使用。依据（百度《知识产权声明》三项条件、feed 运营者公开列出 RSS 地址）与署名落在 `src/pages/sources.astro` 「使用许可与署名」段；证据与原文摘录留档 `.superpowers/sdd/mvp-tickets/progress.md`。同时如实记录：aishort 服务条款未就 feed 内容单独授权且含自动访问限制条款。
 - [x] 本地规则/浏览器/构建检查通过，实际 CI 抓取和部署有证据。—— 本地 check 0 error、Node 240/240、e2e 50/50；CI `init-data`/`update-data`/`build-deploy`（push 与 repository_dispatch 两触发）均成功。
 - [x] 远端版本、运行、产物、主页/详情/过期404和资源路径一致。—— code sha 与 data sha 记录于运行摘要；首页/主题/详情/长文/来源 200、不存在 ID 404、资源经基路径且运行期零外链。
 - [x] 主题/位置/菜单/动画关键流线上可用；隐私声明与实际行为一致。—— 内置浏览器实抽：动效 on、Header Morph、三态主题切换与刷新持久化、全屏菜单、菜单内主题筛选与真实空态、阅读进度；console 零错误；e2e 隐私断言（localStorage 仅 `overthecocoons.theme`、sessionStorage 空）通过。口径：Chromium 单引擎 + 面板视口，非手机实机、非跨浏览器。
