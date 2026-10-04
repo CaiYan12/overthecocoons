@@ -25,6 +25,13 @@
 - **来源公开展示许可已完成**（2026-10-04）：维护者本人核查裁定为非商业、获取信息目的使用，依据与署名落在 `/sources/` 「使用许可与署名」段，证据留档台账 `.superpowers/sdd/mvp-tickets/progress.md`；feed 日期语义仍属未核实项。
 - **仍未完成（如实标注，不得宣称通过）**：**剩余事项以 `README.md` 末尾 TODO 的 checkbox 清单为准**——① 线上性能未立项（Lighthouse 13.5.0 单轮：线上移动 perf 67 / FCP 3.7s / LCP 3.9s，本地移动 90、桌面 100），Lighthouse 未多轮取中位数落门槛；② deferred minor 41 条 open 未清理；③ feed 日期语义未核实（另有榜单规则文本、GSAP 许可条款落档）。详情与证据见 `docs/remaining-work-report.md`。已闭环（2026-10-04）：跨浏览器 e2e 矩阵全绿（`pnpm test:e2e:matrix` 245+5；本机日常 `pnpm test:e2e` 仅 chromium）、第三方 action 13 处钉 commit SHA（B-②，运行 37206156255 实证）、手机实机由用户验证、来源许可裁定并上线。
 
+## 项目记忆与技能目录
+
+- `.agents/memories/` 为**项目记忆目录**（已入 git 跟踪，不得加入 `.gitignore`）：`memory.md` 为统领索引，登记全部记忆条目与摘要；单条记忆文件名 `YYYYMMDDHHMM.md`（本地时间，精确到分）。会话需要既往项目经验时，先读 `memory.md` 索引再打开对应条目；记忆是经验与过程沉淀，**当前状态以本文件状态段与 Git 现状为权威**，冲突时以现状为准。
+- `.agents/skills/` 为**项目技能目录**（已入 git 跟踪，不得加入 `.gitignore`）：项目专用技能以 Markdown 存放，是否加载由本文件「Agent skills」节声明；与个人全局技能（本机安装的斜杠技能）区分，二者不等同。
+- **收尾强制更新记忆**：每次任务收尾必须更新 `.agents/memories/`——把本次任务的经验、状态变化、用户裁定写成或修订一条 `YYYYMMDDHHMM.md` 记忆，并同步登记 `memory.md` 索引；任务收尾不允许跳过这一步。
+- **记忆机制优先级**：忽略 harness（如 opencode 等工具）自身的记忆/持久化机制——不读不写工具级 memory、全局记忆库等 harness 私有存储；项目记忆的读与写一律且仅使用本目录 `.agents/memories/`。
+
 ## Context7
 
 Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service -- even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer -- your training data may not reflect recent changes. Prefer this over web search for library docs.
