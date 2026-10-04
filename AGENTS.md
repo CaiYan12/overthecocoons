@@ -15,12 +15,14 @@
 - 数据采用成功构建快照的最近 7 天窗口；重复抓取不刷新首次收录时间。每页最多 20 条，主题单选并可选“全部”，筛选后分页，刷新重置；首源默认主题为“新闻”“社会”。
 - 摘要优先取源摘要、缺失时取源提供正文的纯文本，最多 300 字；当前首源不额外抓网页补图或正文。缺图或失败保留图片区域，用本站占位图；明确禁止外链时不请求源图。
 - MVP 含时间线、主题筛选、来源页、关于／原则／隐私、图片与占位、每日更新、来源提交 Issue 模板；随机漫游、搜索、订阅输出和多源对照留到后续。
-- 已确认 Astro + TypeScript、GitHub Actions 每日北京时间 08:00 触发及手动触发、GitHub Pages 子路径 `/overthecocoons`；不增加后端、数据库或用户系统。构建与占位页已落地（见上条），GitHub Actions 工作流与部署尚未创建。
+- 已确认 Astro + TypeScript、GitHub Actions 每日北京时间 08:00 触发及手动触发、GitHub Pages 子路径 `/overthecocoons`；不增加后端、数据库或用户系统。工程骨架、构建与三条工作流（`init-data` 手动初始化 / `update-data` 定时+手动写入 data 分支 / `build-deploy` 只读构建+Pages 部署）均已落地并实跑验证。
 - 代码许可证为 MIT，版权署名 `CaiYan12`，`LICENSE` 已创建。来源内容不因项目许可证而重新许可。
 - 首版接受全中文；90/10 仅作后续多源方向，不删减内容凑比例。默认固定 11 个主题，优先映射源明确分类，缺失时用来源默认主题。
 - UI 结构、风格与动效已在 `docs/ui-alignment.md` / `docs/ui-design.md` 对齐；后续核实来源使用说明、稳定身份和跨构建状态，并执行真实构建、浏览器、动效与部署验收。
 - 原文代码未经验证；实现时必须核对依赖/API、解析和日期异常、抓取失败、去重、内容安全与子路径行为，不能直接复制并宣称可用。
-- 产品、UI与MVP-Q1–Q22 已归档确认，规格、架构、依赖证据与实现计划已保存到 docs；MVP-Q13–Q22 于 2026-10-03 继续对齐后确认（初始化手动入口、损坏即停写停发人工恢复、台账无限保留、SHA-256 稳定 ID、三文件契约、并发冲突即失败、仅靠 data 分支历史恢复、wd 规则、隔离条目公开列出及八项工程方案固化）。建议和未验证项保持标注；工程骨架、数据契约/身份规则、首源归一化与时间线/详情静态渲染（Ticket 01–04）已建立并本地验证，交互/动效（05/06）、工作流与部署（07/08）尚未实现，GitHub Actions 工作流与部署尚未创建，未做线上验收；后续按用户授权推进。
+- 产品、UI与MVP-Q1–Q22 已归档确认，规格、架构、依赖证据与实现计划已保存到 docs；MVP-Q13–Q22 于 2026-10-03 继续对齐后确认（初始化手动入口、损坏即停写停发人工恢复、台账无限保留、SHA-256 稳定 ID、三文件契约、并发冲突即失败、仅靠 data 分支历史恢复、wd 规则、隔离条目公开列出及八项工程方案固化）。
+- **Ticket 01–08 全部实现完毕并已上线**（2026-10-04）：`HEAD=1214154`（origin/main），站点 https://caiyan12.github.io/overthecocoons/ 以**真实源数据**运行（data 分支 `444afba`：100 条真实条目、隔离 0、主题全部映射为「新闻」，「社会」为真实空态），页面不再标注「演示数据」。发布接线已实证：`update-data` 成功推送 data 后发 `repository_dispatch data-updated` → `build-deploy` 读取 data 固定提交、`verifyManifest` 摘要校验、生成 7 天窗口快照、`SNAPSHOT_PATH` 注入构建 → Pages 部署（注意：data 分支 push 本身不触发工作流——push 事件取被推送分支上的工作流文件版本，而 data 分支只有三文件）。动效库 GSAP 3.13.0 已自托管于 `public/vendor/`（T08 裁定，站点运行期零外链请求，SRI 由 dist 内文件实测断言）。本地 HEAD 全量 `pnpm test` 通过：check 0 error、Node 240/240、e2e 50/50。台账 `.superpowers/sdd/mvp-tickets/progress.md` 与各票报告 `task-01..08-report.md` 为实施与验收记录。
+- **仍未完成（如实标注，不得宣称通过）**：① **来源公开展示许可未核实**——发布闸门第 1 项红线，需维护者本人完成，站内 `/sources/` 已标注未核实项；② 手机实机、跨浏览器（仅 Chromium）、Lighthouse/性能测量均未验证，模拟视口与面板视口不算实机；③ Action 按 tag 钉版（`checkout@v7.0.1`/`setup-node@v7.0.0`/`pnpm/action-setup@v6.1.0`/`upload-pages-artifact@v5.0.0`/`deploy-pages@v5.0.1`），第三方 action 钉 commit SHA 属 deferred minor；④ 台账内各票 deferred minor 未清理。
 
 ## Context7
 
