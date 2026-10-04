@@ -1,0 +1,49 @@
+name: 提交新来源
+description: 提交新的 RSS/Feed 来源供人工治理评审（不自动采纳）
+title: "来源提交：（请填写来源名称）"
+labels:
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提交来源。本站以拓宽视野为主、日常资讯为辅；不人工挑选、排序或推荐单条内容，
+        允许的是来源准入与明确规则下的治理。新来源经人工评审，提交不保证采纳。
+        收录原则见站内「收录原则」页与本仓库 `docs/mvp-spec.md`。
+
+  - type: input
+    id: feed-url
+    attributes:
+      label: Feed 地址
+      description: 必须是公开可访问的 RSS/Atom（http/https）地址。请提交前自行确认可访问。
+      placeholder: "https://example.com/feed.xml"
+    validations:
+      required: true
+
+  - type: textarea
+    id: site-description
+    attributes:
+      label: 站点/来源说明
+      description: |
+        该来源是什么、内容范围与更新频率；它为何符合「拓宽视野为主、日常资讯为辅」的定位。
+        如已知，请说明 feed 的时间字段语义、内容许可与是否有上游筛选。
+      placeholder: |
+        例：某机构的公开新闻 feed，每日更新数条，标题即内容概要，
+        无需登录，无广告要求；feed 时间为发布时间。
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: 申请人确认
+      description: 请逐项确认后提交。
+      options:
+        - label: 我已阅读并认同本站收录原则（无个性化、无登录、无广告；不人工挑选/排序/推荐单条内容）。
+          required: true
+        - label: 我确认上述 Feed 地址当前公开可访问，且无需登录或付费即可读取。
+          required: true
+        - label: 我理解是否采纳由人工治理决定，且本站仅聚合来源线索，不代表对内容的背书。
+          required: true
+        - label: 我提供的说明属实；来源内容的使用许可如未核实，已如实注明「待核实」。
+          required: true

@@ -1,0 +1,87 @@
+# data 分支更新工作流（Ticket 07）：每日定时 + 手动两条路径共用同一采集编排。
+#
+# cron 换算说明：GitHub Actions 的 schedule 只支持 5 段 POSIX cron（分 时 日 月 周，
+# 无秒段）；工单所写「7 段 cron」是 Quartz/云开发定时器语法，GitHub 不支持。
+# 每日北京时间（UTC+8）08:00 = UTC 00:00，即五段表达式 "0 0 * * *"。
+# 注意：GitHub 定时触发为尽力而为，高峰期可能延迟；精确时刻不作保证。
+#
+# 与 main 推送构建分离：本工作流不响应 push/pull_request；main 推送只读构建属
+# 独立工作流（后续工单）。本工作流是唯一允许抓源并写入 data 分支的入口（MVP-Q8）。
+name: update-data
+
+on:
+  schedule:
+    # 5 段 POSIX cron：UTC 00:00 = 北京时间 08:00（GitHub 不支持 7 段语法）。
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+# 最小权限：本工作流只需推送 data 分支。GitHub 的 permissions 是仓库级粒度
+# （无法按分支收窄），分支范围由流程约束保证：本工作流只对 data 分支执行
+# add/commit/push，不触碰 main，不使用强制推送。
+permissions:
+  contents: write
+
+# 串行控制（MVP-Q17）：同一时刻只允许一个更新运行；排队等待而非取消。
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # main 代码（编排 CLI、依赖与锁文件所在；只读使用）。
+      - name: Checkout main（只读：编排脚本与依赖）
+        uses: actions/checkout@v7.0.1
+
+      # data 分支权威状态检出到子目录；所有写入只发生在这个子目录。
+      - name: Checkout data branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: data
+          path: data-branch
+
+      - name: Setup Node（与本地/锁文件一致的运行时，MVP-Q10）
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24.18.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6.1.0
+        with:
+          version: 10.26.2
+
+      - name: Install dependencies（严格按锁文件）
+        run: pnpm install --frozen-lockfile
+
+      - name: Read data branch HEAD
+        id: head
+        working-directory: data-branch
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # 采集编排：verifyManifest 前置校验 → 时钟单调闸门 → 抓取（http/https + host
+      # 安全校验）→ ingest 合并 → 产物自检 → 三文件写入检出目录。
+      # 任何校验失败（损坏/时钟/冲突）都以非零退出终止本运行：不写新权威版本、
+      # 不生成新快照、不发布，线上保持上一次成功站点（MVP-Q13）。
+      - name: Run update pipeline
+        run: >
+          node scripts/update-data.ts
+          --store git
+          --dir data-branch
+          --expected-sha "${{ steps.head.outputs.sha }}"
+
+      - name: Commit and push data（失败不重试、不自动合并）
+        working-directory: data-branch
+        run: |
+          git config user.name "overthecocoons-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state.json items.json manifest.json
+          if git diff --cached --quiet; then
+            echo "三文件无变化，跳过提交"
+          else
+            git commit -m "data: scheduled update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            # 不使用强制推送（--force 与 -f 均禁止）：分支已前进时 push 被拒（非快进），
+            # 本次运行失败，等待下次定时/手动重试（MVP-Q17）。
+            git push origin data
+          fi

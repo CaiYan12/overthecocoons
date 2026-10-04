@@ -1,0 +1,66 @@
+# data 分支首次初始化（MVP-Q13：仅独立手动入口）。
+#
+# 首次初始化是明确的人为动作：本工作流只允许 workflow_dispatch 手动触发，
+# 无定时触发。日常定时/手动更新发现无权威状态会报错停止，绝不自动初始化；
+# 数据损坏的恢复由人工从 data 分支 Git 历史核对后执行（MVP-Q18），不走本工作流。
+#
+# data 分支已存在时本工作流直接失败（CLI 同样拒绝），绝不自动清空台账重采。
+name: init-data
+
+on:
+  workflow_dispatch:
+
+# 最小权限：仅需推送新建的 data 分支；不触碰 main，不使用强制推送。
+permissions:
+  contents: write
+
+concurrency:
+  group: init-data
+  cancel-in-progress: false
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main（只读：编排脚本与依赖）
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24.18.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6.1.0
+        with:
+          version: 10.26.2
+
+      - name: Install dependencies（严格按锁文件）
+        run: pnpm install --frozen-lockfile
+
+      # 防重复初始化：data 分支已存在即失败（恢复按 MVP-Q13/Q18 人工处理）。
+      - name: Verify data branch does not exist
+        run: |
+          if git ls-remote --exit-code --heads origin data; then
+            echo "::error::data 分支已存在。初始化仅允许一次；恢复请人工从 data 分支 Git 历史核对（MVP-Q13/Q18）。"
+            exit 1
+          fi
+
+      # 在空目录建立空权威台账（--expected-sha empty 即空 data 分支的占位 HEAD 契约）。
+      # CLI 初始化不抓取、不产出快照；首日真实数据由之后的首次 update-data 采集。
+      - name: Initialize empty authoritative state
+        run: |
+          mkdir data-branch
+          node scripts/update-data.ts --store git --dir data-branch --expected-sha empty --init
+
+      - name: Create data branch and push（孤儿历史，根提交即初始化提交）
+        working-directory: data-branch
+        run: |
+          git init -b data
+          git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git config user.name "overthecocoons-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state.json items.json manifest.json
+          git commit -m "data: manual initialization (MVP-Q13 manual entry)"
+          git push origin data
