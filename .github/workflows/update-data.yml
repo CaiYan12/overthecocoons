@@ -33,22 +33,22 @@ jobs:
     steps:
       # main 代码（编排 CLI、依赖与锁文件所在；只读使用）。
       - name: Checkout main（只读：编排脚本与依赖）
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # data 分支权威状态检出到子目录；所有写入只发生在这个子目录。
       - name: Checkout data branch
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: data
           path: data-branch
 
       - name: Setup Node（与本地/锁文件一致的运行时，MVP-Q10）
-        uses: actions/setup-node@v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24.18.0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6.1.0
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: 10.26.2
 
