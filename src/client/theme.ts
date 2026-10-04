@@ -1,9 +1,12 @@
 /**
- * 三态显示模式（Ticket 05）：浅色 → 深色 → 跟随系统 循环（原型 v-kinetic 行为，去掉动效）。
+ * 三态显示模式（Ticket 05/06）：浅色 → 深色 → 跟随系统 循环（原型 v-kinetic 行为）。
  * 偏好用项目专属 key 保存在 localStorage（全站唯一持久化项，隐私规格：仅显示偏好持久化）。
  * 存储被拒（隐私模式等 SecurityError）时降级为内存态：切换与播报仍可用。
  * 「跟随系统」由 CSS `:root[data-theme=auto]` + prefers-color-scheme 媒体查询实现，脚本只切属性。
+ * 切换呈现（Ticket 06）：GSAP 可用时走 View Transition 径向揭示（ready 250ms 超时
+ * skipTransition 兜底），无 VT API 时降级 k-themefade 颜色过渡；无动效路径直接应用。
  */
+import { syncHeroGhost, themeApplyMotion } from "./motion.ts";
 import { announce } from "./status.ts";
 
 /** 项目专属存储 key：全站唯一允许写入 localStorage 的键。 */
@@ -55,8 +58,13 @@ export function initTheme(): void {
   apply(button);
   button.addEventListener("click", () => {
     index = (index + 1) % MODES.length;
-    apply(button);
-    writeStored(MODES[index]!.value);
-    announce(`显示模式：${MODES[index]!.label}`);
+    const mode = MODES[index]!;
+    themeApplyMotion(() => {
+      apply(button);
+      // 深色场景 ghost 透明度随 token 变化（原型 apply 内重同步）
+      syncHeroGhost();
+      announce(`显示模式：${mode.label}`);
+    }, button);
+    writeStored(mode.value);
   });
 }

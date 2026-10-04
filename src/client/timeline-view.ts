@@ -1,11 +1,14 @@
 /**
- * 时间线视图增强（Ticket 05）：客户端接管静态链接式筛选与分页（原型 v-kinetic 行为，去掉动效）。
+ * 时间线视图增强（Ticket 05/06）：客户端接管静态链接式筛选与分页（原型 v-kinetic 行为）。
  *
  * 渐进增强契约：
  * - 静态层（T04）是可独立工作的链接式页面；本模块只在存在 [data-klist] 与数据岛时初始化；
  * - 渲染口径复用 src/lib/timeline.ts（sortEntriesDesc/paginate/topicPagePath/entryWeights 等），
  *   不镜像逻辑；DOM 结构与 KEntry/KEmpty/KPager/TimelinePage 输出一致，CSS 不区分两种来源；
  * - 筛选优先于分页；主题切换重置页码；空主题渲染真实空态与「查看全部」；
+ * - 主题切换（Ticket 06）：GSAP 可用时走两段式内容过渡（出 260ms blur+scale / 入 340ms，
+ *   日期组头先行、条目 +120ms 延迟揭示），列表动效（进度线/节点激活/分层揭示）随每次渲染
+ *   由 motion.onListRendered 重建（listCtx revert 回收，ScrollTrigger 无泄漏）；
  * - 阅读位置仅存于本次访问内存（模块变量，绝不写 localStorage/sessionStorage）：
  *   仅由用户手势（滚轮/触摸/滚动键）触发的滚动记录阅读条目；翻页/切主题返回时尽量按原条目
  *   恢复或回退有效页码并经 aria-live 播报（决策见 ./position.ts）；
@@ -25,6 +28,7 @@ import {
   sortEntriesDesc,
   topicPagePath,
 } from "../lib/timeline.ts";
+import { animateTopicSwitch, moveIndicator, onListRendered } from "./motion.ts";
 import { resolveRestore } from "./position.ts";
 import { announce } from "./status.ts";
 
@@ -136,21 +140,13 @@ function renderPager(page: number, totalPages: number, renderTopic: string): voi
 
 /* ---- 同步 header/菜单/HUD ---- */
 
-function moveIndicator(target: string): void {
-  const indicator = document.querySelector<HTMLElement>("[data-indicator]");
-  const tab = document.querySelector<HTMLElement>(`[data-ktabs] .tab[data-topic="${target}"]`);
-  if (!indicator || !tab) return;
-  indicator.style.width = `${tab.offsetWidth}px`;
-  indicator.style.transform = `translateX(${tab.offsetLeft}px)`;
-}
-
 function syncTopicUi(nextTopic: string, total: number): void {
   document
     .querySelectorAll<HTMLElement>('[data-ktabs] .tab[data-topic], .k-menu-topics .tab[data-topic]')
     .forEach((tab) => {
       tab.setAttribute("aria-current", tab.dataset.topic === nextTopic ? "true" : "false");
     });
-  moveIndicator(nextTopic);
+  moveIndicator(nextTopic, false);
   const hudTotal = document.querySelector<HTMLElement>("[data-total]");
   if (hudTotal) hudTotal.textContent = pad2(total);
   const menuTopic = document.querySelector<HTMLElement>("[data-menu-topic]");
@@ -213,7 +209,7 @@ function scrollToEntry(index: number): void {
   element.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
 }
 
-function renderView(nextTopic: string, requestedPage: number): void {
+function renderView(nextTopic: string, requestedPage: number, options?: { deferredListMotion?: boolean }): void {
   const filtered = nextTopic === "全部" ? sorted : sorted.filter((entry) => entry.topic === nextTopic);
   const decision = resolveRestore(filtered, lastReadId, requestedPage, PAGE_SIZE);
   const { page, totalPages, start, slice } = paginate(filtered, requestedPage);
@@ -224,6 +220,8 @@ function renderView(nextTopic: string, requestedPage: number): void {
   list.innerHTML = filtered.length === 0 ? emptyHtml(nextTopic) : dayGroupsHtml(slice, start);
   renderPager(page, totalPages, nextTopic);
   syncTopicUi(nextTopic, filtered.length);
+  // 列表动效（进度线/节点激活/分层揭示）随本次渲染重建；两段式切换时条目揭示延迟 +120ms
+  onListRendered(options?.deferredListMotion === true);
   const previousTopic = topic;
   topic = nextTopic;
 
@@ -258,7 +256,9 @@ function renderView(nextTopic: string, requestedPage: number): void {
 function switchTopic(next: string, focusAllTab: boolean): void {
   if (!next || next === topic) return;
   focusHeaderAllTab = focusAllTab;
-  renderView(next, 1); // 主题切换重置页码
+  // 两段式主题切换（GSAP 可用）：出 260ms → 渲染 → 日期组头先行、条目 +120ms 揭示；
+  // 无动效路径直接渲染（render 始终被调用恰好一次）
+  animateTopicSwitch(() => renderView(next, 1, { deferredListMotion: true }));
 }
 
 /* ---- 初始化 ---- */
@@ -325,5 +325,5 @@ export function initTimeline(): void {
   });
 
   bindScrollTracking();
-  moveIndicator(topic);
+  moveIndicator(topic, true);
 }

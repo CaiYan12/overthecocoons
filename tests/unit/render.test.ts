@@ -254,15 +254,17 @@ test("演示数据标注：数据型页面带「演示数据」标注", () => {
   assert.ok(readDist(`items/${firstEntry.id}/index.html`).includes("演示数据"));
 });
 
-test("脚本形态（Ticket 05 起允许渐进增强）：仅限本地打包模块与 JSON 数据岛，无内联事件处理器", () => {
+test("脚本形态（Ticket 05 起允许渐进增强；Ticket 06 起 head 启动主题脚本）：仅限本地打包模块、JSON 数据岛与启动内联脚本，无内联事件处理器", () => {
   assert.ok(jsFiles.length >= 1, "客户端增强应产出至少一个本地打包 JS 文件");
   let moduleSrcCount = 0;
   let islandCount = 0;
   for (const rel of htmlFiles) {
     const html = readDist(rel);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} 不应包含内联事件处理器`);
-    for (const match of html.matchAll(/<script\b([^>]*)>/gi)) {
+    let startupCount = 0;
+    for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
       const attrs = match[1] ?? "";
+      const body = match[2] ?? "";
       const isIsland = /type="application\/json"/i.test(attrs) && /data-kdata/i.test(attrs);
       const isModuleSrc =
         /type="module"/i.test(attrs) &&
@@ -273,13 +275,33 @@ test("脚本形态（Ticket 05 起允许渐进增强）：仅限本地打包模�
           const relPath = src.slice(BASE.length + 1).replace(/\?.*$/, "");
           return jsFiles.includes(relPath) || existsSync(join(DIST, relPath));
         })();
+      // Ticket 06 FOUC 裁定：head 内联启动脚本（恢复持久化主题 + 打 data-oct-pending 预绘制遮蔽标记）。
+      // 不是内联事件处理器（无 on* 属性）；模块失效由脚本内 1500ms 兜底解除遮蔽，内容不会滞留隐藏。
+      const isStartupTheme =
+        attrs.trim() === "" &&
+        body.includes("overthecocoons.theme") &&
+        body.includes("data-oct-pending");
+      // Ticket 06：GSAP 官方 CDN 双脚本（SRI 固定，另测）；无 defer/async（解析期执行，
+      // 先于 deferred 模块脚本运行，模块初始化时 window.gsap 必已就绪）
+      const isGsapCdn =
+        /src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/gsap\/3\.13\.0\//.test(attrs) &&
+        !/\sdefer/i.test(attrs) &&
+        !/\sasync/i.test(attrs);
       assert.ok(
-        isIsland || isModuleSrc,
-        `${rel} 存在非允许形态的脚本：<script ${attrs}>（仅允许 type=module 的本地打包文件与 data-kdata JSON 数据岛）`,
+        isIsland || isModuleSrc || isStartupTheme || isGsapCdn,
+        `${rel} 存在非允许形态的脚本：<script ${attrs}>（仅允许 type=module 的本地打包文件、data-kdata JSON 数据岛、head 启动主题脚本与 GSAP CDN 脚本）`,
       );
       if (isIsland) islandCount++;
       if (isModuleSrc) moduleSrcCount++;
+      if (isStartupTheme) startupCount++;
     }
+    assert.equal(startupCount, 1, `${rel} 应恰有一个 head 启动主题脚本`);
+    const headEnd = html.indexOf("</head>");
+    const startupAt = html.indexOf("overthecocoons.theme");
+    assert.ok(
+      startupAt >= 0 && headEnd >= 0 && startupAt < headEnd,
+      `${rel} 启动主题脚本必须在 </head> 之前（首帧前执行，否则无法消除闪色/闪动）`,
+    );
   }
   assert.ok(moduleSrcCount >= 1, "应存在客户端增强模块脚本");
   // 数据岛只出现在时间线页（需要客户端筛选分页的页面），说明页不携带
@@ -290,6 +312,38 @@ test("脚本形态（Ticket 05 起允许渐进增强）：仅限本地打包模�
       `${page} 页不应携带数据岛`,
     );
   }
+});
+
+test("动效库（Ticket 06）：官方 cdnjs GSAP 3.13.0 双脚本 + SRI + crossorigin，位于客户端模块之前；预绘制遮蔽与 View Transition 样式就位", () => {
+  const GSAP_CDN = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/";
+  const GSAP_SRI = "sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc";
+  const ST_SRI = "sha384-P8VzCVnT9NBUkMrpcIZrJbA7EBjJvh/fJS6PmP+4nLIM284DtsImIv8D0fFjIkeh";
+  for (const rel of htmlFiles) {
+    const html = readDist(rel);
+    const cdnTags = [...html.matchAll(/<script[^>]*src="(https:[^"]+)"[^>]*>/gi)].map((m) => m[0]);
+    const gsapTags = cdnTags.filter((tag) => tag.includes(GSAP_CDN));
+    assert.equal(gsapTags.length, 2, `${rel} 应恰有两个 GSAP CDN 脚本（Core + ScrollTrigger）`);
+    assert.ok(
+      gsapTags.some((tag) => tag.includes(`${GSAP_CDN}gsap.min.js"`)) &&
+        gsapTags.some((tag) => tag.includes(`${GSAP_CDN}ScrollTrigger.min.js"`)),
+      `${rel} 应为 gsap.min.js 与 ScrollTrigger.min.js`,
+    );
+    for (const tag of gsapTags) {
+      assert.ok(tag.includes('integrity="sha384-'), `${rel} GSAP 脚本应带 SRI`);
+      assert.ok(tag.includes('crossorigin="anonymous"'), `${rel} GSAP 脚本应带 crossorigin`);
+    }
+    assert.ok(html.includes(GSAP_SRI), `${rel} gsap.min.js SRI 摘要与官方发布一致`);
+    assert.ok(html.includes(ST_SRI), `${rel} ScrollTrigger.min.js SRI 摘要与官方发布一致`);
+    // 执行顺序保证：GSAP 为解析期阻塞脚本（无 defer/async），模块脚本为 deferred，
+    // HTML 语义保证 GSAP 先执行——模块初始化时 window.gsap/window.ScrollTrigger 必已就绪
+    for (const tag of gsapTags) {
+      assert.ok(!/\sdefer/i.test(tag) && !/\sasync/i.test(tag), `${rel} GSAP 脚本不得 defer/async`);
+    }
+  }
+  const css = cssFiles.map(readDist).join("\n");
+  assert.ok(css.includes("data-oct-pending"), "预绘制遮蔽选择器应在构建 CSS 中");
+  assert.ok(css.includes("view-transition-old(root)"), "View Transition 径向揭示样式应在构建 CSS 中");
+  assert.ok(css.includes("k-themefade"), "无 View Transition API 的颜色过渡降级样式应在构建 CSS 中");
 });
 
 test("数据岛内容与构建快照一致（字段、条数、基路径）", () => {
@@ -312,17 +366,33 @@ test("数据岛内容与构建快照一致（字段、条数、基路径）", ()
   }
 });
 
-test("隐私约束：无统计/广告/外部字体/CDN 引用（HTML、CSS 与本地 JS 一并检查）", () => {
+test("隐私约束：无统计/广告/外部字体/CDN 引用（HTML、CSS 与本地 JS 一并检查；GSAP 官方 CDN 为 Ticket 06 唯一白名单外源）", () => {
   const forbidden = [
     "googletagmanager", "google-analytics", "gtag(", "hm.baidu.com", "cnzz",
     "adsbygoogle", "doubleclick", "fonts.googleapis.com", "fonts.gstatic.com",
-    "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "unpkg.com", "gsap",
+    "cdn.jsdelivr.net", "unpkg.com",
   ];
   for (const rel of [...htmlFiles.map((f) => f), ...cssFiles, ...jsFiles]) {
     const text = readDist(rel).toLowerCase();
     for (const marker of forbidden) {
       assert.ok(!text.includes(marker), `${rel} 不应包含 ${marker}`);
     }
+  }
+  // 外链脚本仅限官方 GSAP CDN；样式表与字体等外链资源一律禁止（隐私约束不变）
+  const GSAP_CDN = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/";
+  for (const rel of htmlFiles) {
+    const html = readDist(rel);
+    for (const match of html.matchAll(/<script[^>]*src="(https:[^"]+)"/gi)) {
+      const src = match[1] ?? "";
+      assert.ok(
+        src.startsWith(GSAP_CDN),
+        `${rel} 外链脚本只能是官方 GSAP CDN，实际：${src}`,
+      );
+    }
+    assert.ok(
+      !/<link[^>]*href="https?:/i.test(html),
+      `${rel} 不得外链样式表/字体等资源`,
+    );
   }
 });
 

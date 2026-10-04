@@ -55,8 +55,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .page-btn { min-width: 44px; min-height: 44px; border: 1px solid var(--rule); background: var(--surface); padding: 0 12px; font-size: 15px }
 .page-btn:hover { border-color: var(--accent) }
 .page-btn[aria-current=page] { border-color: var(--accent); color: var(--accent); font-weight: 600 }
-.page-btn[disabled] { opacity: .4; cursor: default }
-.page-btn[disabled]:hover { border-color: var(--rule) }
+/* T04 遗留修正（Ticket 06）：分页器边界项是 <span aria-disabled="true">（非 disabled 属性），规则改配 aria-disabled */
+.page-btn[aria-disabled="true"] { opacity: .4; cursor: default }
+.page-btn[aria-disabled="true"]:hover { border-color: var(--rule) }
 .pager .of { color: var(--muted); font-size: 14px }
 .empty { border: 1px solid var(--rule); background: var(--surface); padding: 48px 24px; text-align: center; margin-top: 8px }
 .empty h3 { font: 600 22px/1.35 var(--serif); margin: 0 0 8px }
@@ -202,8 +203,11 @@ footer p { margin: 0 0 8px }
 .layout-c .k-headline { max-width: 22em }
 .k-headline a { color: var(--ink); text-decoration: none }
 .k-headline a:hover { color: var(--accent) }
-.k-headline .kw { display: inline-block; overflow: hidden; vertical-align: bottom }
-.k-headline .ch { display: inline-block; white-space: pre; will-change: transform }
+/* 字符遮罩（分层揭示）：原型把 .kw/.ch 限定在 .k-headline，导致 Hero 标题字符是普通内联
+   span——CSS transform 对内联元素无效，原型 Hero「标题字符升起」实为静默空操作（原型潜在缺陷）。
+   此处扩展到 .k-hero-title（设计意图与本票参数一致：字符自遮罩下升起），缺陷已在报告记录。 */
+.k-headline .kw, .k-hero-title .kw { display: inline-block; overflow: hidden; vertical-align: bottom }
+.k-headline .ch, .k-hero-title .ch { display: inline-block; white-space: pre; will-change: transform }
 .k-summary { margin: 0 0 12px; max-width: 62ch }
 .k-meta { margin: 0; font-size: 13px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline }
 .k-meta .tpc { color: var(--accent) }
@@ -243,7 +247,7 @@ footer p { margin: 0 0 8px }
 .v-kinetic .page-btn { border: 0; background: none; min-width: 44px; min-height: 44px; padding: 0 10px; font: 600 17px/1 var(--serif); font-variant-numeric: tabular-nums; color: var(--muted); text-decoration: none }
 .v-kinetic .page-btn:hover { border-color: transparent; color: var(--ink) }
 .v-kinetic .page-btn[aria-current=page] { color: var(--accent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px }
-.v-kinetic .page-btn[disabled] { opacity: .35 }
+.v-kinetic .page-btn[aria-disabled="true"] { opacity: .35 }
 .v-kinetic .pager .of { display: none }
 
 /* 圆形进度返回顶部（显示/进度由 JS 驱动，属 Ticket 06；无 JS 时保持隐藏不遮挡内容） */
@@ -299,6 +303,33 @@ dialog.k-menu::backdrop { background: transparent }
   .k-nav { display: none }
   .k-header { gap: 16px }
 }
+
+/* ============================================================
+   Ticket 06 动效层补充（基准：原型 v-kinetic；逐项对齐原型 CSS）
+   ============================================================ */
+/* View Transition 径向主题切换（仅当 JS 调 startViewTransition 时生效） */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal }
+html[data-vt]::view-transition-new(root) { animation: vt-clip 450ms var(--ease-out) }
+@keyframes vt-clip {
+  from { clip-path: circle(0px at var(--vt-x, 50%) var(--vt-y, 50%)) }
+  to { clip-path: circle(142% at var(--vt-x, 50%) var(--vt-y, 50%)) }
+}
+@media (prefers-reduced-motion: reduce) { html[data-vt]::view-transition-new(root) { animation: none } }
+/* 主题切换降级（无 View Transition API 时）：仅三类颜色属性的颜色过渡（非 transition:all） */
+.k-themefade, .k-themefade * { transition: background-color .38s ease-out, color .38s ease-out, border-color .38s ease-out }
+
+/* 预绘制遮蔽（head 启动脚本打 html[data-oct-pending]）：模块脚本就位前遮蔽 Hero/Header
+   初始态，消除「先画静态层 → JS 再隐藏 → 再播 intro」的闪动；GSAP 隐藏初态就位后由
+   motion 模块解除标记。降级路径（reduced-motion 不打标记 / 模块失效 1500ms 兜底解除）
+   内容直显。遮蔽期与 GSAP 不同时控制同一属性（解除后才由 GSAP 内联样式接管）。 */
+html[data-oct-pending] .k-header { transform: translateY(-100%) }
+html[data-oct-pending] .k-hero-en,
+html[data-oct-pending] .k-hero-rule,
+html[data-oct-pending] .k-hero-date,
+html[data-oct-pending] .k-hero-meta li,
+html[data-oct-pending] .k-scrollhint,
+html[data-oct-pending] .k-hero-title .line { opacity: 0 }
+
 /* 响应式：移动端（单栏 + 左线时间线 + HUD 元数据条） */
 @media (max-width: 767px) {
   .k-header { height: 60px; gap: 10px }

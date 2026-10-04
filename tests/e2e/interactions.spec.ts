@@ -37,6 +37,40 @@ async function waitClientReady(page: Page): Promise<void> {
   await page.waitForSelector('html[data-oct-client="ready"]');
 }
 
+/** 滚过 84px 阈值并等待 Header Morph 滑入（Ticket 06 动效：header 首屏隐藏，滚动后出现）。 */
+async function showHeader(page: Page): Promise<void> {
+  await page.mouse.move(640, 400);
+  await page.mouse.wheel(0, 300);
+  await page.waitForFunction(
+    () => {
+      const header = document.querySelector("[data-kheader]");
+      if (!header) return true;
+      const transform = getComputedStyle(header).transform;
+      if (transform === "none") return true;
+      return new DOMMatrixReadOnly(transform).m42 > -10;
+    },
+    undefined,
+    { timeout: 5_000 },
+  );
+}
+
+/** 等待全屏菜单关闭动画结束（Ticket 06：关闭走 GSAP 时间线后 dialog.close()）。 */
+async function waitMenuClosed(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const menu = document.querySelector<HTMLDialogElement>("dialog[data-kmenu]");
+      return !menu || !menu.open;
+    },
+    undefined,
+    { timeout: 5_000 },
+  );
+}
+
+/** 等待播报出现指定文案（两段式切换时播报发生在 out 段动画完成后）。 */
+async function expectStatusContains(page: Page, text: string): Promise<void> {
+  await expect.poll(async () => statusText(page), { timeout: 5_000 }).toContain(text);
+}
+
 /** 在 window 上做标记，断言后续交互没有发生整页导航（客户端接管）。 */
 async function markWindow(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -66,11 +100,11 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
     await page.goto(BASE);
     await waitClientReady(page);
     await markWindow(page);
+    await showHeader(page);
 
     await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
-    const status = await statusText(page);
-    expect(status).toContain("已切换主题：新闻");
-    expect(status).toContain("第 1 页");
+    await expectStatusContains(page, "已切换主题：新闻");
+    await expectStatusContains(page, "第 1 页");
     await expectSameDocument(page);
 
     // 第一页 20 条、全部为新闻、HUD 总数同步为 23、页码指示 1/2
@@ -98,11 +132,11 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
       news[20]!.firstSeenAt,
     );
     await expect(page.locator('[data-pager] [aria-label="第 2 页"][aria-current="page"]')).toHaveCount(1);
-    const pagerStatus = await statusText(page);
-    expect(pagerStatus).toContain("第 2 页");
+    await expectStatusContains(page, "第 2 页");
     await expectSameDocument(page);
 
-    // 切回全部：45 条、3 页，页码重置为 1
+    // 切回全部：45 条、3 页，页码重置为 1（翻页渲染会回顶使 header 滑出，先重新滚入）
+    await showHeader(page);
     await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
     await expect(page.locator(".k-entry")).toHaveCount(20);
     await expect(page.locator("[data-total]")).toHaveText("45");
@@ -117,15 +151,19 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
     await page.goto(`${BASE}page/2/`);
     await waitClientReady(page);
     await markWindow(page);
+    await showHeader(page);
 
     await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    // 两段式切换的渲染在 out 段后：等播报确认渲染完成，翻页才作用于新主题
+    await expectStatusContains(page, "已切换主题：新闻");
     await expect(page.locator(".k-entry")).toHaveCount(20);
     await page.locator('[data-pager] [aria-label="第 2 页"]').click();
     await expect(page.locator(".k-entry")).toHaveCount(3);
     await expect(page.locator(".k-entry .tpc")).toHaveText(Array(3).fill("新闻"));
     await expectSameDocument(page);
 
-    // 切回全部回到第 1 页（主题切换重置页码）
+    // 切回全部回到第 1 页（主题切换重置页码；翻页渲染回顶使 header 滑出，先重新滚入）
+    await showHeader(page);
     await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
     await expect(page.locator(".k-entry")).toHaveCount(20);
     await expect(page.locator('.k-entry[data-gi="0"] time')).toHaveAttribute(
@@ -137,10 +175,10 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
   test("空主题真实空态与「查看全部」恢复路径", async ({ page }) => {
     await page.goto(BASE);
     await waitClientReady(page);
+    await showHeader(page);
 
     await page.locator('[data-ktabs] .tab[data-topic="哲学"]').click();
-    const status = await statusText(page);
-    expect(status).toContain("已切换主题：哲学（暂无内容）");
+    await expectStatusContains(page, "已切换主题：哲学（暂无内容）");
     await expect(page.getByText("「哲学」暂无内容")).toBeVisible();
     await expect(page.locator(".k-entry")).toHaveCount(0);
     await expect(page.locator("[data-total]")).toHaveText("00");
@@ -148,8 +186,7 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
 
     await page.locator("[data-all]").click();
     await expect(page.locator(".k-entry")).toHaveCount(20);
-    const status2 = await statusText(page);
-    expect(status2).toContain("已切换主题：全部");
+    await expectStatusContains(page, "已切换主题：全部");
   });
 });
 
@@ -163,8 +200,7 @@ test.describe("阅读位置（仅本次访问内存）", () => {
     await expect(page.locator('.k-entry[data-gi="20"]')).toBeVisible();
 
     await page.locator('[data-pager] [aria-label="第 1 页"]').click();
-    const status = await statusText(page);
-    expect(status, "返回原页应播报恢复").toContain("已恢复到原阅读位置");
+    await expectStatusContains(page, "已恢复到原阅读位置");
     await expect
       .poll(async () => (await page.locator('[data-gi="5"]').boundingBox())?.y ?? 9999, {
         timeout: 5_000,
@@ -179,14 +215,13 @@ test.describe("阅读位置（仅本次访问内存）", () => {
     // 阅读页 1 中的一条「社会」条目，然后切到「新闻」（该条目不在新闻内容中）
     await wheelEntryToReadLine(page, societyGi);
     await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
-    const status = await statusText(page);
-    expect(status, "内容变化应回退并播报").toContain("内容已变化，原条目不在当前内容中");
+    await expectStatusContains(page, "内容已变化，原条目不在当前内容中");
     await expect(page.locator(".k-entry")).toHaveCount(20);
 
-    // 切回全部：原条目仍在，恢复到原条目
+    // 切回全部：原条目仍在，恢复到原条目（切换渲染回顶使 header 滑出，先重新滚入）
+    await showHeader(page);
     await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
-    const status2 = await statusText(page);
-    expect(status2).toContain("已恢复到原阅读位置");
+    await expectStatusContains(page, "已恢复到原阅读位置");
     await expect
       .poll(async () => (await page.locator(`[data-gi="${societyGi}"]`).boundingBox())?.y ?? 9999, {
         timeout: 5_000,
@@ -213,6 +248,7 @@ test.describe("三态主题（浅色/深色/跟随系统）", () => {
   test("循环切换、html data-theme 同步、项目专属 key 本地保存并在重载后恢复", async ({ page }) => {
     await page.goto(BASE);
     await waitClientReady(page);
+    await showHeader(page);
 
     const modeBtn = page.locator("[data-mode]");
     await expect(modeBtn).toHaveText("显示：浅色");
@@ -262,6 +298,7 @@ test.describe("三态主题（浅色/深色/跟随系统）", () => {
 
     await page.goto(BASE);
     await waitClientReady(page);
+    await showHeader(page);
     const modeBtn = page.locator("[data-mode]");
     await modeBtn.click();
     await expect(modeBtn).toHaveText("显示：深色");
@@ -280,13 +317,18 @@ test.describe("隐私断言（持久化仅限主题偏好）", () => {
   test("完整交互流程后：localStorage 仅主题 key，sessionStorage 为空", async ({ page }) => {
     await page.goto(BASE);
     await waitClientReady(page);
+    await showHeader(page);
 
     // 完整走一遍会产生状态的交互：主题、翻页、菜单、阅读位置
     await page.locator("[data-mode]").click();
     await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    // 两段式切换的渲染在 out 段后：等播报确认渲染完成，翻页才作用于新闻（避免交错渲染回页 1）
+    await expectStatusContains(page, "已切换主题：新闻");
     await page.locator('[data-pager] [aria-label="第 2 页"]').click();
+    await showHeader(page);
     await page.locator("[data-kmenu-open]").click();
     await page.keyboard.press("Escape");
+    await waitMenuClosed(page);
     await wheelEntryToReadLine(page, 22);
     await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
 
@@ -385,6 +427,7 @@ test.describe("全屏菜单（dialog）", () => {
   test("打开焦点进入、Esc 关闭焦点返回、aria-expanded 同步、连续开合稳定", async ({ page }) => {
     await page.goto(BASE);
     await waitClientReady(page);
+    await showHeader(page);
 
     const openBtn = page.locator("[data-kmenu-open]");
     const menu = page.locator("[data-kmenu]");
@@ -399,19 +442,19 @@ test.describe("全屏菜单（dialog）", () => {
     ).toBe(true);
 
     await page.keyboard.press("Escape");
-    expect(await page.evaluate(() => document.querySelector("dialog")?.open)).toBe(false);
+    await waitMenuClosed(page);
     await expect(openBtn).toHaveAttribute("aria-expanded", "false");
     expect(
       await page.evaluate(() => document.activeElement?.hasAttribute("data-kmenu-open")),
       "关闭后焦点应返回触发按钮",
     ).toBe(true);
 
-    // 连续开合稳定
+    // 连续开合稳定（关闭动画结束后才能再次打开）
     for (let round = 0; round < 2; round++) {
       await openBtn.click();
       expect(await page.evaluate(() => document.querySelector("dialog")?.open)).toBe(true);
       await closeBtn.click();
-      expect(await page.evaluate(() => document.querySelector("dialog")?.open)).toBe(false);
+      await waitMenuClosed(page);
     }
     await expect(menu).toHaveCount(1);
   });
@@ -420,10 +463,11 @@ test.describe("全屏菜单（dialog）", () => {
     await page.goto(BASE);
     await waitClientReady(page);
     await markWindow(page);
+    await showHeader(page);
 
     await page.locator("[data-kmenu-open]").click();
     await page.locator('.k-menu-topics .tab[data-topic="新闻"]').click();
-    expect(await page.evaluate(() => document.querySelector("dialog")?.open)).toBe(false);
+    await waitMenuClosed(page);
     await expect(page.locator(".k-entry")).toHaveCount(20);
     await expect(page.locator('.k-entry .tpc').first()).toHaveText("新闻");
     await expect(page.locator('[data-ktabs] .tab[data-topic="新闻"]')).toHaveAttribute(
