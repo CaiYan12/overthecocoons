@@ -18,6 +18,10 @@
 - [UI设计与动效](ui-design.md)
 - [设计样本](design/brief-preview.html)
 
+## 状态报告
+
+- [剩余未完事项报告（2026-10-04）](remaining-work-report.md)
+
 ## ADR与协作配置
 
 - [ADR-0001 权威收录状态](adr/0001-authoritative-ingestion-state.md)
