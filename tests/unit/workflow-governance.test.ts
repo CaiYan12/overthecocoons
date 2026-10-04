@@ -78,6 +78,21 @@ describe("init-data 工作流定义（初始化仅手动入口，MVP-Q13）", ()
     assert.match(yaml, /^ {2}contents:\s*write\s*$/m);
     assert.doesNotMatch(yaml, /--force/);
   });
+
+  it("push 从主检出的孤儿 worktree 执行（审查修复环 R1：凭证策略）", () => {
+    // 必须以 git worktree add --orphan 建孤儿树：凭证由 actions/checkout 写在主检出
+    // 本地配置（includeIf.gitdir:<检出>/.git 及其 worktrees/* 变体），worktree 命中后者。
+    assert.match(yaml, /git worktree add --orphan -b data data-branch/);
+    // 命令行（排除注释）里不得再出现裸 git init：对 data-branch 单独 git init 的
+    // 新仓库既无 includeIf 也无 extraheader，匿名 push 必失败（R1 Critical 回归守卫）。
+    const commandLines = yaml
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("#"))
+      .join("\n");
+    assert.doesNotMatch(commandLines, /\bgit init\b/, "不得在检出目录外新建仓库后 push");
+    // 不得在 YAML 内手工处理凭证（extraheader/token 注入）——凭证统一由 checkout 配置。
+    assert.doesNotMatch(commandLines, /extraheader|AUTHORIZATION|GITHUB_TOKEN/);
+  });
 });
 
 describe("来源提交 Issue 模板（治理入口）", () => {

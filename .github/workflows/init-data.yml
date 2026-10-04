@@ -4,7 +4,7 @@
 # 无定时触发。日常定时/手动更新发现无权威状态会报错停止，绝不自动初始化；
 # 数据损坏的恢复由人工从 data 分支 Git 历史核对后执行（MVP-Q18），不走本工作流。
 #
-# data 分支已存在时本工作流直接失败（CLI 同样拒绝），绝不自动清空台账重采。
+# data 分支已存在时前置检查即失败（恢复由人工从 Git 历史核对，绝不自动清空台账重采）。
 name: init-data
 
 on:
@@ -47,20 +47,30 @@ jobs:
             exit 1
           fi
 
-      # 在空目录建立空权威台账（--expected-sha empty 即空 data 分支的占位 HEAD 契约）。
-      # CLI 初始化不抓取、不产出快照；首日真实数据由之后的首次 update-data 采集。
-      - name: Initialize empty authoritative state
-        run: |
-          mkdir data-branch
-          node scripts/update-data.ts --store git --dir data-branch --expected-sha empty --init
+      # 孤儿 worktree（git >= 2.42）：空工作区 + 未出生分支 data。
+      # 凭证策略（审查修复环 R1）：actions/checkout 把 GITHUB_TOKEN 凭证文件挂到
+      # 主检出本地配置的 includeIf.gitdir:<检出>/.git.path，并附带
+      # includeIf.gitdir:<检出>/.git/worktrees/*.path 变体——worktree 命中后者，push 可用；
+      # 若在本步骤里对 data-branch 单独 git init，新仓库两者皆无，匿名 push 必被拒。
+      # 失败方向安全：后续任何步骤失败都不会推送任何远端引用。
+      - name: Create orphan worktree（空树 + 未出生分支）
+        run: git worktree add --orphan -b data data-branch
 
-      - name: Create data branch and push（孤儿历史，根提交即初始化提交）
+      # CLI 初始化：不抓取、不产出快照；首日真实数据由之后的首次 update-data 采集。
+      # --expected-sha empty = 空 data 分支占位 HEAD 契约（见 scripts/update-data.ts 头注）。
+      - name: Initialize empty authoritative state
+        run: >
+          node scripts/update-data.ts
+          --store git
+          --dir data-branch
+          --expected-sha empty
+          --init
+
+      - name: Commit and push data（孤儿历史，根提交即初始化提交；非快进即失败）
         working-directory: data-branch
         run: |
-          git init -b data
-          git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
-          git config user.name "overthecocoons-data-bot"
-          git config user.email "actions@users.noreply.github.com"
           git add state.json items.json manifest.json
-          git commit -m "data: manual initialization (MVP-Q13 manual entry)"
+          git -c user.name="overthecocoons-data-bot" -c user.email="actions@users.noreply.github.com" \
+            commit -m "data: manual initialization (MVP-Q13 manual entry)"
+          # 无强制推送：远端若被并发创建，本次 push 因历史无关被拒（非快进），运行失败等待重试。
           git push origin data
