@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import type { PublicEntry, PublicSnapshot } from "../../src/domain/contract.ts";
+import { safeScreenshot } from "./helpers.ts";
 
 const BASE = "/overthecocoons/";
 
@@ -60,10 +61,7 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
         () => document.documentElement.scrollWidth,
       );
       expect(scrollWidth, `${width}px 视口不应出现横向滚动`).toBeLessThanOrEqual(width);
-      await page.screenshot({
-        path: `test-results/screenshots/home-${width}.png`,
-        fullPage: true,
-      });
+      await safeScreenshot(page, `test-results/screenshots/home-${width}.png`);
     }
   });
 

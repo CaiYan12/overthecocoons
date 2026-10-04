@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import type { PublicEntry, PublicSnapshot } from "../../src/domain/contract.ts";
+import { pickTopic, wheelBy, wheelEntryToLine } from "./helpers.ts";
 
 const BASE = "/overthecocoons/";
 const THEME_KEY = "overthecocoons.theme";
@@ -39,19 +40,56 @@ async function waitClientReady(page: Page): Promise<void> {
 
 /** 滚过 84px 阈值并等待 Header Morph 滑入（Ticket 06 动效：header 首屏隐藏，滚动后出现）。 */
 async function showHeader(page: Page): Promise<void> {
-  await page.mouse.move(640, 400);
-  await page.mouse.wheel(0, 300);
-  await page.waitForFunction(
-    () => {
-      const header = document.querySelector("[data-kheader]");
-      if (!header) return true;
-      const transform = getComputedStyle(header).transform;
-      if (transform === "none") return true;
-      return new DOMMatrixReadOnly(transform).m42 > -10;
-    },
-    undefined,
-    { timeout: 5_000 },
-  );
+  // 指针须落在最小移动视口（412px）内：越界指针的 wheel 事件不派发到页面
+  await page.mouse.move(200, 300);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await wheelBy(page, 300);
+    const state = await page.evaluate(() => ({
+      scrollY: Math.round(window.scrollY),
+      atBottom:
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1,
+    }));
+    if (state.scrollY <= 84) continue; // wheel 未生效（偶发），重试
+    if (state.atBottom) {
+      // 列表尾页 focus 分页器停在 maxScroll 底部：向下 wheel 空转且焦点式滚动不触发
+      // morph 更新；向上滚一次（位置仍高于 84 阈值）唤醒按当前位置重算
+      await wheelBy(page, -200);
+    }
+    break; // 已滚动：等 morph 补间完成（下方 gate；低帧率/负载下补间按 GSAP lag smoothing 慢速推进）
+  }
+  try {
+    await page.waitForFunction(
+      () => {
+        const header = document.querySelector("[data-kheader]");
+        if (!header) return true;
+        const transform = getComputedStyle(header).transform;
+        if (transform === "none") return true;
+        return new DOMMatrixReadOnly(transform).m42 > -10;
+      },
+      undefined,
+      { timeout: 15_000 },
+    );
+  } catch (error) {
+    // 失败时带出页面状态便于定位（滚动位置 / morph / 客户端就绪标记）
+    const state = await page
+      .evaluate(() => {
+        const header = document.querySelector("[data-kheader]");
+        const transform = header ? getComputedStyle(header).transform : "missing";
+        return {
+          scrollY: Math.round(window.scrollY),
+          m42:
+            transform === "none"
+              ? "none"
+              : transform === "missing"
+                ? "missing"
+                : +new DOMMatrixReadOnly(transform).m42.toFixed(1),
+          motion: document.documentElement.getAttribute("data-oct-motion"),
+          client: document.documentElement.getAttribute("data-oct-client"),
+        };
+      })
+      .catch(() => null);
+    throw new Error(`showHeader 超时，页面状态: ${JSON.stringify(state)}; ${String(error)}`);
+  }
 }
 
 /** 等待全屏菜单关闭动画结束（Ticket 06：关闭走 GSAP 时间线后 dialog.close()）。 */
@@ -68,7 +106,8 @@ async function waitMenuClosed(page: Page): Promise<void> {
 
 /** 等待播报出现指定文案（两段式切换时播报发生在 out 段动画完成后）。 */
 async function expectStatusContains(page: Page, text: string): Promise<void> {
-  await expect.poll(async () => statusText(page), { timeout: 5_000 }).toContain(text);
+  // 两段式切换播报在 out 段（0.26s）完成后；负载下 GSAP lag smoothing 会让补间慢速推进
+  await expect.poll(async () => statusText(page), { timeout: 15_000 }).toContain(text);
 }
 
 /** 在 window 上做标记，断言后续交互没有发生整页导航（客户端接管）。 */
@@ -82,13 +121,9 @@ async function expectSameDocument(page: Page): Promise<void> {
   expect(mark, "交互应发生在同一文档（客户端接管，无整页导航）").toBe(1);
 }
 
-/** 用滚轮把指定 data-gi 的条目滚到阅读基准线（用户手势，触发阅读位置追踪）。 */
+/** 把指定条目滚到阅读基准线（用户手势，触发阅读位置追踪）；按 DOM 状态迭代收敛。 */
 async function wheelEntryToReadLine(page: Page, gi: number): Promise<void> {
-  const box = await page.locator(`[data-gi="${gi}"]`).boundingBox();
-  expect(box, `条目 gi=${gi} 应存在`).not.toBeNull();
-  await page.mouse.move(640, 400);
-  await page.mouse.wheel(0, box!.y - 96);
-  await page.waitForTimeout(300);
+  await wheelEntryToLine(page, gi);
 }
 
 async function statusText(page: Page): Promise<string> {
@@ -102,7 +137,7 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
     await markWindow(page);
     await showHeader(page);
 
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     await expectStatusContains(page, "已切换主题：新闻");
     await expectStatusContains(page, "第 1 页");
     await expectSameDocument(page);
@@ -137,7 +172,7 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
 
     // 切回全部：45 条、3 页，页码重置为 1（翻页渲染会回顶使 header 滑出，先重新滚入）
     await showHeader(page);
-    await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
+    await pickTopic(page, "全部");
     await expect(page.locator(".k-entry")).toHaveCount(20);
     await expect(page.locator("[data-total]")).toHaveText("45");
     await expect(page.locator('[data-pager] [aria-label="第 3 页"]')).toBeVisible();
@@ -153,7 +188,7 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
     await markWindow(page);
     await showHeader(page);
 
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     // 两段式切换的渲染在 out 段后：等播报确认渲染完成，翻页才作用于新主题
     await expectStatusContains(page, "已切换主题：新闻");
     await expect(page.locator(".k-entry")).toHaveCount(20);
@@ -164,7 +199,7 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
 
     // 切回全部回到第 1 页（主题切换重置页码；翻页渲染回顶使 header 滑出，先重新滚入）
     await showHeader(page);
-    await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
+    await pickTopic(page, "全部");
     await expect(page.locator(".k-entry")).toHaveCount(20);
     await expect(page.locator('.k-entry[data-gi="0"] time')).toHaveAttribute(
       "datetime",
@@ -177,7 +212,7 @@ test.describe("主题筛选与分页（客户端接管静态链接式分页）",
     await waitClientReady(page);
     await showHeader(page);
 
-    await page.locator('[data-ktabs] .tab[data-topic="哲学"]').click();
+    await pickTopic(page, "哲学");
     await expectStatusContains(page, "已切换主题：哲学（暂无内容）");
     await expect(page.getByText("「哲学」暂无内容")).toBeVisible();
     await expect(page.locator(".k-entry")).toHaveCount(0);
@@ -214,13 +249,13 @@ test.describe("阅读位置（仅本次访问内存）", () => {
 
     // 阅读页 1 中的一条「社会」条目，然后切到「新闻」（该条目不在新闻内容中）
     await wheelEntryToReadLine(page, societyGi);
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     await expectStatusContains(page, "内容已变化，原条目不在当前内容中");
     await expect(page.locator(".k-entry")).toHaveCount(20);
 
     // 切回全部：原条目仍在，恢复到原条目（切换渲染回顶使 header 滑出，先重新滚入）
     await showHeader(page);
-    await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
+    await pickTopic(page, "全部");
     await expectStatusContains(page, "已恢复到原阅读位置");
     await expect
       .poll(async () => (await page.locator(`[data-gi="${societyGi}"]`).boundingBox())?.y ?? 9999, {
@@ -306,7 +341,7 @@ test.describe("三态主题（浅色/深色/跟随系统）", () => {
     await modeBtn.click();
     await expect(modeBtn).toHaveText("显示：跟随系统");
     // 交互功能不受存储拒绝影响
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     await expect(page.locator(".k-entry")).toHaveCount(20);
     expect(errors, "存储拒绝不应产生未捕获错误").toEqual([]);
     await context.close();
@@ -321,7 +356,7 @@ test.describe("隐私断言（持久化仅限主题偏好）", () => {
 
     // 完整走一遍会产生状态的交互：主题、翻页、菜单、阅读位置
     await page.locator("[data-mode]").click();
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     // 两段式切换的渲染在 out 段后：等播报确认渲染完成，翻页才作用于新闻（避免交错渲染回页 1）
     await expectStatusContains(page, "已切换主题：新闻");
     await page.locator('[data-pager] [aria-label="第 2 页"]').click();
@@ -330,7 +365,7 @@ test.describe("隐私断言（持久化仅限主题偏好）", () => {
     await page.keyboard.press("Escape");
     await waitMenuClosed(page);
     await wheelEntryToReadLine(page, 22);
-    await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
+    await pickTopic(page, "全部");
 
     // 详情页路径（审查修复环 R2-I1）：copy.ts 所在页面必须在断言捕获范围内——
     // 进入详情页并点击复制按钮（未授予剪贴板权限，走 clipboard 或 execCommand 回退均可），
@@ -366,8 +401,16 @@ test.describe("详情页复制链接", () => {
 
   test("navigator.clipboard 成功路径：写入门户地址并播报", async ({ browser }) => {
     const context = await browser.newContext();
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-    const page = await context.newPage();
+    let page!: Page;
+    try {
+      await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+      // Playwright WebKit 把 clipboard 权限错误延迟到 newPage 应用时抛出
+      page = await context.newPage();
+    } catch (error) {
+      await context.close();
+      const reason = error instanceof Error ? error.message.split("\n")[0] : String(error);
+      test.skip(true, `当前引擎不提供 clipboard 权限授予：${reason}`);
+    }
     await page.goto(detailUrl);
     await waitClientReady(page);
 
@@ -484,8 +527,9 @@ test.describe("返回顶部", () => {
     await waitClientReady(page);
 
     const topBtn = page.locator("[data-ktop]");
-    await page.mouse.move(640, 400);
-    await page.mouse.wheel(0, 1500);
+    // 指针须落在最小移动视口（412px）内：越界指针的 wheel 事件不派发到页面
+  await page.mouse.move(200, 300);
+    await wheelBy(page, 1500);
     await page.waitForTimeout(300);
     await expect(topBtn).toHaveClass(/show/);
     await topBtn.click();

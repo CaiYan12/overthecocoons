@@ -8,6 +8,7 @@
  * 降级契约：内容直显、无隐藏初态、功能完整（与 Ticket 05 渐进增强一致）。
  */
 import { expect, test, type Page } from "@playwright/test";
+import { pickTopic, safeScreenshot, wheelBy } from "./helpers.ts";
 
 const BASE = "/overthecocoons/";
 const RING_LENGTH = 163.4;
@@ -27,19 +28,55 @@ async function waitIntroDone(page: Page): Promise<void> {
 
 /** 滚过 84px 阈值并等待 Header Morph 滑入（动效模式下 header 首屏隐藏）。 */
 async function showHeader(page: Page): Promise<void> {
-  await page.mouse.move(640, 400);
-  await page.mouse.wheel(0, 300);
-  await page.waitForFunction(
-    () => {
-      const header = document.querySelector("[data-kheader]");
-      if (!header) return true;
-      const transform = getComputedStyle(header).transform;
-      if (transform === "none") return true;
-      return new DOMMatrixReadOnly(transform).m42 > -10;
-    },
-    undefined,
-    { timeout: 5_000 },
-  );
+  await page.mouse.move(200, 300);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await wheelBy(page, 300);
+    const state = await page.evaluate(() => ({
+      scrollY: Math.round(window.scrollY),
+      atBottom:
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1,
+    }));
+    if (state.scrollY <= 84) continue; // wheel 未生效（偶发），重试
+    if (state.atBottom) {
+      // 列表尾页 focus 分页器停在 maxScroll 底部：向下 wheel 空转且焦点式滚动不触发
+      // morph 更新；向上滚一次（位置仍高于 84 阈值）唤醒按当前位置重算
+      await wheelBy(page, -200);
+    }
+    break; // 已滚动：等 morph 补间完成（下方 gate；低帧率/负载下补间按 GSAP lag smoothing 慢速推进）
+  }
+  try {
+    await page.waitForFunction(
+      () => {
+        const header = document.querySelector("[data-kheader]");
+        if (!header) return true;
+        const transform = getComputedStyle(header).transform;
+        if (transform === "none") return true;
+        return new DOMMatrixReadOnly(transform).m42 > -10;
+      },
+      undefined,
+      { timeout: 15_000 },
+    );
+  } catch (error) {
+    // 失败时带出页面状态便于定位（滚动位置 / morph / 客户端就绪标记）
+    const state = await page
+      .evaluate(() => {
+        const header = document.querySelector("[data-kheader]");
+        const transform = header ? getComputedStyle(header).transform : "missing";
+        return {
+          scrollY: Math.round(window.scrollY),
+          m42:
+            transform === "none"
+              ? "none"
+              : transform === "missing"
+                ? "missing"
+                : +new DOMMatrixReadOnly(transform).m42.toFixed(1),
+          motion: document.documentElement.getAttribute("data-oct-motion"),
+          client: document.documentElement.getAttribute("data-oct-client"),
+        };
+      })
+      .catch(() => null);
+    throw new Error(`showHeader 超时，页面状态: ${JSON.stringify(state)}; ${String(error)}`);
+  }
 }
 
 /** 等待两段式主题切换动画结束（html[data-oct-topic-anim] 移除）。 */
@@ -149,7 +186,7 @@ test.describe("GSAP 动效层（Hero Intro / Header Morph / 全局进度）", ()
       const ch = document.querySelector<HTMLElement>("[data-herotitle] .ch");
       if (ch) (ch as unknown as { octProbe?: boolean }).octProbe = true;
     });
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     await expect(page.locator(".k-entry .tpc").first()).toHaveText("新闻");
     await expect(page.locator("[data-total]")).toHaveText("23");
     await waitTopicAnimDone(page);
@@ -184,8 +221,8 @@ test.describe("GSAP 动效层（Hero Intro / Header Morph / 全局进度）", ()
 
     expect(await headerY(), "首屏 header 应隐藏（yPercent -100）").toBeLessThan(-60);
 
-    await page.mouse.move(640, 400);
-    await page.mouse.wheel(0, 300);
+    await page.mouse.move(200, 300);
+    await wheelBy(page, 300);
     await page.waitForFunction(() => {
       const header = document.querySelector("[data-kheader]");
       if (!header) return false;
@@ -213,8 +250,8 @@ test.describe("GSAP 动效层（Hero Intro / Header Morph / 全局进度）", ()
     await waitMotionOn(page);
 
     expect(await page.locator("[data-readpct]").textContent()).toBe("0%");
-    await page.mouse.move(640, 400);
-    await page.mouse.wheel(0, 2000);
+    await page.mouse.move(200, 300);
+    await wheelBy(page, 2000);
     await page.waitForFunction(
       () => document.querySelector("[data-readpct]")?.textContent !== "0%",
       undefined,
@@ -227,7 +264,8 @@ test.describe("GSAP 动效层（Hero Intro / Header Morph / 全局进度）", ()
     }));
     expect(mid.pct).toMatch(/^[1-9]\d%$|^100%$/);
     expect(mid.readbar, "readbar scaleX 应大于 0").not.toContain("matrix(1, 0, 0, 0, 0, 0)");
-    expect(Number(mid.ring), "圆环 dashoffset 应小于满值").toBeLessThan(RING_LENGTH);
+    // Firefox 序列化带单位（"141.196px"）、Chromium 不带，须用 parseFloat 而非 Number
+    expect(parseFloat(mid.ring), "圆环 dashoffset 应小于满值").toBeLessThan(RING_LENGTH);
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForFunction(
@@ -295,6 +333,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     await page.evaluate(() => {
       const w = window as unknown as {
         __octReveal?: { ch: number; sum: number; meta: number };
+        __octTicks?: number[];
       };
       const entries = [...document.querySelectorAll<HTMLElement>(".k-entry")];
       const entry = entries.find(
@@ -306,8 +345,11 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
       const sum = entry.querySelector<HTMLElement>(".k-summary");
       const meta = entry.querySelector<HTMLElement>(".k-meta");
       const mark = { ch: -1, sum: -1, meta: -1 };
+      const ticks: number[] = [];
+      w.__octTicks = ticks;
       const t0 = performance.now();
       const tick = () => {
+        ticks.push(performance.now() - t0);
         if (
           mark.ch < 0 &&
           ch &&
@@ -332,8 +374,22 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
       (window as unknown as { __octRevealTarget?: HTMLElement }).__octRevealTarget = entry;
     });
 
-    await page.mouse.move(640, 400);
-    await page.mouse.wheel(0, 900);
+    await page.mouse.move(200, 300);
+    // 按目标条目实际位置迭代滚进触发区（分层揭示 start: "top 85%"）：单次 wheel 的实际滚动量
+    // 因引擎而异（Firefox 实测 900 只滚到 858，条目未进触发区），且须在探针 4s 窗口内触发
+    for (let i = 0; i < 8; i++) {
+      const state = await page.evaluate(() => {
+        const w = window as unknown as { __octReveal?: unknown; __octRevealTarget?: HTMLElement };
+        return {
+          revealed: w.__octReveal !== undefined,
+          top: w.__octRevealTarget?.getBoundingClientRect().top ?? 0,
+          inner: window.innerHeight,
+        };
+      });
+      if (state.revealed || state.top <= state.inner * 0.5) break;
+      await wheelBy(page, Math.min(Math.max(state.top - state.inner * 0.4, 300), 2400));
+      await page.waitForTimeout(120);
+    }
     await page.waitForFunction(
       () => (window as unknown as { __octReveal?: unknown }).__octReveal !== undefined,
       undefined,
@@ -345,8 +401,20 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     expect(mark.ch, "标题字符开始升起").toBeGreaterThanOrEqual(0);
     expect(mark.sum, "摘要 clip 开始释放").toBeGreaterThanOrEqual(0);
     expect(mark.meta, "元信息开始显现").toBeGreaterThanOrEqual(0);
-    expect(mark.sum, "摘要晚于标题字符").toBeGreaterThan(mark.ch);
-    expect(mark.meta, "元信息晚于摘要").toBeGreaterThan(mark.sum);
+    // 设计错峰为 ch→+80ms→sum→+60ms→meta（motion.ts 时间线 0/0.08/0.14）。mobile WebKit 在
+    // dSF3×1440 下 rAF 实测仅 ~7.8fps（帧间隔 >80ms），同帧吞掉错峰导致采样等值：帧间隔
+    // 足够细时断言严格先后，粗帧时仅断言顺序不倒置（同时序下 sum 恒不早于 ch、meta 恒不早于 sum）
+    const ticks = (await page.evaluate(() => (window as unknown as { __octTicks?: number[] }).__octTicks ?? [])) as number[];
+    const deltas = ticks.slice(1).map((t, i) => t - ticks[i]!).filter((d) => d > 0).sort((a, b) => a - b);
+    const medianDelta = deltas.length > 0 ? deltas[Math.floor(deltas.length / 2)]! : 0;
+    const resolvable = medianDelta > 0 && medianDelta <= 70;
+    if (resolvable) {
+      expect(mark.sum, "摘要晚于标题字符").toBeGreaterThan(mark.ch);
+      expect(mark.meta, "元信息晚于摘要").toBeGreaterThan(mark.sum);
+    } else {
+      expect(mark.sum, "摘要不早于标题字符（粗帧引擎）").toBeGreaterThanOrEqual(mark.ch);
+      expect(mark.meta, "元信息不早于摘要（粗帧引擎）").toBeGreaterThanOrEqual(mark.sum);
+    }
 
     // 媒体揭示补间（900ms power4.out）持续到 meta 出现之后：等待 clip 与 art 补间落到终态再断言
     await page.waitForFunction(
@@ -387,8 +455,8 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     await waitClientReady(page);
     await waitMotionOn(page);
 
-    await page.mouse.move(640, 400);
-    await page.mouse.wheel(0, 1600);
+    await page.mouse.move(200, 300);
+    await wheelBy(page, 1600);
     await page.waitForFunction(
       () => document.querySelector(".k-entry.is-active") !== null,
       undefined,
@@ -453,7 +521,7 @@ test.describe("两段式主题切换（出 260ms / 入 340ms，日期组头先�
       w.__octClickAt = performance.now();
     });
 
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     await expect
       .poll(
         () => page.evaluate(() => document.documentElement.hasAttribute("data-oct-topic-anim")),
@@ -621,7 +689,9 @@ test.describe("全屏菜单动效", () => {
 });
 
 test.describe("桌面限定动效（pointer:fine）", () => {
-  test("自定义光标跟随并显示语义标签；磁性位移；图片 tilt", async ({ page }) => {
+  test("自定义光标跟随并显示语义标签；磁性位移；图片 tilt", async ({ page, isMobile }) => {
+    // 移动设备模拟为 pointer:coarse，站点按设计不启用自定义光标/磁性（非缺陷）
+    test.skip(isMobile === true, "自定义光标与磁性为 pointer:fine 桌面限定");
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
     await waitClientReady(page);
@@ -719,7 +789,7 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
     expect(state.metaInlineOpacity, "元信息无隐藏").toBe("");
 
     // 功能完整：筛选分页照常（无动画属性标记）
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     await expect(page.locator(".k-entry")).toHaveCount(20);
     await expect(page.locator("[data-total]")).toHaveText("23");
     expect(
@@ -728,8 +798,8 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
     ).toBe(false);
 
     // 进度呈现：无 GSAP 的滚动处理器仍更新圆环与百分比
-    await page.mouse.move(640, 400);
-    await page.mouse.wheel(0, 2000);
+    await page.mouse.move(200, 300);
+    await wheelBy(page, 2000);
     await page.waitForFunction(
       () => document.querySelector("[data-readpct]")?.textContent !== "0%",
       undefined,
@@ -738,7 +808,7 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
     const ring = await page.evaluate(
       () => document.querySelector<SVGCircleElement>("[data-ring]")?.style.strokeDashoffset ?? "",
     );
-    expect(Number(ring), "圆环进度更新").toBeLessThan(RING_LENGTH);
+    expect(parseFloat(ring), "圆环进度更新").toBeLessThan(RING_LENGTH);
     await context.close();
   });
 
@@ -770,12 +840,12 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
     expect(state.cursorHidden, "自定义光标不出现").toBe(true);
 
     // 静态可用：筛选、翻页、返回顶部（降级下 header 常显，Tab 直接可点）
-    await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+    await pickTopic(page, "新闻");
     await expect(page.locator(".k-entry")).toHaveCount(20);
-    await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
+    await pickTopic(page, "全部");
     await expect(page.locator(".k-entry")).toHaveCount(20);
-    await page.mouse.move(640, 400);
-    await page.mouse.wheel(0, 2000);
+    await page.mouse.move(200, 300);
+    await wheelBy(page, 2000);
     await expect(page.locator("[data-ktop]")).toHaveClass(/show/);
     await page.waitForFunction(
       () => document.querySelector("[data-readpct]")?.textContent !== "0%",
@@ -787,6 +857,8 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
 
 test.describe("ScrollTrigger 泄漏防护", () => {
   test("反复切主题/翻页/开关菜单后触发器数量稳定", async ({ page }) => {
+    // 移动 WebKit 上 wheel 降级键盘、菜单/主题动画更慢，30s 默认超时不够
+    test.setTimeout(90_000);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
     await waitClientReady(page);
@@ -813,12 +885,12 @@ test.describe("ScrollTrigger 泄漏防护", () => {
     // 一个完整交互周期：切主题（listCtx revert 重建）→ 翻页往返 → 滚尽烧触发器 → 回顶 → 菜单开关
     const cycle = async () => {
       await showHeader(page);
-      await page.locator('[data-ktabs] .tab[data-topic="新闻"]').click();
+      await pickTopic(page, "新闻");
       await waitTopicAnimDone(page);
       await page.waitForTimeout(400);
       await scrollThrough();
       await showHeader(page);
-      await page.locator('[data-ktabs] .tab[data-topic="全部"]').click();
+      await pickTopic(page, "全部");
       await waitTopicAnimDone(page);
       await page.waitForTimeout(400);
       await page.locator('[data-pager] [aria-label="第 2 页"]').click();
@@ -931,10 +1003,7 @@ test.describe("截图矩阵（320/390/768/1024/1440 × 浅/深）", () => {
 
         const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
         expect(scrollWidth, `${width}px 不应横向破版`).toBeLessThanOrEqual(width);
-        await page.screenshot({
-          path: `test-results/screenshots/t06-${width}-${theme}.png`,
-          fullPage: true,
-        });
+        await safeScreenshot(page, `test-results/screenshots/t06-${width}-${theme}.png`);
       });
     }
   }
