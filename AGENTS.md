@@ -30,7 +30,7 @@
 - `.agents/memories/` 为**项目记忆目录**（已入 git 跟踪，不得加入 `.gitignore`）：`memory.md` 为统领索引，登记全部记忆条目与摘要；单条记忆文件名 `YYYYMMDDHHMM.md`（本地时间，精确到分）。会话需要既往项目经验时，先读 `memory.md` 索引再打开对应条目；记忆是经验与过程沉淀，**当前状态以本文件状态段与 Git 现状为权威**，冲突时以现状为准。
 - `.agents/skills/` 为**项目技能目录**（已入 git 跟踪，不得加入 `.gitignore`）：项目专用技能以 Markdown 存放，是否加载由本文件「Agent skills」节声明；与个人全局技能（本机安装的斜杠技能）区分，二者不等同。
 - **收尾强制更新记忆**：每次任务收尾必须更新 `.agents/memories/`——把本次任务的经验、状态变化、用户裁定写成或修订一条 `YYYYMMDDHHMM.md` 记忆，并同步登记 `memory.md` 索引；任务收尾不允许跳过这一步。
-- **记忆机制优先级**：忽略 harness（如 opencode 等工具）自身的记忆/持久化机制——不读不写工具级 memory、全局记忆库等 harness 私有存储；项目记忆的读与写一律且仅使用本目录 `.agents/memories/`。
+- **记忆机制优先级**：harness（如 opencode 等工具）的用户级/个人记忆机制照常可用；**项目级记忆一律且仅使用本目录 `.agents/memories/`**——不把项目记忆写入 harness 的项目级或工具私有存储，读项目既往经验也以本目录及其索引为准。
 
 ## Context7
 
