@@ -137,11 +137,29 @@ describe("build-deploy 工作流定义（Ticket 08：main 只读构建 + Pages �
     .filter((line) => !line.trimStart().startsWith("#"))
     .join("\n");
 
-  it("触发：push main + push data + workflow_dispatch；不响应 pull_request", () => {
+  it("触发：push main + workflow_dispatch + repository_dispatch(data-updated)；不响应 PR，不由 data 分支 push 触发", () => {
     assert.match(yaml, /^ {6}- main\s*$/m, "push 触发须含 main");
-    assert.match(yaml, /^ {6}- data\s*$/m, "push 触发须含 data（每日更新成功后自动重建发布）");
     assert.match(yaml, /^ {2}workflow_dispatch:\s*$/m, "必须支持手动触发");
+    assert.match(yaml, /^ {2}repository_dispatch:\s*$/m, "须由 data 更新后的 dispatch 触发");
+    assert.match(yaml, /^ {6}- data-updated\s*$/m, "dispatch 事件类型为 data-updated");
+    assert.doesNotMatch(yaml, /^ {6}- data\s*$/m, "data 分支 push 不触发（其上无工作流文件）");
     assert.doesNotMatch(yaml, /^ {2}pull_request:\s*$/m, "不得由 PR 触发");
+  });
+
+  it("发布接线闭环：update-data 仅在 data 实际前进时发 data-updated dispatch", () => {
+    const updateYaml = readRepoFile(".github/workflows/update-data.yml");
+    assert.match(updateYaml, /event_type=data-updated/, "update-data 须发出 data-updated 事件");
+    assert.match(
+      updateYaml,
+      /steps\.publish-data\.outputs\.changed == 'true'/,
+      "dispatch 必须以三文件实际变化为前提（无变化不触发重建）",
+    );
+    // dispatch 只调 GitHub API，不扩大权限（contents: write 已覆盖 repository_dispatch 创建）。
+    const updateCommands = updateYaml
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("#"))
+      .join("\n");
+    assert.doesNotMatch(updateCommands, /actions:|write-all/, "不得扩大 update-data 权限");
   });
 
   it("权限最小化：contents: read + pages: write + id-token: write；无 contents: write", () => {

@@ -72,6 +72,7 @@ jobs:
           --expected-sha "${{ steps.head.outputs.sha }}"
 
       - name: Commit and push data（失败不重试、不自动合并）
+        id: publish-data
         working-directory: data-branch
         run: |
           git config user.name "overthecocoons-data-bot"
@@ -79,9 +80,25 @@ jobs:
           git add state.json items.json manifest.json
           if git diff --cached --quiet; then
             echo "三文件无变化，跳过提交"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "data: scheduled update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             # 不使用强制推送（--force 与 -f 均禁止）：分支已前进时 push 被拒（非快进），
             # 本次运行失败，等待下次定时/手动重试（MVP-Q17）。
             git push origin data
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      # 发布接线（Ticket 08）：data 分支推送不会自动触发 build-deploy——GitHub 对 push
+      # 事件使用「被推送分支上」的工作流文件版本，而 data 分支只含三文件不含工作流定义。
+      # 故推送成功后发 repository_dispatch（GITHUB_SHA=默认分支 main 最新提交，已查证
+      # docs.github.com 事件表），由 build-deploy 读取最新 data 完成只读构建与发布。
+      # 仅内容变化时触发；contents: write 已是创建 repository_dispatch 事件的最低要求，
+      # 权限块不扩大。
+      - name: Trigger site rebuild（仅 data 实际前进时）
+        if: steps.publish-data.outputs.changed == 'true'
+        run: >
+          gh api repos/${GITHUB_REPOSITORY}/dispatches
+          -f event_type=data-updated
+        env:
+          GH_TOKEN: ${{ github.token }}

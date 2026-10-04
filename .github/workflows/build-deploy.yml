@@ -2,8 +2,11 @@
 #
 # 职责边界（MVP-Q8/Q21，架构「main 推送：读取已保存状态 → 生成快照 → 检查/构建 →
 # 发布，不抓源、不写首次收录」）：
-# - 触发：main 推送（代码变更发布）、data 分支推送（每日定时/手动更新成功后自动重建
-#   发布，落实架构「保存权威状态 → 生成快照 → 检查/构建 → 发布」全链路）、手动 dispatch。
+# - 触发：main 推送（代码变更发布）、repository_dispatch:data-updated（update-data 每次
+#   data 实际前进后触发；data 分支推送本身不会触发——GitHub 对 push 事件使用被推送分支
+#   上的工作流文件版本，data 分支只含三文件不含工作流定义）、手动 dispatch。
+#   repository_dispatch 运行的 GITHUB_SHA = 默认分支 main 最新提交（docs.github.com
+#   事件表已查证），deploy 对 github-pages 环境以 main ref 放行。
 # - 只读 data：对 data 分支单一提交 checkout（不读变化中文件拼混合快照，MVP-Q21 第 2 项），
 #   经 scripts/build-snapshot.ts 做 verifyManifest 摘要校验（损坏即失败，MVP-Q13）后
 #   生成 7 天窗口公开快照，再以 SNAPSHOT_PATH 注入 astro build。
@@ -14,15 +17,17 @@
 #
 # Pages 部署要求（仓库设置，2026-10-04 已配置）：
 # - Settings→Pages 来源为 GitHub Actions（API build_type=workflow）；
-# - github-pages 环境部署分支策略含 main 与 data（data 推送触发时 deploy 才被放行）。
+# - github-pages 环境部署分支策略含 main（本工作流所有触发形态的运行 ref 均为 main）。
 name: build-deploy
 
 on:
   push:
     branches:
       - main
-      - data
   workflow_dispatch:
+  repository_dispatch:
+    types:
+      - data-updated
 
 # 最小权限：contents: read 供 checkout；pages: write + id-token: write 供官方
 # deploy-pages（OIDC 换取部署凭证）。不授予 contents: write（本工作流不写任何分支）。
