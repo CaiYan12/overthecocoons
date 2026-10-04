@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "stateTakenAt": "2026-10-04T04:51:54.650Z",
+  "stateTakenAt": "2026-10-04T05:20:02.267Z",
   "publicContentVersion": 1,
   "publicContentDigest": "e89316d0d64a5c03b75434785f897a0c43bad6a71543d3403876668ec132b344",
   "identities": [
@@ -809,8 +809,8 @@
   "sources": [
     {
       "sourceId": "baidu-aishort",
-      "lastAttemptedAt": "2026-10-04T04:51:54.383Z",
-      "lastSucceededAt": "2026-10-04T04:51:54.650Z",
+      "lastAttemptedAt": "2026-10-04T05:20:02.053Z",
+      "lastSucceededAt": "2026-10-04T05:20:02.267Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     }
