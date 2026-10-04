@@ -7,7 +7,7 @@ import {
 } from "../../src/domain/ingestion.ts";
 import type { RawEntryInput } from "../../src/domain/ingestion.ts";
 import type { ItemsFile, StateFile } from "../../src/domain/contract.ts";
-import { stableId, verifyManifest } from "../../src/domain/contract.ts";
+import { canonicalJson, sha256hex, stableId, verifyManifest } from "../../src/domain/contract.ts";
 
 /**
  * Ticket 02 验收场景（任务书）：
@@ -53,6 +53,40 @@ function firstRun(entries: RawEntryInput[]) {
   };
   return ingest(previous, okRun(T0, entries));
 }
+
+describe("台账交叉校验：identity.stableId 必须等于 stableId(sourceId, guid)（MVP-Q15 反向不变量）", () => {
+  // 台账把 stableId 当作身份唯一键（详情页 URL + 跨构建去重）。若契约层只验 64hex 格式，
+  // 一个"合法但错误"的 stableId 就能通过 assertStateFile 与 verifyManifest；下次 ingest
+  // 同一 GUID 会新增第二条身份并重算 firstSeenAt——静默违反「重复抓取不刷新首次收录时间」。
+  // 本组用例锁定"格式 + 来源"双重校验（终审 Important 1）。
+
+  it("管线产出的真实台账通过校验（防止交叉校验写过头误杀正常数据）", () => {
+    const run = firstRun([makeEntry({ guid: "g1" })]);
+    verifyManifest(run.state, run.items, run.manifest);
+  });
+
+  it("伪造 64hex stableId + 自洽 manifest 摘要：契约层必须拒绝（不得放行到 ingest）", () => {
+    const run = firstRun([makeEntry({ guid: "g1" })]);
+    const forgedState = structuredClone(run.state);
+    // 合法 64 位小写十六进制，但不是 sha256(sourceId + NUL + guid)
+    forgedState.identities[0]!.stableId = "0".repeat(63) + "1";
+    // 把 manifest 摘要改到与伪造 state 自洽：只有交叉校验能拦住它（摘要自洽 = 模拟人工恢复流程后的状态）
+    const forgedManifest = { ...run.manifest, stateSha256: sha256hex(canonicalJson(forgedState)) };
+    assert.throws(
+      () => verifyManifest(forgedState, run.items, forgedManifest),
+      /stableId/,
+      "stableId 与 (sourceId, guid) 不一致时必须拒绝（身份唯一键不可被伪造）",
+    );
+  });
+
+  it("仅 stableId 与 guid 不符（sourceId 正确）同样拒绝：错一个分量即不可放行", () => {
+    const run = firstRun([makeEntry({ guid: "g1" })]);
+    const forgedState = structuredClone(run.state);
+    forgedState.identities[0]!.stableId = stableId(SOURCE, "g-OTHER");
+    const forgedManifest = { ...run.manifest, stateSha256: sha256hex(canonicalJson(forgedState)) };
+    assert.throws(() => verifyManifest(forgedState, run.items, forgedManifest), /stableId/);
+  });
+});
 
 describe("场景一：同 GUID 重抓不刷新首次收录时间（规格内容规则 1/3）", () => {
   it("重抓同一 GUID：firstSeenAt 保持首轮值，台账只有一条身份，条目不重复", () => {

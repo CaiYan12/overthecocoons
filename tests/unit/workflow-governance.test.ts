@@ -223,4 +223,21 @@ describe("build-deploy 工作流定义（Ticket 08：main 只读构建 + Pages �
     );
     assert.doesNotMatch(cli, /writeFileSync\([^)]*dataDir/, "不得写入 data 目录");
   });
+
+  it("快照时间基准锁定为 state.stateTakenAt：构建期禁用墙钟（同一 data 提交必须产出同一快照）", () => {
+    const cli = readRepoFile("scripts/build-snapshot.ts");
+    // 裁定（MVP-Q21 构建确定性）：窗口基准取权威状态时刻 state.stateTakenAt，
+    // 不取构建墙钟。终审 Important 2：换基准会让同一份数据在 60 条与 0 条之间跳变
+    // （实测基准敏感性），行为本身当前正确，缺的是把裁定锁进测试防误改。
+    assert.match(
+      cli,
+      /buildPublicSnapshot\(\s*state\s*,\s*items\s*,\s*state\.stateTakenAt\s*\)/,
+      "快照基准必须是 state.stateTakenAt（权威状态时刻），不得改为构建墙钟",
+    );
+    assert.doesNotMatch(
+      cli,
+      /Date\.now\(\)|new Date\(/,
+      "构建期不得引入墙钟时间：会使同一 data 提交在不同时间构建出不同快照",
+    );
+  });
 });

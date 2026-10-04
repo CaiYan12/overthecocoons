@@ -273,11 +273,18 @@ export function assertStateFile(value: unknown): StateFile {
   const identityPath = "state.identities[]";
   for (const [index, raw] of identities.entries()) {
     if (!isPlainObject(raw)) fail(`${identityPath}[${index}] 必须是对象`);
-    reqHex64(raw, "stableId", identityPath);
+    const stableIdValue = reqHex64(raw, "stableId", identityPath);
     const sourceId = reqNonEmptyString(raw, "sourceId", identityPath);
     if (sourceId.includes(ID_SEPARATOR)) fail(`${identityPath}[${index}].sourceId 含分隔符`);
     const guid = reqNonEmptyString(raw, "guid", identityPath);
     if (guid.includes(ID_SEPARATOR)) fail(`${identityPath}[${index}].guid 含分隔符`);
+    // 反向不变量（终审 Important 1）：stableId 必须等于 sha256(sourceId + NUL + guid)。
+    // 只验 64hex 格式会让「合法但错误」的 stableId 通过校验——同一 GUID 会新增第二条身份
+    // 并把 firstSeenAt 重算，静默违反「重复抓取不刷新首次收录时间」（MVP-Q15）。
+    // 顺带收紧：stableId 为 null 也不再放行（身份键不允许缺失）。
+    if (stableIdValue !== stableId(sourceId, guid)) {
+      fail(`${identityPath}[${index}].stableId 与 (sourceId, guid) 不一致（身份唯一键不可伪造）`);
+    }
     reqIsoTime(raw, "firstSeenAt", identityPath);
     reqString(raw, "wdFingerprint", identityPath);
     if (typeof raw.wdMissing !== "boolean") fail(`${identityPath}.wdMissing 必须是布尔值`);
