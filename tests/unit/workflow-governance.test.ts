@@ -128,3 +128,81 @@ describe("站内「提交新来源」入口指向治理模板", () => {
     assert.match(hud, new RegExp(TEMPLATE_URL.replace(/[?]/g, "\\?")));
   });
 });
+
+describe("build-deploy 工作流定义（Ticket 08：main 只读构建 + Pages 部署）", () => {
+  const yaml = readRepoFile(".github/workflows/build-deploy.yml");
+  // 命令行（排除注释行）：注释允许解释禁令本身。
+  const commandLines = yaml
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("#"))
+    .join("\n");
+
+  it("触发：push main + push data + workflow_dispatch；不响应 pull_request", () => {
+    assert.match(yaml, /^ {6}- main\s*$/m, "push 触发须含 main");
+    assert.match(yaml, /^ {6}- data\s*$/m, "push 触发须含 data（每日更新成功后自动重建发布）");
+    assert.match(yaml, /^ {2}workflow_dispatch:\s*$/m, "必须支持手动触发");
+    assert.doesNotMatch(yaml, /^ {2}pull_request:\s*$/m, "不得由 PR 触发");
+  });
+
+  it("权限最小化：contents: read + pages: write + id-token: write；无 contents: write", () => {
+    assert.match(yaml, /^permissions:\s*$/m);
+    assert.match(yaml, /^ {2}contents:\s*read\s*$/m);
+    assert.match(yaml, /^ {2}pages:\s*write\s*$/m);
+    assert.match(yaml, /^ {2}id-token:\s*write\s*$/m);
+    assert.doesNotMatch(yaml, /^ {2}contents:\s*write\s*$/m, "只读构建不得授予 contents: write");
+    assert.doesNotMatch(yaml, /write-all/);
+  });
+
+  it("并发串行：group pages 且排队不取消（发布中途取消可能留不一致状态）", () => {
+    assert.match(yaml, /^concurrency:\s*$/m);
+    assert.match(yaml, /group:\s*pages/);
+    assert.match(yaml, /cancel-in-progress:\s*false/);
+  });
+
+  it("只读边界：checkout data 分支子目录 + build-snapshot 只读转换；无抓源、无写 data", () => {
+    assert.match(yaml, /ref:\s*data\s*$/m, "必须以固定 ref 检出 data 分支");
+    assert.match(yaml, /path:\s*data-branch\s*$/m, "data 必须检出为子目录");
+    assert.match(yaml, /scripts\/build-snapshot\.ts/, "必须经快照生成 CLI（摘要校验 fail-closed）");
+    // 不抓源：update-data 编排 CLI 与烟测不得出现在本工作流（注释行亦不允许，见上过滤）。
+    assert.doesNotMatch(commandLines, /scripts\/update-data\.ts/, "只读构建不得调用 update-data 编排");
+    assert.doesNotMatch(commandLines, /smoke:source|smoke-source/, "只读构建不得触发来源抓取烟测");
+    assert.doesNotMatch(commandLines, /rss-parser/, "构建命令不得直接触碰 rss 抓取");
+    // 不写 data：无任何向 data 分支的 git 写操作。
+    assert.doesNotMatch(commandLines, /git push[^|]*\bdata\b/, "不得推送 data 分支");
+    assert.doesNotMatch(commandLines, /git commit/, "不得产生任何 git 提交");
+  });
+
+  it("真实数据构建：SNAPSHOT_PATH 注入；不得回退 fixtures 演示数据", () => {
+    assert.match(yaml, /SNAPSHOT_PATH:\s*\.snapshot\/snapshot\.json/, "必须注入 data 生成的快照");
+    assert.doesNotMatch(commandLines, /fixtures\/snapshot\.json/, "构建不得使用演示快照");
+  });
+
+  it("部署链：官方 upload-pages-artifact + deploy-pages 固定版本；deploy 依赖 build 成功", () => {
+    assert.match(yaml, /actions\/upload-pages-artifact@v5\.0\.0/);
+    assert.match(yaml, /actions\/deploy-pages@v5\.0\.1/);
+    assert.match(yaml, /^ {10}path:\s*dist\s*$/m, "上传产物为 dist");
+    assert.match(yaml, /needs:\s*build\s*$/m, "deploy 必须依赖 build 成功");
+    assert.match(yaml, /name:\s*github-pages\s*$/m, "部署进入 github-pages 环境");
+  });
+
+  it("版本 pin 与 T07 一致：checkout/setup-node/pnpm 固定版本，锁定可复核", () => {
+    assert.match(yaml, /actions\/checkout@v7\.0\.1/);
+    assert.match(yaml, /actions\/setup-node@v7\.0\.0/);
+    assert.match(yaml, /pnpm\/action-setup@v6\.1\.0/);
+    assert.match(yaml, /pnpm install --frozen-lockfile/, "依赖严格按锁文件");
+  });
+
+  it("快照 CLI 损坏即拒绝：build-snapshot.ts 调用 verifyManifest，失败退出 1", () => {
+    const cli = readRepoFile("scripts/build-snapshot.ts");
+    assert.match(cli, /verifyManifest/, "必须做三文件摘要校验（MVP-Q13 停写语义）");
+    assert.match(cli, /process\.exit\(1\)/, "校验失败必须非零退出");
+    assert.match(cli, /buildPublicSnapshot/, "必须复用管线同一快照生成函数");
+    // 只读边界：CLI 不得 import 抓取模块、不得写 data 目录。
+    assert.doesNotMatch(
+      cli,
+      /from "[^"]*(source-fetch|feed-parse|baidu-source)/,
+      "快照 CLI 不得引入抓取模块",
+    );
+    assert.doesNotMatch(cli, /writeFileSync\([^)]*dataDir/, "不得写入 data 目录");
+  });
+});

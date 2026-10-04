@@ -23,21 +23,19 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     await expect(page).toHaveTitle(/跳出茧房/);
   });
 
-  test("页面资源全部经基路径可达（无失败请求；基路径外仅限 Ticket 06 官方 GSAP CDN）", async ({ page }) => {
+  test("页面资源全部经基路径可达（无失败请求；Ticket 08 起动效库自托管，基路径外零资源）", async ({ page }) => {
     const failed: string[] = [];
     const offBase: string[] = [];
-    // 动效库白名单：官方 cdnjs GSAP 3.13.0（SRI 固定，render.test 亦断言），其余资源必须在基路径下
-    const GSAP_CDN =
-      /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/gsap\/3\.13\.0\/(gsap|ScrollTrigger)\.min\.js$/;
+    // Ticket 08 自托管裁定：动效库已在 /overthecocoons/vendor/ 下，基路径外不再有任何资源
     page.on("requestfailed", (request) => {
       failed.push(`${request.url()} :: ${request.failure()?.errorText}`);
     });
     page.on("response", (response) => {
       if (response.status() >= 400) {
-        failed.push(`${response.url()} :: HTTP ${response.status()}`);
+        failed.push(`${response.url()} :: HTTP ${response.status}`);
       }
       const path = new URL(response.url()).pathname;
-      if (!path.startsWith(BASE) && path !== "/favicon.ico" && !GSAP_CDN.test(response.url())) {
+      if (!path.startsWith(BASE) && path !== "/favicon.ico") {
         offBase.push(response.url());
       }
     });

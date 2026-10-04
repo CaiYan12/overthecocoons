@@ -742,8 +742,9 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
     await context.close();
   });
 
-  test("GSAP CDN 失败：本地模块仍运行，整体退化为静态可用", async ({ page }) => {
-    await page.route(/cdnjs\.cloudflare\.com/, (route) => route.abort());
+  test("动效库脚本加载失败（Ticket 08 起为自托管 vendor 脚本缺失/失败场景）：本地模块仍运行，整体退化为静态可用", async ({ page }) => {
+    // 模拟站内动效库文件不可用（部署不完整或传输失败），降级路径与原 CDN 失败场景一致
+    await page.route(/\/vendor\/(gsap|ScrollTrigger)\.min\.js$/, (route) => route.abort());
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
     await waitClientReady(page);

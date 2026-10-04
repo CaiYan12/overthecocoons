@@ -1,0 +1,121 @@
+# main 只读构建与 GitHub Pages 部署（Ticket 08，发布闸门入口）。
+#
+# 职责边界（MVP-Q8/Q21，架构「main 推送：读取已保存状态 → 生成快照 → 检查/构建 →
+# 发布，不抓源、不写首次收录」）：
+# - 触发：main 推送（代码变更发布）、data 分支推送（每日定时/手动更新成功后自动重建
+#   发布，落实架构「保存权威状态 → 生成快照 → 检查/构建 → 发布」全链路）、手动 dispatch。
+# - 只读 data：对 data 分支单一提交 checkout（不读变化中文件拼混合快照，MVP-Q21 第 2 项），
+#   经 scripts/build-snapshot.ts 做 verifyManifest 摘要校验（损坏即失败，MVP-Q13）后
+#   生成 7 天窗口公开快照，再以 SNAPSHOT_PATH 注入 astro build。
+# - 不抓源：本工作流没有任何抓取步骤（source-fetch/rss-parser 不进入构建 import 图），
+#   不写 data 分支任何文件，不产生新的首次收录时间。抓源与写入唯一入口是 update-data。
+# - 失败方向安全：data 分支缺失、三文件损坏、构建失败均使本工作流失败，不部署任何
+#   替代内容（绝不部署演示数据冒充真实站点），线上保持上一次成功站点（MVP-Q13）。
+#
+# Pages 部署要求（仓库设置，2026-10-04 已配置）：
+# - Settings→Pages 来源为 GitHub Actions（API build_type=workflow）；
+# - github-pages 环境部署分支策略含 main 与 data（data 推送触发时 deploy 才被放行）。
+name: build-deploy
+
+on:
+  push:
+    branches:
+      - main
+      - data
+  workflow_dispatch:
+
+# 最小权限：contents: read 供 checkout；pages: write + id-token: write 供官方
+# deploy-pages（OIDC 换取部署凭证）。不授予 contents: write（本工作流不写任何分支）。
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 串行控制：同一时刻只允许一个构建/部署运行；排队等待而非取消
+# （部署中途取消可能留下不一致状态；MVP-Q17 发布串行）。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # 代码版本：main 推送用触发提交本身；data 推送/手动运行取 main 当前 HEAD。
+      - name: Resolve code ref（main 推送固定触发 SHA；data 推送/手动取 main）
+        id: code
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF_NAME}" = "data" ]; then
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout code（main，只读）
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ steps.code.outputs.ref }}
+
+      # 只读边界：data 分支检出为独立子目录；本工作流没有任何对 data 的写入步骤。
+      - name: Checkout data branch（只读：单一提交，避免混合快照）
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: data
+          path: data-branch
+
+      - name: Read data branch HEAD（数据版本可追溯）
+        id: data
+        working-directory: data-branch
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node（与本地/锁文件一致的运行时，MVP-Q10）
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24.18.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6.1.0
+        with:
+          version: 10.26.2
+
+      - name: Install dependencies（严格按锁文件）
+        run: pnpm install --frozen-lockfile
+
+      # data 三文件 → 摘要校验（损坏即失败）→ 7 天窗口公开快照（只读转换，不触网）。
+      - name: Generate public snapshot from data branch
+        run: >
+          node scripts/build-snapshot.ts
+          --data-dir data-branch
+          --out .snapshot/snapshot.json
+
+      # 真实数据构建（isFixture=false，页面不再标注「演示数据」）；不抓源、不写 data。
+      - name: Build site
+        run: pnpm run build
+        env:
+          SNAPSHOT_PATH: .snapshot/snapshot.json
+
+      - name: Record versions（构建记录固定代码与数据版本，MVP-Q21）
+        run: |
+          {
+            echo "code ref: ${{ steps.code.outputs.ref }}"
+            echo "code sha: $(git rev-parse HEAD)"
+            echo "data sha: ${{ steps.data.outputs.sha }}"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5.0.1

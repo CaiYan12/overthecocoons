@@ -10,7 +10,8 @@ interface Props {
 const { title, description } = Astro.props;
 
 // 显式拼接基路径，避免绝对路径资源脱离 /overthecocoons 前缀
-const faviconHref = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/favicon.svg`;
+const motionBase = import.meta.env.BASE_URL.replace(/\/$/, "");
+const faviconHref = `${motionBase}/favicon.svg`;
 ---
 
 <!doctype html>
@@ -28,7 +29,7 @@ const faviconHref = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/favicon.svg`
       // 2) 非 reduced-motion 下打 data-oct-pending（CSS 遮蔽 Hero/Header 初始态，
       //    避免「先画静态层 → JS 再隐藏 → 再播 intro」的闪动）；
       // 3) 本地模块失效时由 1500ms 兜底解除遮蔽，内容不会滞留隐藏。
-      // 4) 尽早禁用浏览器刷新滚动恢复：本票起 body 末端有阻塞式 GSAP CDN 脚本，
+      // 4) 尽早禁用浏览器刷新滚动恢复：本票起 body 末端有阻塞式动效库脚本（Ticket 08 起自托管），
       //    打包模块（deferred）执行时点被网络延迟推后，晚于 Chrome 的恢复时点；
       //    scrollRestoration=manual 必须在 head 内联脚本（首个 JS）设置才可靠。
       // 这是内联 <script>（非内联事件处理器），无 on* 属性，隐私约束不变。
@@ -59,15 +60,16 @@ const faviconHref = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/favicon.svg`
   </head>
   <body>
     <slot />
-    <!-- 动效库（Ticket 06）：GSAP Core + ScrollTrigger 官方 CDN 3.13.0（SRI 固定，
-         摘要经本仓下载实测校验）；加载失败时客户端模块整体退化为无动效静态层 -->
+    <!-- 动效库（Ticket 06 引入，Ticket 08 自托管裁定）：GSAP Core + ScrollTrigger 3.13.0
+         自托管于 public/vendor/（文件与 cdnjs 官方发布逐字节一致，SRI 摘要实测校验后沿用），
+         站点运行期零外链请求；加载失败时客户端模块整体退化为无动效静态层 -->
     <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"
+      src={`${motionBase}/vendor/gsap.min.js`}
       integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc"
       crossorigin="anonymous"
     ></script>
     <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"
+      src={`${motionBase}/vendor/ScrollTrigger.min.js`}
       integrity="sha384-P8VzCVnT9NBUkMrpcIZrJbA7EBjJvh/fJS6PmP+4nLIM284DtsImIv8D0fFjIkeh"
       crossorigin="anonymous"
     ></script>

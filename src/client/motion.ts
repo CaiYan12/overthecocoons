@@ -1,7 +1,8 @@
 /**
  * Kinetic 动效层（Ticket 06）：把原型 v-kinetic（docs/design/prototype-timeline.html）的 GSAP
- * 动效逐项移植到产品页。GSAP Core + ScrollTrigger 经官方 CDN（cdnjs 3.13.0，BaseLayout 内
- * SRI 固定）加载；CDN 失败或 prefers-reduced-motion 时整体退化为 Ticket 05 静态可用状态
+ * 动效逐项移植到产品页。GSAP Core + ScrollTrigger 自托管于 public/vendor/（3.13.0，
+ * BaseLayout 内 SRI 固定）加载；库脚本加载失败或 prefers-reduced-motion 时整体退化为
+ * Ticket 05 静态可用状态
  * （内容直显、无隐藏初态、功能完整）。
  *
  * 结构对齐原型：
