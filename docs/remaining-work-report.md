@@ -60,7 +60,7 @@
 | 百度热搜「榜单规则」浮层文本 | **已获取落档（2026-10-05）** | 正文在规则页 `top.baidu.com/board?page=rule&tab=realtime`（非浮层，静态 HTML 即含五节全文）；已接入站内 sources 页官方出处并落档 `docs/mvp-dependency-evidence.md` |
 | GSAP 自托管库许可条款 | **已落档（2026-10-05）** | 实读 gsap.com/standard-license（2025-04-30 生效版）：免费含商用、自托管属许可用途、须保留专有声明——本项目合规；落档 `docs/mvp-dependency-evidence.md`「GSAP 自托管许可落档」节 |
 | 手机实机验证 | 无本地证据 | 用户 2026-10-04 口头确认通过，证据不在仓库 |
-| B-② 钉 SHA 生效 | 待 push 后验证 | YAML 格式已校验；真正生效需 GitHub Actions 实际运行一次 |
+| B-② 钉 SHA 生效 | **已实证（2026-10-04）** | 13 处钉 40 位 commit SHA；`update-data` 运行 37206156255 与 `build-deploy` 运行 37207081722 实跑成功，SHA 钉法在真实 Actions 环境生效 |
 | 跨浏览器矩阵进 CI | 未做（未要求） | 矩阵仅本地跑过（run7/run8 全绿）；CI 不跑 e2e 是既有设计 |
 
 ## 四、本轮已闭环（供对照）

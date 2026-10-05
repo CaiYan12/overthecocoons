@@ -3,6 +3,8 @@
 日期：2026-10-03。上轮归档后，本轮继续未决对齐；这是后续实现顺序和验收标准，未执行安装、开发或发布。
 输入：[规格](mvp-spec.md)、[架构](mvp-architecture.md)、[UI](ui-design.md)、[依赖证据](mvp-dependency-evidence.md)、[决定](mvp-decisions.md)。
 
+> **执行状态注记（2026-10-05）**：本文为 2026-10-03 的计划原稿。文中全部阶段（MVP-01～08，含下方启动检查）均已按票实现并通过发布闸门验收——Ticket 01–08 全部完成、站点已上线运行真实数据。checkbox 保留计划原貌不逐项翻勾，当前状态以 `AGENTS.md` 状态段、`README.md` 末尾 TODO 与台账 `.superpowers/sdd/mvp-tickets/progress.md` 为权威。
+
 ## 启动检查
 
 - [x] 产品、UI 与 MVP-Q1–Q12 已记录。
