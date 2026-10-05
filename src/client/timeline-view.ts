@@ -182,13 +182,19 @@ function onUserScroll(): void {
   });
 }
 
+/** 阅读位置采样状态：程序化滚动（恢复/回顶）置 paused，用户输入复位（bindScrollTracking）。 */
+const samplingState = { paused: false };
+
 function bindScrollTracking(): void {
   // 只在「紧随用户输入（滚轮/触摸/滚动键）」的滚动上采样阅读位置：
   // 程序化滚动（如辅助技术、脚本 scrollIntoView、浏览器行为）不得污染阅读位置记忆。
+  // 已知限制（T05 收尾项记录）：滚动条拖拽不产生 wheel/touchmove/滚动键事件，拖拽阅读
+  // 不会被采样记忆——方向安全（少记忆而非误记忆），浏览器不在文档层派发滚动条事件，无法可靠识别。
   const USER_INPUT_WINDOW_MS = 200;
   let lastUserInputAt = -Infinity;
   const markInput = () => {
     lastUserInputAt = performance.now();
+    samplingState.paused = false;
   };
   window.addEventListener("wheel", markInput, { passive: true });
   window.addEventListener("touchmove", markInput, { passive: true });
@@ -196,6 +202,7 @@ function bindScrollTracking(): void {
     if (SCROLL_KEYS.has(event.key)) markInput();
   }, true);
   window.addEventListener("scroll", () => {
+    if (samplingState.paused) return;
     if (performance.now() - lastUserInputAt <= USER_INPUT_WINDOW_MS) onUserScroll();
   }, { passive: true });
 }
@@ -206,6 +213,7 @@ function scrollToEntry(index: number): void {
   const element = list.querySelector<HTMLElement>(`[data-gi="${index}"]`);
   if (!element) return;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  samplingState.paused = true;
   element.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
 }
 
@@ -237,9 +245,12 @@ function renderView(nextTopic: string, requestedPage: number, options?: { deferr
     scrollToEntry(decision.index);
     message += "；已恢复到原阅读位置";
   } else {
+    samplingState.paused = true;
     window.scrollTo({ top: 0, behavior: "auto" });
-    if (decision.mode === "fallback" && filtered.length > 0) {
-      // 空主题的空态播报已说明无内容，不再叠加回退提示
+    if (decision.mode === "fallback" && filtered.length > 0 && nextTopic !== previousTopic) {
+      // 回退提示仅限主题变化时播报（T05 收尾项）：主题切换后记忆条目不在当前列表，
+      // 同主题后续翻页属既有状态，不得重复播报「内容已变化」。记忆保留——
+      // 回到包含原条目的主题时仍按原条目恢复（e2e「切主题回退」路径）。
       message += `；内容已变化，原条目不在当前内容中，已回到第 ${page} 页`;
     }
   }
@@ -296,7 +307,9 @@ export function initTimeline(): void {
   list = listElement;
   pager = ensurePager();
 
-  // 主题 Tab（header + 全屏菜单）：客户端筛选接管；非时间线页不初始化本模块，链接保持原生导航
+  // 主题 Tab（header + 全屏菜单）：客户端筛选接管；非时间线页不初始化本模块，链接保持原生导航。
+  // 点击当前主题 Tab 与静态链接语义对齐（T05 收尾项）：静态链接指向该主题第 1 页，
+  // 客户端等价重置页码渲染，不再静默忽略。
   document
     .querySelectorAll<HTMLAnchorElement>(
       '[data-ktabs] .tab[data-topic], .k-menu-topics .tab[data-topic]',
@@ -304,7 +317,13 @@ export function initTimeline(): void {
     .forEach((tab) => {
       tab.addEventListener("click", (event) => {
         event.preventDefault();
-        switchTopic(tab.dataset.topic ?? "", false);
+        const next = tab.dataset.topic ?? "";
+        if (!next) return;
+        if (next === topic) {
+          animateTopicSwitch(() => renderView(next, 1, { deferredListMotion: true }));
+          return;
+        }
+        switchTopic(next, false);
       });
     });
 

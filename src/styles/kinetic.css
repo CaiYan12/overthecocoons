@@ -374,6 +374,15 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
 .k-foot-nav a { color: var(--muted) }
 .k-foot-nav a:hover { color: var(--accent) }
 
+/* 页脚主题导航（T04 收尾项）：≤767px 时 header 主题 Tab 隐藏（.k-tabs display:none），
+   无 JS 用户在移动端经此处进入主题页；桌面端 header Tab 可用，本导航隐藏不改桌面构图 */
+.k-foot-topics { display: none; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px }
+.k-foot-topics a { color: var(--muted) }
+.k-foot-topics a:hover { color: var(--accent) }
+@media (max-width: 767px) {
+  .k-foot-topics { display: flex }
+}
+
 /* 长文页左栏目录（≥1200px 常驻；平板隐藏；手机显示在正文上方） */
 .k-toccol { position: sticky; top: 100px; padding-top: 8px }
 .k-toc ol { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 1px solid var(--rule); display: flex; flex-direction: column; gap: 2px }

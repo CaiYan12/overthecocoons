@@ -25,7 +25,7 @@
 | `pnpm test:node` | 只跑 Node 单元测试（数据规则、编排、工作流定义 lint） |
 | `pnpm test:e2e` | 只跑 e2e 的 chromium project（本机日常检测口径，50 用例） |
 | `pnpm test:e2e:matrix` | 跑全部 5 个 e2e project（chromium/firefox/webkit/mobile-chrome/mobile-safari，需另装 firefox/webkit） |
-| `pnpm smoke:source` | 首源只读烟测：发起真实网络读取，不写任何文件 |
+| `pnpm smoke:source` | 首源只读烟测：发起真实网络读取，不写任何文件；结果为单机单次口径，不构成对源的可用性证明 |
 | `node scripts/update-data.ts --dir <演练目录> --init` | data 权威状态初始化演练（仅手动；不抓取、不产快照） |
 | `node scripts/update-data.ts --dir <演练目录> --fixture` | data 更新编排离线演练（注入合成 feed，不触网） |
 
@@ -37,7 +37,7 @@ data 更新编排说明见 `docs/mvp-architecture.md`（工作流与失败控制
 
 ## TODO
 
-剩余未完事项（2026-10-04 状态；逐项证据与已闭环对照见 `docs/remaining-work-report.md`，台账 `.superpowers/sdd/mvp-tickets/progress.md`）。
+剩余未完事项（2026-10-05 状态；逐项证据与已闭环对照见 `docs/remaining-work-report.md`，台账 `.superpowers/sdd/mvp-tickets/progress.md`）。
 
 ### 性能与验收裁决（2026-10-05 已裁决）
 
@@ -49,74 +49,20 @@ data 更新编排说明见 `docs/mvp-architecture.md`（工作流与失败控制
 
 - [ ] feed 时间（日期）语义核实（影响「可靠发布时间」标注口径）
 - [ ] 百度热搜「榜单规则」浮层文本获取（许可核查时实测 `display:none` 未取到）
-- [ ] GSAP 自托管库许可条款落档核查（`public/vendor/` 保留 GreenSock 版权头）
+- [x] GSAP 自托管库许可条款落档核查（2026-10-05 实读 gsap.com/standard-license：免费含商用、自托管属许可用途、须保留版权声明——本项目合规，落档 `docs/mvp-dependency-evidence.md`）
 
-### deferred minor（41 条，全部不阻塞）
+### deferred minor（41 条，2026-10-05 全清）
 
-T01 工程骨架（3）
+全部 41 条已处置完毕：代码修复 / 测试补强 / 报告勘误 / 取舍裁定记录，逐条处置口径见 `docs/remaining-work-report.md`。
 
-- [ ] e2e 对根路径 `/favicon.ico` 的豁免弱化断言
-- [ ] snapshot 校验的 `entries[]` 内字段分支无用例
-- [ ] `@types/node 24.19.1` 超出依赖证据文档清单，补录 `docs/mvp-dependency-evidence.md`
+- [x] T01 工程骨架（3）：favicon 豁免收窄为「同源根路径」、snapshot 校验补 entries[] 分支与 64hex/generatedAt 用例、`@types/node 24.19.1` 补录依赖证据文档
+- [x] T02 数据契约（3）：`parseIsoTime` 收紧正则 + Date.parse 双检；`sources` 按 sourceId 确定性排序（展示层不再随更新漂移）；隔离台账重复记录裁定保留——台账是追加式审计流水，重复即真实历史
+- [x] T03 首源归一化（6）：体读取中途超时消息归一（「读取响应体超时」）；空 description 分层口径勘误（归一化层 null、契约层空串）；烟测单机单次口径注记（AGENTS/README）；DNS rebinding TOCTOU、确定性失败重试、尾点 FQDN 三项裁定维持 fail-closed 现状并记录理由
+- [x] T04 时间线静态渲染（4）：KPager `aria-disabled` 核查确认已随 T06 闭环（CSS `[aria-disabled="true"]` 已生效）；页脚新增主题导航（仅 ≤767px 显示，补无 JS 主题入口）；`docs/fixtures.md` 补 guid→id 映射方案；e2e 改导入渲染层 `sortEntriesDesc` 消除镜像比较器
+- [x] T05 交互（6）：回退播报仅限主题变化时（记忆保留，回主题仍可恢复）；程序化滚动（恢复/回顶）暂停阅读位置采样，滚动条拖拽记为已知限制；数据岛改「仅时间线路径允许」正向断言；`announce` 连续相同文案清空重写以重播；移除 `.k-list` 死属性 `data-page`；点击当前主题 Tab 与静态链接语义对齐（重置到第 1 页）
+- [x] T06 动效（5）：`initMotion` catch 即时移除 `data-oct-pending`（不再依赖 1500ms 兜底）；readbar 断言改解析 matrix 首值 a>0（原断言恒真）；报告数字勘误（736 行、18/27、测试分组）；reduced-motion e2e 补 computed opacity 断言；indicator 编排点差异记为已知差异（参数与原型一致）
+- [x] T07 工作流（4）：治理测试封堵 job 级 `permissions` 缩进盲区（三工作流统一禁止）；`scripts/update-data.ts` 夹具改动态导入（生产入口不静态依赖 tests/ 分层）；`init-data` ls-remote 区分「分支不存在」(exit 2) 与访问失败（后者拒绝初始化）；`update-data.yml` 调用串测试断言（CLI 漂移报警）
+- [x] T08 工作流收尾（6）：smoke 漏写 `()` 修正；`build-deploy.yml` 删除不可达 `GITHUB_REF_NAME="data"` 死分支 + deploy 显式 `if: github.ref == 'refs/heads/main'`；SRI 守卫边界注记（只证明标签=dist，官方一致性由 2026-10-03 独立取证留档）；GSAP 许可落档（见未核实项）
+- [x] 终审新发现（4）：`assertSnapshot` 补 `entries[].id` 64hex 与 `generatedAt`/`firstSeenAt` 可解析校验；`data-page` 死属性（与 T05 同项）；数据岛随性能裁决记为已知限制
 
-T02 数据契约（3）
-
-- [ ] `parseIsoTime` 宽松校验，收紧正则 + 双检
-- [ ] `sources` 数组顺序随更新漂移（展示层噪声）
-- [ ] 相同坏条目逐日重复入隔离台账（后续治理决定）
-
-T03 首源归一化（6）
-
-- [ ] DNS rebinding / 内嵌 IPv4 的 TOCTOU 加固（当前记为 deferred）
-- [ ] 体读取中途超时消息未归一（fail-closed 不破，仍计入重试）
-- [ ] 确定性校验失败也在重试循环内（无害）
-- [ ] 公网域名尾点 FQDN 现被拒（fail-closed 取舍，冻结首源无尾点）
-- [ ] 报告口径——空 `description` 实为缺失而非空串
-- [ ] 烟测结果为单机单次口径
-
-T04 时间线静态渲染（4）
-
-- [ ] KPager `aria-disabled` 禁用态（`src/components/KPager.astro:21,41`）与分页重做一并处理
-- [ ] ≤767px 无 JS 主题筛选不可达（页脚补主题链接）
-- [ ] fixture guid→id 映射方案未记录进 `docs/fixtures.md`
-- [ ] e2e `sortedEntries` 镜像比较器漂移风险（改导入 `sortEntriesDesc`）
-
-T05 交互（6）
-
-- [ ] 同主题翻页误播报回退文案（fallback 后缀应仅限主题变化时）
-- [ ] 阅读位置采样不认滚动条拖拽 + 恢复动画 200ms 采样窗口污染记忆
-- [ ] e2e 镜像比较器（与 T04 同项，改导入）
-- [ ] 数据岛负面断言不全（改「仅时间线路径允许」正向断言）
-- [ ] `announce` 连续相同文案不重播
-- [ ] `.k-list` 死属性 `data-page` + 同主题 Tab 客户端与静态链接语义分歧
-
-T06 动效（5）
-
-- [ ] `initMotion` catch 未即时移除 `data-oct-pending`（依赖 1500ms 兜底，建议补一行）
-- [ ] e2e `readbar scaleX` 断言恒真（首值应 >0）
-- [ ] `aria-current`/indicator 编排点推迟到 out 段后（与原型的已知差异）
-- [ ] 报告数字勘误（736→731、18+8、测试分组标签）
-- [ ] reduced-motion e2e 补 computed opacity 断言
-
-T07 工作流（4）
-
-- [ ] 治理测试权限正则只锚顶层 2 空格缩进（job 级 `permissions` 可绕过）
-- [ ] `scripts/update-data.ts` 生产入口静态 import 测试夹具（分层瑕疵）
-- [ ] `ls-remote` 瞬时网络失败会静默走初始化路径（方向安全）
-- [ ] `update-data.yml` 实际调用串无测试断言（与 CLI 漂移无报警）
-
-T08 工作流收尾（6）
-
-- [ ] `tests/e2e/smoke.spec.ts:36` `HTTP ${response.status}` 漏写 `()`（1 字符）
-- [ ] 权限正则缩进盲区（与 T07 同项）
-- [ ] `build-deploy.yml` `GITHUB_REF_NAME="data"` 死分支与过时步骤名
-- [ ] deploy job 加 `if: github.ref == 'refs/heads/main'` 显式化 main 保护
-- [ ] SRI 守卫只能证明标签摘要 = dist 文件摘要，不能证明 = cdnjs 官方
-- [ ] GSAP 自托管库自身许可条款未落档（与未核实项一条相关）
-
-终审新发现（4）
-
-- [ ] `assertSnapshot` 不校验 `entries[].id` 为 64hex
-- [ ] `assertSnapshot` 不校验 `generatedAt` 可解析
-- [ ] `TimelinePage.astro` `data-page` 死属性（与 T05 同项）
-- [ ] 数据岛内联膨胀（与性能节一条相关）
+顺带修正（不在 41 条内）：治理测试「版本 pin」断言未随 B-② 钉 commit SHA 更新而在基线上失败（基线复验确认既有，非本轮引入），已改按「40 位 SHA + 版本注释」口径匹配。

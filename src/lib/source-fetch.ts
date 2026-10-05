@@ -5,7 +5,8 @@
  * 本模块负责单次尝试内的失败处理：
  * - 请求前调用 URL 安全校验（url-guard）；重定向以 redirect:"manual" 手工跟随，
  *   每一跳都重新过校验——防止经重定向进入环回/私有地址（用户安全硬约束）。
- * - 超时：AbortSignal.timeout（到达上限即中止请求并报「超时」）。
+ * - 超时：AbortSignal.timeout（到达上限即中止请求并报「超时」；响应体读取中途触发时
+ *   同样归一为「读取响应体超时」口径，不透出底层 abort 原文）。
  * - 非 2xx 状态码（含缺 Location 的 3xx）报错；响应体按字节计量，超过上限中止读取。
  * - 严格 UTF-8 解码（fatal 模式）：非法字节流报错，不产生替换字符静默通过。
  *
@@ -37,7 +38,10 @@ export async function fetchTextOnce(url: string, options: FetchTextOptions = {})
   let current = validateFetchUrl(url);
   let redirects = 0;
   for (;;) {
-    const response = await requestOnce(fetchImpl, current.href, timeoutMs);
+    // 每跳各自建超时预算（signal 在循环体内创建）：与原实现「每跳 timeoutMs」一致，
+    // 不共享到全程；本轮差异仅是体读取也计入该跳预算（超时归一修复，T03 收尾项）。
+    const signal = AbortSignal.timeout(timeoutMs);
+    const response = await requestOnce(fetchImpl, current.href, signal, timeoutMs);
     if (REDIRECT_STATUSES.has(response.status)) {
       const location = response.headers.get("location");
       if (!location) {
@@ -54,16 +58,16 @@ export async function fetchTextOnce(url: string, options: FetchTextOptions = {})
     if (!response.ok) {
       throw new Error(`获取失败：HTTP ${response.status}`);
     }
-    return await readBodyWithLimit(response, maxBytes);
+    return await readBodyWithLimit(response, maxBytes, signal, timeoutMs);
   }
 }
 
 async function requestOnce(
   fetchImpl: typeof fetch,
   url: string,
+  signal: AbortSignal,
   timeoutMs: number,
 ): Promise<Response> {
-  const signal = AbortSignal.timeout(timeoutMs);
   try {
     return await fetchImpl(url, { redirect: "manual", signal });
   } catch (cause) {
@@ -76,7 +80,12 @@ async function requestOnce(
 }
 
 /** 有界读取响应体并严格 UTF-8 解码；超过上限即中止读取（不再继续下载）。 */
-async function readBodyWithLimit(response: Response, maxBytes: number): Promise<string> {
+async function readBodyWithLimit(
+  response: Response,
+  maxBytes: number,
+  signal: AbortSignal,
+  timeoutMs: number,
+): Promise<string> {
   const reader = response.body?.getReader() ?? null;
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -101,6 +110,12 @@ async function readBodyWithLimit(response: Response, maxBytes: number): Promise<
         chunks.push(value);
       }
     }
+  } catch (cause) {
+    // 体读取中途超时：与请求阶段同一口径归一（T03 收尾项），不再透出底层 abort 原文。
+    if (signal.aborted) {
+      throw new Error(`获取失败：读取响应体超时（${timeoutMs}ms 内未完成）`, { cause });
+    }
+    throw cause;
   } finally {
     if (oversize) {
       await reader.cancel().catch(() => {});

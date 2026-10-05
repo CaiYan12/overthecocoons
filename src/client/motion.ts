@@ -136,12 +136,14 @@ export function initMotion(): void {
   try {
     initMotionOn(root!);
   } catch {
-    // GSAP 运行时异常：整体回收（revert 清除全部隐藏初态），退化为无动效路径
+    // GSAP 运行时异常：整体回收（revert 清除全部隐藏初态），退化为无动效路径。
+    // 立即解除预绘制遮蔽（T06 收尾项）：不依赖 head 启动脚本的 1500ms 兜底。
     destroyMotion();
     enabled = false;
     gsap = null;
     st = null;
     html.dataset.octMotion = "off";
+    html.removeAttribute("data-oct-pending");
     markIntroDone();
     startFallbackProgress();
   }

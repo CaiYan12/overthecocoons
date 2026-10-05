@@ -68,6 +68,30 @@ describe("fetchTextOnce：超时", () => {
       /超时/,
     );
   });
+
+  it("响应体读取中途触发超时：归一为「读取响应体超时」口径（T03 收尾项）", async () => {
+    // fetch 响应头及时返回，但 body 流永不结束，直到 signal 中止读取——
+    // 该场景在 readBodyWithLimit 内失败，错误消息必须与请求阶段同口径，不透出底层 abort 原文。
+    const fetchImpl = ((_input: RequestInfo | URL, init?: RequestInit) => {
+      return new Promise<Response>((resolve) => {
+        const response = new Response(new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode("<rss>"));
+            init?.signal?.addEventListener("abort", () => controller.error(new Error("This operation was aborted")));
+          },
+        }), { status: 200 });
+        resolve(response);
+      });
+    }) as typeof fetch;
+    await assert.rejects(
+      () => fetchTextOnce("https://rss.aishort.top/?type=baidu", { fetchImpl, timeoutMs: 30 }),
+      (error: Error) => {
+        assert.match(error.message, /读取响应体超时/);
+        assert.doesNotMatch(error.message, /This operation was aborted/);
+        return true;
+      },
+    );
+  });
 });
 
 describe("fetchTextOnce：HTTP 状态与非 2xx", () => {

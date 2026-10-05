@@ -28,7 +28,7 @@ export const SCHEMA_VERSION = 1;
  */
 export const ID_SEPARATOR = "\u0000";
 
-const HEX64 = /^[0-9a-f]{64}$/;
+export const HEX64 = /^[0-9a-f]{64}$/;
 
 export interface LedgerIdentity {
   /** 稳定 ID：sha256(来源 ID + ID_SEPARATOR + 原始 GUID) 的完整 64 位小写十六进制（MVP-Q15）。 */
@@ -221,10 +221,25 @@ function reqInt(obj: Record<string, unknown>, key: string, path: string, min: nu
   return value;
 }
 
-/** 校验 ISO 8601 可解析的时间字符串（V8 Date.parse；越界月份等返回 NaN 视为无效。注意：V8 对越界“日”会进位而非判 NaN）。 */
+/**
+ * 校验 ISO 8601 时间字符串（收紧正则 + Date.parse 双检）。
+ *
+ * 正则只接受带 T 分隔的完整时戳 `YYYY-MM-DDTHH:MM[:SS[.frac]][Z|±HH:MM]`（秒与
+ * 时区可省），不接受纯日期与自由文本；现有写入方（ingestion 的 toISOString、
+ * fixtures 的 +08:00 全时戳）均在范围内。Date.parse 复核越界月份等（V8 返回 NaN
+ * 视为无效。注意：V8 对越界“日”会进位而非判 NaN——双检不覆盖该形态）。
+ */
+const ISO_TIME_RE =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?$/;
+
 export function parseIsoTime(value: string, label: string): number {
+  if (!ISO_TIME_RE.test(value)) {
+    throw new Error(`无效时间（${label}）：${value}`);
+  }
   const ms = Date.parse(value);
-  if (Number.isNaN(ms)) throw new Error(`无效时间（${label}）：${value}`);
+  if (Number.isNaN(ms)) {
+    throw new Error(`无效时间（${label}）：${value}`);
+  }
   return ms;
 }
 

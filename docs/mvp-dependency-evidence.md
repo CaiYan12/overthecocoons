@@ -57,3 +57,17 @@ Node24.18满足所返回范围；Vite8.0.13与Tailwind插件/Vitest peer范围�
 - [GitHub Pages自定义404](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-custom-404-page-for-your-github-pages-site)
 - [Node24 TypeScript](https://nodejs.org/docs/latest-v24.x/api/typescript.html)
 - [Playwright设备模拟](https://playwright.dev/docs/emulation)
+
+## 补录（2026-10-05，T01 收尾项）
+
+- `@types/node` `24.19.1`：工程骨架票实际安装引入（`package.json` 精确 pin `"@types/node": "24.19.1"`，锁文件冻结），2026-10-03 原证据清单漏录，此处补录。该包为 Node 24 类型声明，仅类型层依赖，不进运行时依赖图。
+
+## GSAP 自托管许可落档（2026-10-05，T08-⑥/未核实项核查）
+
+- 自托管文件：`public/vendor/gsap.min.js`、`public/vendor/ScrollTrigger.min.js`（3.13.0），文件头保留 GreenSock 版权与许可声明（`@license Copyright 2025, GreenSock. All rights reserved. Subject to the terms at https://gsap.com/standard-license.`），未移除/改动脉隙性声明。
+- 条款核查：2026-10-05 实读 [GSAP Standard (No Charge) License](https://gsap.com/standard-license/)（2025-04-30 生效版）。要点：
+  - 免费含商用（FAQ 原文 "Commercial usage is covered under the standard license"）；
+  - 「Permitted Uses」明确覆盖 *在任何网站/Web 应用/数字界面中使用 GSAP*——本项目把库文件自托管进站点属普通部署形态，是被许可用途，不涉及被禁止的「竞品可视化动画构建工具」类用途；
+  - 约束为：不得逆向制作竞品、**不得移除或篡改专有声明与品牌**（本仓库保留版权头即满足）、不得用于与 Webflow 动画构建能力竞争的工具；
+  - 无署名展示义务；Webflow 保留 IP 与违约终止权；条款可更新（继续使用视为接受，可沿用旧版本对应旧条款）。
+- 结论：本项目（非商业公共信息站点、自托管 3.13.0、保留版权头）在 standard license 允许范围内。

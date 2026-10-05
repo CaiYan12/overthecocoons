@@ -387,6 +387,8 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
     });
 
   // 来源状态：尝试/成功/失败分字段记录，失败不刷新成功获取时间。
+  // 数组按 sourceId 确定性排序（T02 收尾项）：更新不改变顺序，规范序列化与
+  // 展示层（公开快照 sources）不再随更新漂移。
   const previousSource = state.sources.find((source) => source.sourceId === result.sourceId);
   const sources: SourceStatus[] = [
     ...state.sources.filter((source) => source.sourceId !== result.sourceId),
@@ -399,7 +401,7 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
       lastFailureAt: result.ok ? previousSource?.lastFailureAt ?? null : runAt,
       lastFailureReason: result.ok ? previousSource?.lastFailureReason ?? null : result.error,
     },
-  ];
+  ].sort((a, b) => (a.sourceId < b.sourceId ? -1 : a.sourceId > b.sourceId ? 1 : 0));
 
   const stateCandidate: StateFile = {
     schemaVersion: SCHEMA_VERSION,

@@ -76,7 +76,7 @@ const description =
   </Fragment>
 
   <script is:inline type="application/json" data-kdata set:html={kdataIsland}></script>
-  <div class="k-list" data-klist data-topic={topic} data-page={currentPage}>
+  <div class="k-list" data-klist data-topic={topic}>
     {
       total === 0 ? (
         <KEmpty topic={topic} />

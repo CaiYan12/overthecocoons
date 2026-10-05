@@ -47,15 +47,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      # 代码版本：main 推送用触发提交本身；data 推送/手动运行取 main 当前 HEAD。
-      - name: Resolve code ref（main 推送固定触发 SHA；data 推送/手动取 main）
+      # 代码版本：push（仅 main 触发）取触发提交本身；repository_dispatch 的 GITHUB_SHA
+      # 事件表已查证为默认分支 main 最新提交，workflow_dispatch 默认亦为 main——
+      # 三种触发形态 GITHUB_SHA 即所需 ref（T08 收尾项：删除不可达的 GITHUB_REF_NAME="data" 死分支）。
+      - name: Resolve code ref（GITHUB_SHA 即所需 ref）
         id: code
-        run: |
-          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF_NAME}" = "data" ]; then
-            echo "ref=main" >> "$GITHUB_OUTPUT"
-          else
-            echo "ref=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-          fi
+        run: echo "ref=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout code（main，只读）
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -115,6 +112,9 @@ jobs:
 
   deploy:
     needs: build
+    # 显式 main 保护（T08 收尾项）：本工作流所有触发形态的运行 ref 均应为 main；
+    # 此条件把该约束固化为部署闸门，误配置其他 ref 时部署步骤直接跳过而非误发。
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:

@@ -257,13 +257,18 @@ test.describe("GSAP 动效层（Hero Intro / Header Morph / 全局进度）", ()
       undefined,
       { timeout: 5_000 },
     );
-    const mid = await page.evaluate(() => ({
-      pct: document.querySelector("[data-readpct]")?.textContent ?? "",
-      readbar: getComputedStyle(document.querySelector("[data-readbar]")!).transform,
-      ring: document.querySelector<SVGCircleElement>("[data-ring]")?.style.strokeDashoffset ?? "",
-    }));
+    const mid = await page.evaluate(() => {
+      const readbarTransform = getComputedStyle(document.querySelector("[data-readbar]")!).transform;
+      return {
+        pct: document.querySelector("[data-readpct]")?.textContent ?? "",
+        // T06 收尾项：readbar scaleX 应大于 0——在页面内解析 matrix 首值（a），
+        // 原「not.toContain 零矩阵字符串」恒真（该序列化形态不会出现），断言无鉴别力。
+        readbarScaleX: readbarTransform === "none" ? 0 : new DOMMatrixReadOnly(readbarTransform).a,
+        ring: document.querySelector<SVGCircleElement>("[data-ring]")?.style.strokeDashoffset ?? "",
+      };
+    });
     expect(mid.pct).toMatch(/^[1-9]\d%$|^100%$/);
-    expect(mid.readbar, "readbar scaleX 应大于 0").not.toContain("matrix(1, 0, 0, 0, 0, 0)");
+    expect(mid.readbarScaleX, "readbar scaleX 应大于 0").toBeGreaterThan(0);
     // Firefox 序列化带单位（"141.196px"）、Chromium 不带，须用 parseFloat 而非 Number
     expect(parseFloat(mid.ring), "圆环 dashoffset 应小于满值").toBeLessThan(RING_LENGTH);
 
@@ -777,6 +782,7 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
       return {
         chars: document.querySelectorAll("[data-herotitle] .ch, .k-headline .ch").length,
         heroEnInlineOpacity: heroEn?.style.opacity ?? "",
+        heroEnComputedOpacity: heroEn ? Number.parseFloat(getComputedStyle(heroEn).opacity) : -1,
         headerTransform: header ? getComputedStyle(header).transform : "",
         summaryInlineClip: sum?.style.clipPath ?? "",
         metaInlineOpacity: meta?.style.opacity ?? "",
@@ -784,6 +790,7 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
     });
     expect(state.chars, "不做字符拆分（无隐藏初态）").toBe(0);
     expect(state.heroEnInlineOpacity, "hero 无内联隐藏").toBe("");
+    expect(state.heroEnComputedOpacity, "hero 计算透明度可见（非内联断言，T06 收尾项）").toBeGreaterThan(0);
     expect(state.headerTransform, "header 首屏可见").toBe("none");
     expect(state.summaryInlineClip, "摘要无 clip 遮蔽").toBe("");
     expect(state.metaInlineOpacity, "元信息无隐藏").toBe("");

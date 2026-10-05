@@ -40,10 +40,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # 防重复初始化：data 分支已存在即失败（恢复按 MVP-Q13/Q18 人工处理）。
+      # 退出码区分（T07 收尾项）：--exit-code 的 2 = 远端无 data 分支（可初始化）；
+      # 其他非零（如瞬时网络失败）一律拒绝初始化——方向安全，避免故障被误判为「可初始化」。
       - name: Verify data branch does not exist
         run: |
-          if git ls-remote --exit-code --heads origin data; then
+          code=0
+          git ls-remote --exit-code --heads origin data || code=$?
+          if [ "$code" -eq 0 ]; then
             echo "::error::data 分支已存在。初始化仅允许一次；恢复请人工从 data 分支 Git 历史核对（MVP-Q13/Q18）。"
+            exit 1
+          elif [ "$code" -ne 2 ]; then
+            echo "::error::ls-remote 失败（退出码 $code，非「分支不存在」）：拒绝初始化，请排查网络后重试。"
             exit 1
           fi
 

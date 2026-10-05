@@ -11,10 +11,25 @@
  * - fullPage 截图在超长页面超过 WebKit 32767px 上限 → 超限退化为视口截图（截图仅留档，
  *   破版断言与截图分离）。
  */
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, type Page } from "@playwright/test";
+import type { PublicEntry } from "../../src/domain/contract.ts";
+import { sortEntriesDesc } from "../../src/lib/timeline.ts";
 
 /** 阅读基准线，与 src/client/timeline-view.ts READ_LINE 保持一致。 */
 const READ_LINE = 100;
+
+/**
+ * 演示快照条目按渲染口径排序（T04/T05 收尾项：直接导入渲染层 sortEntriesDesc，
+ * 不在测试里镜像比较器，避免口径漂移）。读 fixtures/snapshot.json。
+ */
+export function sortedEntries(): PublicEntry[] {
+  const snapshot = JSON.parse(
+    readFileSync(join(process.cwd(), "fixtures", "snapshot.json"), "utf-8"),
+  ) as { entries: PublicEntry[] };
+  return sortEntriesDesc(snapshot.entries);
+}
 
 /** 用户语义滚动 dy 像素：优先滚轮，不支持滚轮的引擎降级为滚动键。 */
 export async function wheelBy(page: Page, dy: number): Promise<void> {

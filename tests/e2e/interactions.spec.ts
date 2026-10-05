@@ -5,25 +5,11 @@
  * 行为基准：docs/design/prototype-timeline.html 的 v-kinetic 变体（去掉动效部分，动效属 Ticket 06）。
  * 数据口径：读 fixtures/snapshot.json（与构建同一份演示快照），期望值在文件内推导，不硬编码。
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import type { PublicEntry, PublicSnapshot } from "../../src/domain/contract.ts";
-import { pickTopic, wheelBy, wheelEntryToLine } from "./helpers.ts";
+import { pickTopic, sortedEntries, wheelBy, wheelEntryToLine } from "./helpers.ts";
 
 const BASE = "/overthecocoons/";
 const THEME_KEY = "overthecocoons.theme";
-
-/** 与渲染层一致的排序口径：首次收录时间倒序，同时间按 id 升序。 */
-function sortedEntries(): PublicEntry[] {
-  const snapshot = JSON.parse(
-    readFileSync(join(process.cwd(), "fixtures", "snapshot.json"), "utf-8"),
-  ) as PublicSnapshot;
-  return [...snapshot.entries].sort((a, b) => {
-    const byTime = Date.parse(b.firstSeenAt) - Date.parse(a.firstSeenAt);
-    return byTime !== 0 ? byTime : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-  });
-}
 
 const sorted = sortedEntries();
 const news = sorted.filter((entry) => entry.topic === "新闻");

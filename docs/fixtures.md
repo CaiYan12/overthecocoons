@@ -51,6 +51,7 @@
 - `quarantined` 是隔离条目公开列表（MVP-Q20/Q22 四字段：原始标题、目标链接、隔离原因类别、隔离时间；另附台账已核实的 `guid` 身份依据），随 7 天公开窗口滚动，由 `src/domain/ingestion.ts` 生成。
 - `sources` 是公开来源状态：尝试/成功/失败时间分字段记录，不混称“更新成功”。
 - 三文件权威契约（state.json / items.json / manifest.json）与合并规则定义在 `src/domain/contract.ts` 与 `src/domain/ingestion.ts`（MVP-Q16）；公开快照仅是其窗口内只读视图。
+- **`id`（稳定标识）的生成方案**（T04 收尾项补记）：`id = SHA-256(来源 ID + \u0000 + 原始 GUID)` 的完整 64 位小写十六进制（MVP-Q15，实现见 `src/domain/contract.ts` 的 `stableId()`）。NUL（`\u0000`）作分隔符的理由：XML 1.0 文档不允许出现 NUL，经解析得到的 GUID 不可能含 NUL；来源 ID 为代码内冻结常量 `baidu-aishort`，同样不含——拼接无歧义且抗注入。演示快照的条目 `id` 均按此方案对合成 GUID 预先算出；形态校验由 `src/lib/snapshot.ts` 断言 64hex，规则用例见 `tests/unit/identity.test.ts`。
 - 后续工单扩展字段时在此文件与 `src/lib/snapshot.ts` 的校验同步演进，并在本节更新说明。
 
 ## 注入方式

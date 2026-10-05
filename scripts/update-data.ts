@@ -34,19 +34,6 @@ import {
   LocalDirDataStore,
 } from "../src/lib/data-store.ts";
 import { BAIDU_FEED_URL, fetchSourceEntries } from "../src/lib/baidu-source.ts";
-import {
-  FIXTURE_FEED_HOST,
-  buildFeed,
-  ITEM_BASIC,
-  ITEM_CONTENT_ENCODED,
-  ITEM_EMPTY_DESCRIPTION,
-  ITEM_EMPTY_WD,
-  ITEM_HTML_DESCRIPTION,
-  ITEM_LONG_DESCRIPTION,
-  ITEM_MULTI_WD,
-  ITEM_NO_GUID,
-  ITEM_NO_WD,
-} from "../tests/data/feed-fixtures.ts";
 import type { SourceFetchResult } from "../src/domain/ingestion.ts";
 
 interface CliArgs {
@@ -99,8 +86,24 @@ function parseArgs(argv: string[]): CliArgs {
   return args;
 }
 
-/** fixture 演练的注入 fetch：任何请求都返回合成 feed 文本，不触网。 */
-function makeFixtureFetch(): typeof fetch {
+/**
+ * fixture 演练的注入源（T07 收尾项）：测试夹具模块只在 --fixture 路径动态导入，
+ * 生产入口不静态依赖 tests/ 分层。返回注入 fetchSource（合成 feed，不触网）。
+ */
+async function makeFixtureSource(now: () => Date): Promise<() => Promise<SourceFetchResult>> {
+  const {
+    FIXTURE_FEED_HOST,
+    buildFeed,
+    ITEM_BASIC,
+    ITEM_MULTI_WD,
+    ITEM_NO_WD,
+    ITEM_EMPTY_WD,
+    ITEM_LONG_DESCRIPTION,
+    ITEM_EMPTY_DESCRIPTION,
+    ITEM_NO_GUID,
+    ITEM_HTML_DESCRIPTION,
+    ITEM_CONTENT_ENCODED,
+  } = await import("../tests/data/feed-fixtures.ts");
   const xml = buildFeed([
     ITEM_BASIC,
     ITEM_MULTI_WD,
@@ -112,8 +115,14 @@ function makeFixtureFetch(): typeof fetch {
     ITEM_HTML_DESCRIPTION,
     ITEM_CONTENT_ENCODED,
   ]);
-  return ((_url: RequestInfo | URL, _init?: RequestInit) =>
+  const fetchImpl = ((_url: RequestInfo | URL, _init?: RequestInit) =>
     Promise.resolve(new Response(xml, { status: 200, headers: { "content-type": "application/rss+xml" } }))) as typeof fetch;
+  return () =>
+    fetchSourceEntries({
+      feedUrl: `${FIXTURE_FEED_HOST}/s?wd=%E5%90%88%E6%88%90%E6%BC%94%E7%BB%83`,
+      fetchImpl,
+      now,
+    });
 }
 
 async function main(): Promise<void> {
@@ -122,14 +131,7 @@ async function main(): Promise<void> {
 
   // --fixture：走真实适配器（fetchSourceEntries），仅注入 fetch 实现与演练 URL，
   // 保持「获取 → URL 安全校验 → 解析归一化 → ingest」全链路一致，只是不触网。
-  const fetchSource = args.fixture
-    ? (): Promise<SourceFetchResult> =>
-        fetchSourceEntries({
-          feedUrl: `${FIXTURE_FEED_HOST}/s?wd=%E5%90%88%E6%88%90%E6%BC%94%E7%BB%83`,
-          fetchImpl: makeFixtureFetch(),
-          now,
-        })
-    : undefined;
+  const fetchSource = args.fixture ? await makeFixtureSource(now) : undefined;
 
   const store =
     args.store === "git"
@@ -150,13 +152,15 @@ async function main(): Promise<void> {
   }
 
   const result = await runDataUpdate({ store, now, fetchSource });
-  const feedUrl = args.fixture ? `${FIXTURE_FEED_HOST}（合成演练源）` : BAIDU_FEED_URL;
+  const feedUrl = args.fixture ? "合成演练源（fixture 注入）" : BAIDU_FEED_URL;
   console.log(`[update-data] 更新完成（kind=${result.kind}）：feed=${feedUrl}`);
   console.log(
     `[update-data] HEAD ${result.previousHeadSha.slice(0, 12)}… → ${result.newHeadSha.slice(0, 12)}…；` +
       `窗口条目 ${result.items.items.length} 条；隔离记录 ${result.state.quarantined.length} 条。`,
   );
-  const status = result.state.sources[0];
+  const status = [...result.state.sources].sort(
+    (a, b) => Date.parse(b.lastAttemptedAt) - Date.parse(a.lastAttemptedAt),
+  )[0];
   if (status) {
     console.log(
       `[update-data] 来源状态：lastAttemptedAt=${status.lastAttemptedAt} lastSucceededAt=${status.lastSucceededAt ?? "—"} ` +

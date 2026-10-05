@@ -1,21 +1,7 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import type { PublicEntry, PublicSnapshot } from "../../src/domain/contract.ts";
-import { safeScreenshot } from "./helpers.ts";
+import { safeScreenshot, sortedEntries } from "./helpers.ts";
 
 const BASE = "/overthecocoons/";
-
-/** 与渲染层一致的排序口径：首次收录时间倒序，同时间按 id 升序（读 fixture 演示快照）。 */
-function sortedEntries(): PublicEntry[] {
-  const snapshot = JSON.parse(
-    readFileSync(join(process.cwd(), "fixtures", "snapshot.json"), "utf-8"),
-  ) as PublicSnapshot;
-  return [...snapshot.entries].sort((a, b) => {
-    const byTime = Date.parse(b.firstSeenAt) - Date.parse(a.firstSeenAt);
-    return byTime !== 0 ? byTime : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-  });
-}
 
 test.describe("时间线与站点冒烟（Ticket 04）", () => {
   test("基路径下返回 200 且标题正确", async ({ page }) => {
@@ -26,25 +12,32 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
 
   test("页面资源全部经基路径可达（无失败请求；Ticket 08 起动效库自托管，基路径外零资源）", async ({ page }) => {
     const failed: string[] = [];
-    const offBase: string[] = [];
+    const offBaseAll: string[] = [];
     // Ticket 08 自托管裁定：动效库已在 /overthecocoons/vendor/ 下，基路径外不再有任何资源
     page.on("requestfailed", (request) => {
       failed.push(`${request.url()} :: ${request.failure()?.errorText}`);
     });
     page.on("response", (response) => {
       if (response.status() >= 400) {
-        failed.push(`${response.url()} :: HTTP ${response.status}`);
+        failed.push(`${response.url()} :: HTTP ${response.status()}`);
       }
       const path = new URL(response.url()).pathname;
-      if (!path.startsWith(BASE) && path !== "/favicon.ico") {
-        offBase.push(response.url());
+      if (!path.startsWith(BASE)) {
+        offBaseAll.push(response.url());
       }
     });
     await page.goto(BASE);
     // 等待网络空闲，确保样式表等资源已加载
     await page.waitForLoadState("networkidle");
     expect(failed, "不应有失败或 4xx/5xx 请求").toEqual([]);
-    expect(offBase, "所有资源都应位于 /overthecocoons/ 前缀下").toEqual([]);
+    // 豁免收窄（T01 收尾项）：仅同源根路径 /favicon.ico（GitHub Pages 约定回退）可豁免，
+    // 其余任何 host 上的 /favicon.ico 路径仍计入基路径外资源。
+    const siteOrigin = await page.evaluate(() => location.origin);
+    const offBase = offBaseAll.filter((url) => {
+      const parsed = new URL(url);
+      return !(parsed.origin === siteOrigin && parsed.pathname === "/favicon.ico");
+    });
+    expect(offBase, "所有资源都应位于 /overthecocoons/ 前缀下（仅同源根 favicon 豁免）").toEqual([]);
     // 样式表已实际生效（说明 CSS 经基路径加载成功）
     const bodyColor = await page.evaluate(
       () => getComputedStyle(document.body).backgroundColor,

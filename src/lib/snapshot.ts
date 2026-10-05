@@ -12,11 +12,13 @@
  */
 import { readFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
-import type {
-  PublicEntry,
-  PublicQuarantineRecord,
-  PublicSnapshot,
-  PublicSourceStatus,
+import {
+  HEX64,
+  parseIsoTime,
+  type PublicEntry,
+  type PublicQuarantineRecord,
+  type PublicSnapshot,
+  type PublicSourceStatus,
 } from "../domain/contract.ts";
 
 /** 公开条目（与 domain 契约一致）。 */
@@ -76,6 +78,8 @@ function assertSnapshot(value: unknown, source: string): Snapshot {
   if (!assertString(candidate.generatedAt)) {
     throw new Error(`快照缺少字符串字段 generatedAt：${source}`);
   }
+  // generatedAt 必须可解析（终审收尾项）：快照时间是页面呈现与窗口语义的时间基准。
+  parseIsoTime(candidate.generatedAt, "快照 generatedAt");
   if (!Array.isArray(candidate.entries)) {
     throw new Error(`快照缺少数组字段 entries：${source}`);
   }
@@ -102,6 +106,14 @@ function assertSnapshot(value: unknown, source: string): Snapshot {
         throw new Error(`entries[${index}] 缺少字符串字段 ${field}：${source}`);
       }
     }
+    // 稳定 ID 必须是 64 位小写十六进制（终审收尾项）：详情页路径 /items/<id>/ 与
+    // 客户端渲染次序都以此为键，畸形 id 会让链接与排序静默失真。
+    // （id 与 firstSeenAt 已在上方 requiredFields 循环断言为字符串，此处按断言后收窄处理。）
+    if (!HEX64.test(entry.id as string)) {
+      throw new Error(`entries[${index}].id 必须是 64 位小写十六进制：${source}`);
+    }
+    // firstSeenAt 是排序与按日分组的时间基准，必须可解析。
+    parseIsoTime(entry.firstSeenAt as string, `entries[${index}].firstSeenAt`);
   }
   const quarantineFields: Array<keyof PublicQuarantineRecord> = [
     "originalTitle",

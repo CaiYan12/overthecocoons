@@ -121,6 +121,87 @@ describe("loadSnapshot（构建期数据注入缝）", () => {
     );
     assert.throws(() => loadSnapshotFrom(file), /quarantinedAt/);
   });
+
+  it("entries[] 内字段分支：元素非对象、缺字符串字段时抛出错误", () => {
+    const base = {
+      schemaVersion: 1,
+      isFixture: false,
+      generatedAt: "2026-10-03T00:00:00+08:00",
+      quarantined: [],
+      sources: [],
+    };
+    const notObject = writeTempSnapshot(JSON.stringify({ ...base, entries: ["oops"] }));
+    assert.throws(() => loadSnapshotFrom(notObject), /entries\[0\] 不是对象/);
+    const missingField = writeTempSnapshot(
+      JSON.stringify({
+        ...base,
+        entries: [
+          { id: "a".repeat(64), title: "t", summary: "", topic: "新闻", firstSeenAt: "2026-10-03T00:00:00+08:00" },
+        ],
+      }),
+    );
+    assert.throws(() => loadSnapshotFrom(missingField), /缺少字符串字段 url/);
+  });
+
+  it("entries[].id 非 64 位小写十六进制时抛出错误（终审收尾项）", () => {
+    const file = writeTempSnapshot(
+      JSON.stringify({
+        schemaVersion: 1,
+        isFixture: false,
+        generatedAt: "2026-10-03T00:00:00+08:00",
+        entries: [
+          {
+            id: "not-a-stable-id",
+            title: "t",
+            summary: "",
+            topic: "新闻",
+            firstSeenAt: "2026-10-03T00:00:00+08:00",
+            url: "https://example.com",
+          },
+        ],
+        quarantined: [],
+        sources: [],
+      }),
+    );
+    assert.throws(() => loadSnapshotFrom(file), /64 位小写十六进制/);
+  });
+
+  it("entries[].firstSeenAt 不可解析时抛出错误", () => {
+    const file = writeTempSnapshot(
+      JSON.stringify({
+        schemaVersion: 1,
+        isFixture: false,
+        generatedAt: "2026-10-03T00:00:00+08:00",
+        entries: [
+          {
+            id: "a".repeat(64),
+            title: "t",
+            summary: "",
+            topic: "新闻",
+            firstSeenAt: "昨天下午",
+            url: "https://example.com",
+          },
+        ],
+        quarantined: [],
+        sources: [],
+      }),
+    );
+    assert.throws(() => loadSnapshotFrom(file), /无效时间/);
+  });
+
+  it("generatedAt 不可解析时抛出错误（终审收尾项）", () => {
+    const file = writeTempSnapshot(
+      JSON.stringify({
+        schemaVersion: 1,
+        isFixture: false,
+        generatedAt: "not-a-timestamp",
+        entries: [],
+        quarantined: [],
+        sources: [],
+      }),
+    );
+    assert.throws(() => loadSnapshotFrom(file), /无效时间/);
+  });
 });
 
 // node:test 结束后清理临时目录

@@ -1,5 +1,7 @@
 ---
-// 页脚：页面导航（移动端无 JS 时的站内链接兜底）+ 数据/许可说明。
+// 页脚：页面导航（移动端无 JS 时的站内链接兜底）+ 主题导航（≤767px 显示，补无 JS 主题入口）
+// + 数据/许可说明。
+import { TOPICS, topicPagePath } from "../lib/timeline.ts";
 import { siteUrl } from "../lib/paths.ts";
 
 interface Props {
@@ -24,6 +26,13 @@ const links = [
         <a href={link.href} aria-current={active === link.key ? "page" : undefined}>
           {link.label}
         </a>
+      ))
+    }
+  </nav>
+  <nav class="k-foot-topics" aria-label="主题导航">
+    {
+      TOPICS.map((topic) => (
+        <a href={siteUrl(topicPagePath(topic, 1))}>{topic}</a>
       ))
     }
   </nav>

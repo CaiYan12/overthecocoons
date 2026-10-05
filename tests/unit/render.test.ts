@@ -12,7 +12,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import type { PublicEntry, PublicSnapshot } from "../../src/domain/contract.ts";
-import { sortEntriesDesc, EN_LABEL, topicPagePath } from "../../src/lib/timeline.ts";
+import { sortEntriesDesc, EN_LABEL, TOPICS, topicPagePath } from "../../src/lib/timeline.ts";
 
 const DIST = join(process.cwd(), "dist");
 const BASE = "/overthecocoons";
@@ -258,7 +258,6 @@ test("演示数据标注：数据型页面带「演示数据」标注", () => {
 test("脚本形态（Ticket 05 起允许渐进增强；Ticket 06 起 head 启动主题脚本）：仅限本地打包模块、JSON 数据岛与启动内联脚本，无内联事件处理器", () => {
   assert.ok(jsFiles.length >= 1, "客户端增强应产出至少一个本地打包 JS 文件");
   let moduleSrcCount = 0;
-  let islandCount = 0;
   for (const rel of htmlFiles) {
     const html = readDist(rel);
     assert.ok(!/\son[a-z]+\s*=/i.test(html), `${rel} 不应包含内联事件处理器`);
@@ -292,7 +291,6 @@ test("脚本形态（Ticket 05 起允许渐进增强；Ticket 06 起 head 启动
         isIsland || isModuleSrc || isStartupTheme || isGsapVendor,
         `${rel} 存在非允许形态的脚本：<script ${attrs}>（仅允许 type=module 的本地打包文件、data-kdata JSON 数据岛、head 启动主题脚本与自托管 GSAP 脚本）`,
       );
-      if (isIsland) islandCount++;
       if (isModuleSrc) moduleSrcCount++;
       if (isStartupTheme) startupCount++;
     }
@@ -305,13 +303,18 @@ test("脚本形态（Ticket 05 起允许渐进增强；Ticket 06 起 head 启动
     );
   }
   assert.ok(moduleSrcCount >= 1, "应存在客户端增强模块脚本");
-  // 数据岛只出现在时间线页（需要客户端筛选分页的页面），说明页不携带
-  assert.ok(islandCount >= 1, "时间线页应内嵌客户端数据岛");
-  for (const page of ["about", "principles", "privacy", "sources"]) {
-    assert.ok(
-      !readDist(`${page}/index.html`).includes("data-kdata"),
-      `${page} 页不应携带数据岛`,
-    );
+  // 数据岛正向断言（T05 收尾项）：只有时间线路径（首页/分页/主题页/主题分页）允许携带，
+  // 其余任何页面（详情/来源/长文/404）一律不得出现——对 dist 全量 HTML 逐一判定双向。
+  const TIMELINE_PAGE =
+    /^(index\.html|page\/\d+\/index\.html|topics\/[^/]+\/index\.html|topics\/[^/]+\/page\/\d+\/index\.html)$/;
+  assert.ok(htmlFiles.some((rel) => TIMELINE_PAGE.test(rel)), "产物中应存在时间线页（断言前置）");
+  for (const rel of htmlFiles) {
+    const hasIsland = readDist(rel).includes("data-kdata");
+    if (TIMELINE_PAGE.test(rel)) {
+      assert.ok(hasIsland, `${rel} 是时间线页，应内嵌客户端数据岛`);
+    } else {
+      assert.ok(!hasIsland, `${rel} 非时间线页，不应携带数据岛`);
+    }
   }
 });
 
@@ -334,7 +337,10 @@ test("动效库（Ticket 06 引入，Ticket 08 自托管）：vendor 双脚本 +
       [stTag!, ST_SRI, "vendor/ScrollTrigger.min.js"],
     ] as const) {
       assert.ok(tag.includes(`integrity="${sri}"`), `${rel} 脚本应带与官方发布一致的 SRI：${sri}`);
-      // SRI 摘要与 dist 内实际文件逐字节校验（防止 vendor 文件被改动而标签失真）
+      // SRI 摘要与 dist 内实际文件逐字节校验（防止 vendor 文件被改动而标签失真）。
+      // 守卫边界（T08 收尾项记录）：本测试只能证明「标签摘要 = dist 内文件摘要」；
+      // 「dist 文件 = 官方发布」由 2026-10-03 下载 cdnjs 原件重算 sha384 + T06 复审独立核验
+      // 留档，本测试无法在线复核官方源，两者不可互替。
       const actual = createHash("sha384").update(readFileSync(join(DIST, distFile))).digest("base64");
       assert.equal(`sha384-${actual}`, sri, `${rel} 引用的 SRI 必须等于 dist/${distFile} 实测摘要`);
       assert.ok(tag.includes('crossorigin="anonymous"'), `${rel} GSAP 脚本应带 crossorigin`);
@@ -420,10 +426,17 @@ test("样式经基路径加载且含 v4 设计 token（暖纸白/墨黑/暗红�
   assert.ok(css.includes("--serif:georgia"), "衬线字体栈（系统字体，无外部字体）");
 });
 
-test("无 JS 导航兜底：左栏功能导航与页脚导航均渲染为真实链接", () => {
+test("无 JS 导航兜底：左栏功能导航、页脚导航与页脚主题导航均渲染为真实链接", () => {
   const html = readDist("index.html");
   for (const label of ["时间线", "来源", "关于", "原则", "隐私"]) {
     assert.ok(html.includes(`>${label}</a>`), `导航应包含 ${label} 链接`);
+  }
+  // 页脚主题导航（T04 收尾项）：≤767px 时 header 主题 Tab 隐藏，无 JS 用户经页脚进入主题页
+  for (const topic of TOPICS) {
+    assert.ok(
+      html.includes(`>${topic}</a>`),
+      `页脚主题导航应包含「${topic}」链接（无 JS 主题筛选入口）`,
+    );
   }
   assert.ok(html.includes("<nav"), "存在 nav 语义元素");
   assert.ok(html.includes("<article"), "条目使用 article 语义元素");

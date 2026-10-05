@@ -19,6 +19,31 @@ function readRepoFile(relativePath: string): string {
   return readFileSync(join(ROOT, relativePath), "utf-8");
 }
 
+/**
+ * 权限缩进盲区封堵（T07 收尾项）：三个工作流都只允许顶层 `permissions:` 块。
+ * 顶层正则（`^permissions:`）对 job 级（缩进的 permissions:）失明——job 级块可在
+ * 不触碰顶层断言的情况下扩大授权，这里对所有工作流统一禁止任何缩进的 permissions 块。
+ */
+const WORKFLOW_FILES = [
+  ".github/workflows/update-data.yml",
+  ".github/workflows/init-data.yml",
+  ".github/workflows/build-deploy.yml",
+];
+
+describe("工作流权限块结构（缩进盲区封堵）", () => {
+  for (const file of WORKFLOW_FILES) {
+    it(`${file} 只允许顶层 permissions 块，不得出现 job 级缩进块`, () => {
+      const yaml = readRepoFile(file);
+      assert.match(yaml, /^permissions:\s*$/m, "必须有顶层 permissions 块");
+      assert.doesNotMatch(
+        yaml,
+        /^\s+permissions:\s*$/m,
+        "不得出现 job 级（缩进的）permissions 块：权限收紧只经顶层块评审",
+      );
+    });
+  }
+});
+
 describe("update-data 工作流定义（定时 + 手动）", () => {
   const yaml = readRepoFile(".github/workflows/update-data.yml");
 
@@ -60,6 +85,20 @@ describe("update-data 工作流定义（定时 + 手动）", () => {
     assert.doesNotMatch(commandLines, /--force/, "命令中禁止 force 推送");
     assert.doesNotMatch(commandLines, /push\s+-f\b/, "命令中禁止 -f 强推");
   });
+
+  it("调用串与 CLI 契约一致（T07 收尾项：参数漂移报警）", () => {
+    // 工作流折叠块（run: >）的换行折叠为空白；断言四个参数齐备且顺序与 CLI 用法一致，
+    // 任一参数改名/删除/换序都会使本断言失败，防止 YAML 与 scripts/update-data.ts 漂移。
+    const commandLines = yaml
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("#"))
+      .join("\n");
+    assert.match(
+      commandLines,
+      /node scripts\/update-data\.ts\s+--store git\s+--dir data-branch\s+--expected-sha "\$\{\{ steps\.head\.outputs\.sha \}\}"/,
+      "update-data.yml 的调用串必须与 CLI 契约（--store git --dir <检出> --expected-sha <HEAD>）一致",
+    );
+  });
 });
 
 describe("init-data 工作流定义（初始化仅手动入口，MVP-Q13）", () => {
@@ -92,6 +131,18 @@ describe("init-data 工作流定义（初始化仅手动入口，MVP-Q13）", ()
     assert.doesNotMatch(commandLines, /\bgit init\b/, "不得在检出目录外新建仓库后 push");
     // 不得在 YAML 内手工处理凭证（extraheader/token 注入）——凭证统一由 checkout 配置。
     assert.doesNotMatch(commandLines, /extraheader|AUTHORIZATION|GITHUB_TOKEN/);
+  });
+
+  it("ls-remote 区分「分支不存在」与访问失败（T07 收尾项：瞬时网络故障不得误判为可初始化）", () => {
+    // --exit-code 语义：0=有匹配引用（data 已存在，须拒绝）；2=无匹配引用（可初始化）；
+    // 其余退出码=命令本身失败（如瞬时网络故障），必须同样拒绝初始化并报错，不得继续。
+    const commandLines = yaml
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("#"))
+      .join("\n");
+    assert.match(commandLines, /git ls-remote --exit-code --heads origin data/, "必须探测 data 分支");
+    assert.match(commandLines, /-ne 2/, "退出码非 0 且非 2（访问失败）必须拒绝初始化");
+    assert.match(commandLines, /拒绝初始化/, "失败分支必须显式报错退出");
   });
 });
 
@@ -195,18 +246,22 @@ describe("build-deploy 工作流定义（Ticket 08：main 只读构建 + Pages �
     assert.doesNotMatch(commandLines, /fixtures\/snapshot\.json/, "构建不得使用演示快照");
   });
 
-  it("部署链：官方 upload-pages-artifact + deploy-pages 固定版本；deploy 依赖 build 成功", () => {
-    assert.match(yaml, /actions\/upload-pages-artifact@v5\.0\.0/);
-    assert.match(yaml, /actions\/deploy-pages@v5\.0\.1/);
+  it("部署链：官方 upload-pages-artifact + deploy-pages 固定版本；deploy 依赖 build 成功且显式限定 main", () => {
+    // B-② 起第三方 action 一律钉 40 位 commit SHA、版本号以行尾注释留档，断言按该口径匹配。
+    assert.match(yaml, /actions\/upload-pages-artifact@[0-9a-f]{40} # v5\.0\.0/);
+    assert.match(yaml, /actions\/deploy-pages@[0-9a-f]{40} # v5\.0\.1/);
     assert.match(yaml, /^ {10}path:\s*dist\s*$/m, "上传产物为 dist");
     assert.match(yaml, /needs:\s*build\s*$/m, "deploy 必须依赖 build 成功");
     assert.match(yaml, /name:\s*github-pages\s*$/m, "部署进入 github-pages 环境");
+    // T08 收尾项：main 保护显式化为部署闸门条件（所有触发形态运行 ref 均为 main，
+    // 该条件固化约束——误配置其他 ref 时部署直接跳过而非误发）。
+    assert.match(yaml, /if:\s*github\.ref == 'refs\/heads\/main'/, "deploy 必须显式限定 main ref");
   });
 
-  it("版本 pin 与 T07 一致：checkout/setup-node/pnpm 固定版本，锁定可复核", () => {
-    assert.match(yaml, /actions\/checkout@v7\.0\.1/);
-    assert.match(yaml, /actions\/setup-node@v7\.0\.0/);
-    assert.match(yaml, /pnpm\/action-setup@v6\.1\.0/);
+  it("版本 pin 与 T07 一致：checkout/setup-node/pnpm 固定版本（B-② 起钉 40 位 commit SHA + 版本注释），锁定可复核", () => {
+    assert.match(yaml, /actions\/checkout@[0-9a-f]{40} # v7\.0\.1/);
+    assert.match(yaml, /actions\/setup-node@[0-9a-f]{40} # v7\.0\.0/);
+    assert.match(yaml, /pnpm\/action-setup@[0-9a-f]{40} # v6\.1\.0/);
     assert.match(yaml, /pnpm install --frozen-lockfile/, "依赖严格按锁文件");
   });
 
