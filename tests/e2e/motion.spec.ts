@@ -708,6 +708,13 @@ test.describe("桌面限定动效（pointer:fine）", () => {
       const cursor = document.querySelector<HTMLElement>("[data-kcursor]");
       return cursor !== null && Number.parseFloat(getComputedStyle(cursor).opacity) > 0.9;
     });
+    // UI 票 #12：自定义光标激活时隐藏系统指针（k-cursor-on 由 initCursor 挂载）
+    expect(
+      await page.evaluate(() =>
+        document.querySelector("[data-kinetic]")?.classList.contains("k-cursor-on"),
+      ),
+      "自定义光标激活时应挂 k-cursor-on（隐藏系统指针）",
+    ).toBe(true);
     const headline = page.locator(".k-entry .k-headline a").first();
     await headline.hover();
     await expect(page.locator("[data-kcursor-label]")).toHaveText("VIEW ↗");

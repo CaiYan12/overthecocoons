@@ -577,7 +577,9 @@ function killMenuTl(): void {
   menuTl = null;
 }
 
-/* ---- 自定义光标（原型 initCursor，仅 pointer:fine；不隐藏系统指针） ---- */
+/* ---- 自定义光标（原型 initCursor，仅 pointer:fine） ----
+   UI 票 #12（用户裁定，对原型偏离）：光标就绪时给根加 k-cursor-on 隐藏系统指针——
+   自定义指针成为唯一指针；降级路径（reduced-motion / GSAP 失败 / 触屏）不加类，系统指针照常。 */
 
 function initCursor(root: HTMLElement): void {
   if (!window.matchMedia(FINE_POINTER_QUERY).matches) return;
@@ -586,6 +588,7 @@ function initCursor(root: HTMLElement): void {
   const ringEl = root.querySelector<HTMLElement>("[data-kcursor-ring]");
   const labelEl = root.querySelector<HTMLElement>("[data-kcursor-label]");
   if (!cursor || !dot || !ringEl || !labelEl) return;
+  root.classList.add("k-cursor-on");
   const dx = gsap!.quickTo(dot, "x", { duration: 0.1, ease: "power3" });
   const dy = gsap!.quickTo(dot, "y", { duration: 0.1, ease: "power3" });
   const rx = gsap!.quickTo(ringEl, "x", { duration: 0.38, ease: "power3" });
@@ -623,6 +626,7 @@ function initCursor(root: HTMLElement): void {
     document.removeEventListener("mousemove", onMove);
     root.removeEventListener("mouseover", onOver);
     document.documentElement.removeEventListener("mouseleave", onLeaveDoc);
+    root.classList.remove("k-cursor-on");
     gsap!.killTweensOf([cursor, dot, ringEl, labelEl]);
   });
 }

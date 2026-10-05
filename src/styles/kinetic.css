@@ -296,9 +296,14 @@ dialog.k-menu::backdrop { background: transparent }
 
 /* 自定义光标（驱动属 Ticket 06；保留结构占位，静态层不可见） */
 .k-cursor { position: fixed; left: 0; top: 0; z-index: var(--z-cursor); pointer-events: none; opacity: 0 }
-.k-cursor-dot { position: fixed; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent) }
+/* UI 票 #12（用户裁定）：自定义光标激活时隐藏系统指针——k-cursor-on 由 motion.initCursor 挂/卸，
+   降级路径（reduced-motion / GSAP 失败 / 触屏）不加类、系统指针照常；
+   规则置于本块后，与 .page-btn[aria-disabled] 等同特异性规则竞争时靠源序取胜 */
+.v-kinetic.k-cursor-on, .v-kinetic.k-cursor-on * { cursor: none }
+/* UI 票 #12：对比度增强——dot 6→8px、dot/ring 改纯白 + difference 混合（跨深浅色自动反相，恒最大对比） */
+.k-cursor-dot { position: fixed; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #fff; mix-blend-mode: difference }
 /* P2-11：ring 用 difference 混合，跨深浅色自动反色 */
-.k-cursor-ring { position: fixed; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%; border: 1px solid #9a9a9a; display: grid; place-items: center; mix-blend-mode: difference }
+.k-cursor-ring { position: fixed; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #fff; display: grid; place-items: center; mix-blend-mode: difference }
 .k-cursor-label { font-size: 9.5px; letter-spacing: .18em; color: var(--accent); opacity: 0; white-space: nowrap }
 @media (prefers-reduced-motion: reduce) { .k-cursor { display: none } }
 
