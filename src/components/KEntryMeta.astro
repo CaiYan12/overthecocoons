@@ -11,16 +11,18 @@ const { topic, collected, url } = Astro.props;
 ---
 
 <p class="k-meta">
-  百度热点 <span class="sep">·</span> <span class="tpc">{topic}</span> <span class="sep">·</span> 收录 {collected}
+  {/* UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂 */}
+  <span>百度热点</span>
+  <span class="seg"><span class="sep">·</span><span class="tpc">{topic}</span></span>
+  <span class="seg"><span class="sep">·</span>收录 {collected}</span>
   {
     url && (
-      <Fragment>
-        {" "}
-        <span class="sep">·</span>{" "}
+      <span class="seg">
+        <span class="sep">·</span>
         <a class="ext" href={url} target="_blank" rel="noopener" data-cursor="LINK">
           查看百度搜索结果 ↗
         </a>
-      </Fragment>
+      </span>
     )
   }
 </p>

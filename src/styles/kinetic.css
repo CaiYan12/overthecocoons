@@ -17,6 +17,7 @@
 /* ===== tokens（来自 docs/ui-design.md §2 / 原型文件，未改动） ===== */
 :root {
   color-scheme: light;
+  scrollbar-color: var(--rule) transparent;   /* UI 票 #10：滚动条随明暗主题 token 着色 */
   --paper: #F8F5EC;
   --surface: #FFFDF7;
   --ink: #211E1B;
@@ -131,7 +132,8 @@ footer p { margin: 0 0 8px }
 .k-hero-date { position: absolute; right: 0; bottom: 22%; text-align: right; pointer-events: none; will-change: transform }
 .k-hero-date .d { display: block; font: 700 clamp(180px, 20vw, 320px)/0.85 var(--serif); color: var(--ink); opacity: .07 }
 .k-hero-date .m { font-size: 13px; letter-spacing: .38em; color: var(--muted) }
-.k-hero-meta { list-style: none; margin: 44px 0 0; padding: 16px 0 0; border-top: 1px solid var(--rule); max-width: 760px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px 32px; font-size: 11px; letter-spacing: .14em; color: var(--muted) }
+/* UI 票 #10：minmax 170→150——4×150+3×32=696 ≤ max-width 760，桌面恢复一行四项（原 3+1 折行） */
+.k-hero-meta { list-style: none; margin: 44px 0 0; padding: 16px 0 0; border-top: 1px solid var(--rule); max-width: 760px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px 32px; font-size: 11px; letter-spacing: .14em; color: var(--muted) }
 .k-hero-meta b { display: block; font: 600 15px/1.4 var(--sans); letter-spacing: .04em; color: var(--ink); margin-bottom: 2px }
 .k-hero-note { margin: 18px 0 0; font-size: 12.5px; color: var(--muted) }
 .k-scrollhint { position: absolute; left: 0; bottom: 20px; display: flex; align-items: center; gap: 14px; font-size: 11px; letter-spacing: .32em; color: var(--muted) }
@@ -171,8 +173,10 @@ footer p { margin: 0 0 8px }
 /* 原型为 <button> 桩；真实站点为链接（去下划线，悬停下划线） */
 .k-hud .k-link { color: var(--accent); text-align: left; padding: 2px 0; text-decoration: none; display: inline-block }
 .k-hud .k-link:hover { text-decoration: underline }
-/* P0-5：系统播报移出文档流（语义保留给屏幕阅读器，视觉不再占据版面） */
-.v-kinetic .live-status { position: fixed; left: var(--pad-x); bottom: 16px; z-index: var(--z-float); margin: 0; min-height: 0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; color: var(--muted); pointer-events: none; max-width: 60vw }
+/* P0-5：系统播报移出文档流（语义保留给屏幕阅读器，视觉不再占据版面）。
+   UI 打磨票 #10：加纸面 chip 底——播报出现时不再裸字叠压页面内容；空状态不显示空盒。 */
+.v-kinetic .live-status { position: fixed; left: var(--pad-x); bottom: 16px; z-index: var(--z-float); margin: 0; min-height: 0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; color: var(--muted); pointer-events: none; max-width: 60vw; background: var(--surface); border: 1px solid var(--rule); padding: 6px 12px }
+.v-kinetic .live-status:empty { display: none }
 
 /* 日期组 + 时间线 */
 .k-day { position: relative; padding-top: 96px }   /* P1-8：日组呼吸 */
@@ -211,7 +215,8 @@ footer p { margin: 0 0 8px }
 .k-summary { margin: 0 0 12px; max-width: 62ch }
 .k-meta { margin: 0; font-size: 13px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline }
 .k-meta .tpc { color: var(--accent) }
-.k-meta .sep { color: var(--rule) }
+/* UI 票 #10：sep 并入后段 .seg 内（行首分隔符），margin-right 代替原 HTML 空格，使段内间距与段间 gap 一致 */
+.k-meta .sep { color: var(--rule); margin-right: 6px }
 .k-meta a.ext { color: var(--accent) }
 /* 编辑占位图（三层：clip → tilt → art） */
 .k-media { position: relative; perspective: 900px; align-self: start; will-change: clip-path }
@@ -341,7 +346,10 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
   .k-hero-date { top: 8%; right: -2vw; bottom: auto }                  /* P1-9：ghost 03 让开 meta 区 */
   .k-hero-date .d { font-size: clamp(120px, 36vw, 180px) }
   .k-cols { grid-template-columns: 1fr }
-  .k-hud { position: static; order: -1; flex-direction: row; flex-wrap: wrap; gap: 8px 24px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 14px 0; margin-bottom: 10px }
+  /* UI 票 #10：order:-1 只作用于时间线页（.k-cols.hud-first）——进度 HUD 随列表前置；
+     详情/说明页不加该类，用户先看到返回链接与标题，SOURCE/STATUS/PROJECT 移到正文之后 */
+  .k-hud { position: static; flex-direction: row; flex-wrap: wrap; gap: 8px 24px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 14px 0; margin-bottom: 10px }
+  .k-cols.hud-first .k-hud { order: -1 }
   .k-hud .sec { border-top: 0; padding-top: 0; min-width: 130px; flex: 1 }
   .k-hud .big { font-size: 18px }
   .k-hud .sec-readbar { flex-basis: 100% }
@@ -363,6 +371,8 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
   .layout-c .k-media { margin-top: 16px }
   .k-top { right: 16px; bottom: 88px; width: 58px; height: 58px }
   .k-top svg { width: 50px; height: 50px }
+  /* UI 票 #10：滚动到底时给返回顶部按钮（fixed bottom:88px right:16px）让位，不遮页脚文字 */
+  footer p { padding-right: 72px }
 }
 
 /* ============================================================

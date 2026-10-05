@@ -17,8 +17,13 @@ interface Props {
   activeTopic?: string;
   /** 当前激活的站点导航项。 */
   activeNav?: string;
+  /**
+   * ≤767px 时 HUD 是否排到主内容之前（UI 票 #10）：时间线页传 true（进度 HUD 随列表前置），
+   * 详情/说明页不传（用户先看到内容，SOURCE/STATUS/PROJECT 移到正文之后）。
+   */
+  hudMobileFirst?: boolean;
 }
-const { title, description, isFixture, activeTopic = "全部", activeNav } = Astro.props;
+const { title, description, isFixture, activeTopic = "全部", activeNav, hudMobileFirst } = Astro.props;
 
 // 构建期读取快照，仅为 header/菜单/页脚提供时间基准与当日条数；页面主体数据由各页自行渲染。
 const snapshot = loadSnapshot();
@@ -31,7 +36,7 @@ const { count: todayCount } = latestDayStats(sortEntriesDesc(snapshot.entries));
     <div class="k-grain" aria-hidden="true"></div>
     <KHeader activeTopic={activeTopic} />
     <slot name="hero" />
-    <div class="k-cols">
+    <div class={`k-cols${hudMobileFirst ? " hud-first" : ""}`}>
       <slot name="col-start" />
       <main class="k-main" id="main" data-kmain>
         <slot />

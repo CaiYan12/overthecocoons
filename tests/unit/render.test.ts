@@ -63,7 +63,7 @@ test("首页为动态编辑场 v-kinetic 结构：Hero、紧凑 header、三栏�
   assert.ok(html.includes('class="k-hero-rule"'), "尺规线");
   assert.ok(html.includes('class="k-hero-date"'), "Hero 幽灵日期");
   assert.ok(html.includes('class="k-hero-meta"'), "Hero 元信息列表");
-  assert.ok(html.includes('class="k-cols"'), "三栏容器");
+  assert.ok(html.includes('class="k-cols hud-first"'), "三栏容器（时间线页 HUD 移动端前置，UI 票 #10）");
   assert.ok(html.includes('class="k-hud"'), "右侧 HUD");
   assert.ok(html.includes("<footer"), "页脚");
 });
@@ -166,7 +166,10 @@ test("主题筛选页：新闻主题有内容并独立分页；空主题渲染�
 
   const philosophy = readDist("topics/philosophy/index.html");
   assert.ok(philosophy.includes("「哲学」暂无内容"), "空主题标题");
-  assert.ok(philosophy.includes("这里显示真实空状态"), "空态说明");
+  assert.ok(
+    philosophy.includes("该主题当前没有可展示的内容"),
+    "空态说明（用户视角文案，UI 票 #10）",
+  );
   assert.ok(philosophy.includes(`href="${BASE}/"`), "查看全部返回入口");
   assert.equal(entryChunks(philosophy).length, 0, "空主题不得渲染条目");
   assert.ok(!philosophy.includes('class="pager" data-pager'), "空主题无分页器");

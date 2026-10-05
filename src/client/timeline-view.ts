@@ -74,10 +74,11 @@ function mediaHtml(entry: PublicEntry, gi: number): string {
 
 function metaHtml(entry: PublicEntry): string {
   const collected = formatDateTime(entry.firstSeenAt);
+  // UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂（与 KEntryMeta.astro 同构）
   const ext = entry.url
-    ? ` <span class="sep">·</span> <a class="ext" href="${esc(entry.url)}" target="_blank" rel="noopener" data-cursor="LINK">查看百度搜索结果 ↗</a>`
+    ? `<span class="seg"><span class="sep">·</span><a class="ext" href="${esc(entry.url)}" target="_blank" rel="noopener" data-cursor="LINK">查看百度搜索结果 ↗</a></span>`
     : "";
-  return `<p class="k-meta">百度热点 <span class="sep">·</span> <span class="tpc">${esc(entry.topic)}</span> <span class="sep">·</span> 收录 ${collected}${ext}</p>`;
+  return `<p class="k-meta"><span>百度热点</span><span class="seg"><span class="sep">·</span><span class="tpc">${esc(entry.topic)}</span></span><span class="seg"><span class="sep">·</span>收录 ${collected}</span>${ext}</p>`;
 }
 
 function entryHtml(entry: PublicEntry, gi: number, di: number): string {
@@ -112,7 +113,8 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
 }
 
 function emptyHtml(emptyTopic: string): string {
-  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>首源为百度热点线索，当前仅映射到「新闻」与「社会」主题。这里显示真实空状态。</p><a class="page-btn" data-all href="${base}/">查看全部</a></div>`;
+  // UI 票 #10：与 KEmpty.astro 保持同文（用户视角，不用规格用语）
+  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>首源为百度热点线索，收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p><a class="page-btn" data-all href="${base}/">查看全部</a></div>`;
 }
 
 function renderPager(page: number, totalPages: number, renderTopic: string): void {

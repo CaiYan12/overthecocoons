@@ -60,8 +60,13 @@ const description = entry.summary
     <KEntryMedia lab={lab} clock={clock} num="00" />
     <p class={`k-summary${entry.summary ? "" : " k-summary-empty"}`}>{summaryText}</p>
     <p class="k-meta">
-      百度热点 <span class="sep">·</span> <span class="tpc">{entry.topic}</span> <span class="sep">·</span> 收录{" "}
-      <time datetime={entry.firstSeenAt}>{formatDateTime(entry.firstSeenAt)}</time>
+      {/* UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂 */}
+      <span>百度热点</span>
+      <span class="seg"><span class="sep">·</span><span class="tpc">{entry.topic}</span></span>
+      <span class="seg">
+        <span class="sep">·</span>收录{" "}
+        <time datetime={entry.firstSeenAt}>{formatDateTime(entry.firstSeenAt)}</time>
+      </span>
     </p>
     {
       entry.url && (
