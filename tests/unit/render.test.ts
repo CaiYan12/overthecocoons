@@ -137,7 +137,7 @@ test("日内权重三档与数据版画结构正确（每日首条头条，A/B �
   assert.ok(first.includes(`<span class="lab" aria-hidden="true">${firstLab}</span>`), "竖排主题词");
   assert.match(first, /<span class="num" aria-hidden="true">\d{2}<\/span>/, "出血大序号");
   assert.match(first, /<span class="tm">\d{2}:\d{2}<\/span>/, "色块时间");
-  assert.ok(first.includes('data-cursor="VIEW ↗"'), "T06 光标挂点保留");
+  assert.ok(first.includes('data-cursor="VIEW"'), "T06 光标挂点保留");
 });
 
 test("分页结构：每页独立 URL、页 2/页 3 存在且条数正确、aria-current 指示当前页", () => {
@@ -390,14 +390,14 @@ test("自定义光标语义标记覆盖（UI 票 #14）：可点击元素都带�
   const marked = (tag: string) => tag.includes("data-cursor");
 
   // 首页应同时出现两档标记（断言前置：覆盖不成立时下面的「全带」是空真）
-  assert.ok(anchors.some((t) => t.includes('data-cursor="VIEW ↗"')), "应存在完整语义态锚点");
+  assert.ok(anchors.some((t) => t.includes('data-cursor="VIEW"')), "应存在完整语义态锚点");
   assert.ok(anchors.some((t) => t.includes("data-cursor-soft")), "应存在轻量可点击态锚点");
 
   // 完整语义态：内容入口三类的数量（每页 20 条）
   assert.equal(
-    anchors.filter((t) => t.includes('data-cursor="VIEW ↗"')).length,
+    anchors.filter((t) => t.includes('data-cursor="VIEW"')).length,
     20,
-    "每页 20 条条目标题链接都应带 VIEW ↗",
+    "每页 20 条条目标题链接都应带 VIEW",
   );
   assert.equal(
     [...html.matchAll(/data-cursor="OPEN"/g)].length,

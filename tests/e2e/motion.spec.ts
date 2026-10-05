@@ -712,7 +712,7 @@ test.describe("桌面限定动效（pointer:fine）", () => {
     await waitClientReady(page);
     await waitMotionOn(page);
 
-    // 光标：移动后显示，悬停标题链接显示 VIEW ↗
+    // 光标：移动后显示，悬停标题链接显示 VIEW
     await page.mouse.move(400, 300);
     await page.waitForFunction(() => {
       const cursor = document.querySelector<HTMLElement>("[data-kcursor]");
@@ -727,7 +727,7 @@ test.describe("桌面限定动效（pointer:fine）", () => {
     ).toBe(true);
     const headline = page.locator(".k-entry .k-headline a").first();
     await headline.hover();
-    await expect(page.locator("[data-kcursor-label]")).toHaveText("VIEW ↗");
+    await expect(page.locator("[data-kcursor-label]")).toHaveText("VIEW");
     // ring 放大有 0.3s 补间：轮询到放大终态（2.3）再断言
     await page.waitForFunction(
       () => {
@@ -914,13 +914,19 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
     await waitClientReady(page);
     await waitMotionOn(page);
 
-    const headline = page.locator(".k-entry .k-headline a").first();
+    // 目标选占位版画而非标题链接：链接文字本身是 accent 红，光标压在其上时 difference 会渲染成青绿
+    // （实测 [112,217,212]，与标签字形的红通道极差同为 105 打成平手），取样会变成抛硬币。
+    // 版画中心是中性底（近白底纹 + 墨色大序号），标签字形是框内唯一的高饱和像素。
+    const media = page.locator(".k-entry.layout-a .k-media").first();
     const label = page.locator("[data-kcursor-label]");
 
     for (const theme of ["light", "dark"] as const) {
       await setTheme(page, theme);
-      await headline.hover();
-      await expect(label, `${theme}：标签应显示语义文案`).toHaveText("VIEW ↗");
+      await media.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+      const mediaBox = await media.boundingBox();
+      await page.mouse.move(mediaBox!.x + mediaBox!.width / 2, mediaBox!.y + mediaBox!.height / 2);
+      await expect(label, `${theme}：标签应显示语义文案`).toHaveText("OPEN");
       // 淡入补间 0.2s：等透明度到位再采样，否则采到的是半透明字形
       await expect(label, `${theme}：标签应完全淡入`).toHaveCSS("opacity", "1");
       const box = await label.boundingBox();
@@ -962,6 +968,51 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
         .toBeGreaterThan(glyph[1]!);
       expect(glyph[0], `${theme}：标签渲染色应偏红（R>B），实测 ${JSON.stringify(glyph)}`)
         .toBeGreaterThan(glyph[2]!);
+      // 直接编码回归特征：标签若被反相混合，accent 红会渲染成青绿（G 明显最高）——标签框内不应出现
+      // 直接编码回归特征：标签若被反相混合，accent 红会渲染成青绿（G 反超 R 且不低于 B）。
+      // 不依赖"哪个像素极差最大"——变异实测该色为 [112,215,204]，与红字形极差同为 103。
+      const cyan = pixels.filter((p) => p[1]! > p[0]! + 30 && p[1]! >= p[2]!);
+      expect(cyan, `${theme}：标签框内不应出现青绿像素（反相漂移特征）`).toEqual([]);
+    }
+  });
+
+  test("语义标签完整落在圆环内，不戳出圈外", async ({ page, isMobile }) => {
+    test.skip(isMobile === true, "自定义光标为 pointer:fine 桌面限定");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+
+    const label = page.locator("[data-kcursor-label]");
+    const targets = [
+      ["条目标题链接", ".k-entry .k-headline a"],
+      ["占位版画", ".k-entry.layout-a .k-media"],
+      ["条目外链", ".k-meta a.ext"],
+    ] as const;
+
+    for (const [name, selector] of targets) {
+      const target = page.locator(selector).first();
+      await target.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(150);
+      const box = await target.boundingBox();
+      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      await expect(label, `${name} 应显示语义标签`).toHaveCSS("opacity", "1");
+
+      const measured = await page.evaluate(() => {
+        const labelEl = document.querySelector<HTMLElement>("[data-kcursor-label]")!;
+        const ringEl = document.querySelector<HTMLElement>("[data-kcursor-ring]")!;
+        return {
+          text: labelEl.textContent ?? "",
+          width: labelEl.getBoundingClientRect().width,
+          // 圆环为 38px 盒（border-box），语义态放大 2.3 倍 → 外径
+          diameter: 38 * new DOMMatrixReadOnly(getComputedStyle(ringEl).transform).a,
+        };
+      });
+      expect(
+        measured.width,
+        `${name}「${measured.text}」标签宽 ${measured.width.toFixed(1)}px 不应超过圆环直径 ` +
+          `${measured.diameter.toFixed(1)}px（超出即文字戳出圈外）`,
+      ).toBeLessThanOrEqual(measured.diameter);
     }
   });
 
@@ -1013,7 +1064,7 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
 
     // 完整语义态（内容入口三类）：圆环放大 + 语义标签
     const fullTargets = [
-      ["条目标题链接", ".k-entry .k-headline a", "VIEW ↗"],
+      ["条目标题链接", ".k-entry .k-headline a", "VIEW"],
       ["占位版画", ".k-entry.layout-a .k-media", "OPEN"],
       ["条目外链", ".k-meta a.ext", "LINK"],
     ] as const;

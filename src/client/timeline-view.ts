@@ -83,7 +83,7 @@ function metaHtml(entry: PublicEntry): string {
 
 function entryHtml(entry: PublicEntry, gi: number, di: number): string {
   const { layout, weight } = entryWeights(di);
-  const headline = `<h3 class="k-headline"><a href="${base}/items/${entry.id}/" data-detail data-cursor="VIEW ↗">${esc(entry.title)}</a></h3>`;
+  const headline = `<h3 class="k-headline"><a href="${base}/items/${entry.id}/" data-detail data-cursor="VIEW">${esc(entry.title)}</a></h3>`;
   const summary = entry.summary ? `<p class="k-summary">${esc(entry.summary)}</p>` : "";
   const media = mediaHtml(entry, gi);
   const meta = metaHtml(entry);
