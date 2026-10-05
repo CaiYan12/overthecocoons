@@ -606,6 +606,36 @@ function initCursor(root: HTMLElement): void {
   const lx = gsap!.quickTo(labelEl, "x", { duration: 0.38, ease: "power3" });
   const ly = gsap!.quickTo(labelEl, "y", { duration: 0.38, ease: "power3" });
   let shown = false;
+  /**
+   * 语义档位由「指针下的元素」决定，而不是只由 mouseover 事件决定。
+   * 浏览器会在布局/动效变化后静默更新（或不更新）hover 节点却不派发 mouseover——实测入场揭示
+   * 动效收尾时指针下已是版画但标签不亮；反向则表现为「指针已离开版画、标签仍显示 OPEN」的滞留。
+   * 注意：此时连 mousemove 的 event.target 也取自那个陈旧的 hover 节点（实测 target 仍是版画），
+   * 所以必须用 elementFromPoint 重新做一次命中测试。档位键去重避免每次移动都重启补间。
+   */
+  let tierKey: string | null = null;
+  const applyTier = (target: Element | null) => {
+    const full = target?.closest("[data-cursor]") ?? null;
+    const label = full ? (full.getAttribute("data-cursor") ?? "") : "";
+    const key = full ? `full:${label}` : target?.closest("[data-cursor-soft]") ? "soft" : "none";
+    if (key === tierKey) return;
+    tierKey = key;
+    if (full) {
+      labelEl.textContent = label;
+      // 标签与圆环同步放大：标签已不在圆环内，不再继承圆环的 transform
+      gsap!.to([ringEl, labelEl], { scale: CURSOR_FULL_SCALE, duration: 0.3, ease: "power3.out" });
+      gsap!.to(labelEl, { autoAlpha: 1, duration: 0.2 });
+      return;
+    }
+    gsap!.to(ringEl, {
+      scale: key === "soft" ? CURSOR_SOFT_SCALE : 1,
+      duration: 0.3,
+      ease: "power3.out",
+    });
+    gsap!.to(labelEl, { scale: 1, autoAlpha: 0, duration: 0.15 });
+  };
+  /** 按视口坐标重新判定档位（不信任事件自带的 target）。 */
+  const applyTierAt = (x: number, y: number) => applyTier(document.elementFromPoint(x, y));
   const onMove = (event: MouseEvent) => {
     if (!shown) {
       shown = true;
@@ -617,23 +647,9 @@ function initCursor(root: HTMLElement): void {
     ry(event.clientY);
     lx(event.clientX);
     ly(event.clientY);
+    applyTierAt(event.clientX, event.clientY);
   };
-  const onOver = (event: MouseEvent) => {
-    const target = event.target as Element | null;
-    const full = target?.closest("[data-cursor]");
-    if (full) {
-      labelEl.textContent = full.getAttribute("data-cursor") ?? "";
-      // 标签与圆环同步放大：标签已不在圆环内，不再继承圆环的 transform
-      gsap!.to([ringEl, labelEl], { scale: CURSOR_FULL_SCALE, duration: 0.3, ease: "power3.out" });
-      gsap!.to(labelEl, { autoAlpha: 1, duration: 0.2 });
-    } else if (target?.closest("[data-cursor-soft]")) {
-      gsap!.to(ringEl, { scale: CURSOR_SOFT_SCALE, duration: 0.3, ease: "power3.out" });
-      gsap!.to(labelEl, { scale: 1, autoAlpha: 0, duration: 0.15 });
-    } else {
-      gsap!.to(ringEl, { scale: 1, duration: 0.3, ease: "power3.out" });
-      gsap!.to(labelEl, { scale: 1, autoAlpha: 0, duration: 0.15 });
-    }
-  };
+  const onOver = (event: MouseEvent) => applyTierAt(event.clientX, event.clientY);
   const onLeaveDoc = () => {
     shown = false;
     // 标签是容器的兄弟元素（UI 票 #14），必须与光标一起隐藏，否则语义态下移出窗口会留下悬空残影
