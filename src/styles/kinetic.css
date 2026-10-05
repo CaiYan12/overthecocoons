@@ -295,17 +295,22 @@ dialog.k-menu::backdrop { background: transparent }
 .k-trans-note { margin: 14px 0 0; font-size: 13px; opacity: .8 }
 
 /* 自定义光标（驱动属 Ticket 06；保留结构占位，静态层不可见） */
-.k-cursor { position: fixed; left: 0; top: 0; z-index: var(--z-cursor); pointer-events: none; opacity: 0 }
+/* UI 票 #14：反相混合作用在容器上。容器自身是固定定位的堆叠上下文（= 隔离组），写在子元素上的
+   difference 只能与组内透明背景混合、看不到页面，实测渲染为原始白色（浅色纸面 1.09:1）；
+   移到容器后实测 17.87:1。子元素不再各自带混合。 */
+.k-cursor { position: fixed; left: 0; top: 0; z-index: var(--z-cursor); pointer-events: none; opacity: 0; mix-blend-mode: difference }
 /* UI 票 #12（用户裁定）：自定义光标激活时隐藏系统指针——k-cursor-on 由 motion.initCursor 挂/卸，
    降级路径（reduced-motion / GSAP 失败 / 触屏）不加类、系统指针照常；
    规则置于本块后，与 .page-btn[aria-disabled] 等同特异性规则竞争时靠源序取胜 */
 .v-kinetic.k-cursor-on, .v-kinetic.k-cursor-on * { cursor: none }
-/* UI 票 #12：对比度增强——dot 6→8px、dot/ring 改纯白 + difference 混合（跨深浅色自动反相，恒最大对比） */
-.k-cursor-dot { position: fixed; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #fff; mix-blend-mode: difference }
-/* P2-11：ring 用 difference 混合，跨深浅色自动反色 */
-.k-cursor-ring { position: fixed; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #fff; display: grid; place-items: center; mix-blend-mode: difference }
-.k-cursor-label { font-size: 9.5px; letter-spacing: .18em; color: var(--accent); opacity: 0; white-space: nowrap }
-@media (prefers-reduced-motion: reduce) { .k-cursor { display: none } }
+/* UI 票 #14：点 8px 纯白，随容器一起反相（跨深浅色恒最大对比） */
+.k-cursor-dot { position: fixed; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #fff }
+/* UI 票 #14：描边取 2px —— Blink 把 border-width 取整到整像素，1.5px 实测渲染为 1.00 CSS px（无效值） */
+.k-cursor-ring { position: fixed; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #fff }
+/* UI 票 #14：语义标签在 .k-cursor 之外（隔离组内会随背景反相，accent 红漂成青绿），
+   独立跟随鼠标并自行居中（xPercent/yPercent 由 motion.initCursor 设置），保持主题 accent 原色 */
+.k-cursor-label { position: fixed; left: 0; top: 0; z-index: var(--z-cursor); pointer-events: none; font-size: 9.5px; letter-spacing: .18em; color: var(--accent); opacity: 0; white-space: nowrap }
+@media (prefers-reduced-motion: reduce) { .k-cursor, .k-cursor-label { display: none } }
 
 /* 响应式：平板（正文 + HUD） */
 @media (max-width: 1199px) {

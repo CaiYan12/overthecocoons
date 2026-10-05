@@ -27,12 +27,18 @@ const links = [
 
 <dialog class="k-menu" data-kmenu aria-label="全屏导航菜单">
   <div class="k-menu-inner">
-    <button class="k-menu-close" type="button" data-kmenu-close>关闭 ✕</button>
+    <button class="k-menu-close" type="button" data-kmenu-close data-cursor-soft>关闭 ✕</button>
     <div class="k-menu-grid">
       <div class="k-menu-list">
         {
           links.map((link, index) => (
-            <a class="k-mi" data-nav={index} href={link.href} aria-current={activeNav === link.key ? "page" : undefined}>
+            <a
+              class="k-mi"
+              data-nav={index}
+              data-cursor-soft
+              href={link.href}
+              aria-current={activeNav === link.key ? "page" : undefined}
+            >
               <span class="no">{String(index + 1).padStart(2, "0")}</span>
               <span class="lb">{link.label}</span>
             </a>
@@ -53,6 +59,7 @@ const links = [
             role="tab"
             aria-current={topic === activeTopic ? "true" : "false"}
             data-topic={topic}
+            data-cursor-soft
             href={siteUrl(topicPagePath(topic, 1))}
           >
             {topic}

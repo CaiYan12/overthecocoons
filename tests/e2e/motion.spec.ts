@@ -8,7 +8,17 @@
  * 降级契约：内容直显、无隐藏初态、功能完整（与 Ticket 05 渐进增强一致）。
  */
 import { expect, test, type Page } from "@playwright/test";
-import { pickTopic, safeScreenshot, wheelBy } from "./helpers.ts";
+import {
+  channelSpread,
+  contrastRatio,
+  cursorLabelOpacity,
+  designToken,
+  parseHexColor,
+  pickTopic,
+  safeScreenshot,
+  samplePixels,
+  wheelBy,
+} from "./helpers.ts";
 
 const BASE = "/overthecocoons/";
 const RING_LENGTH = 163.4;
@@ -770,6 +780,301 @@ test.describe("桌面限定动效（pointer:fine）", () => {
   });
 });
 
+test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () => {
+  /** 测试底板：够大，保证「光标处」与「背景处」两个采样点都落在板上。 */
+  const BOARD = { id: "cursor-swatch", x: 600, y: 300, width: 240, height: 160 };
+  const CENTER = { x: BOARD.x + 120, y: BOARD.y + 80 };
+  /** 圆环描边中心线半径（盒 38px + 2px 边框 → 描边占半径 17~19），取 18 命中描边。 */
+  const RING_OFFSET = 18;
+  const BACKDROP_OFFSET = 30; // 在圆环之外且仍在板上
+
+  async function setTheme(page: Page, theme: "light" | "dark"): Promise<void> {
+    await page.evaluate((value) => {
+      document.documentElement.dataset.theme = value;
+    }, theme);
+  }
+
+  /** 注入已知底色的底板并把光标停上去，返回「点」「环」「邻近背景」三处实测像素。 */
+  async function cursorOnBoard(
+    page: Page,
+    color: string,
+  ): Promise<{ dot: readonly number[]; ring: readonly number[]; backdrop: readonly number[] }> {
+    await page.evaluate(
+      ({ board, color }) => {
+        document.getElementById(board.id)?.remove();
+        const el = document.createElement("div");
+        el.id = board.id;
+        el.style.cssText =
+          `position:fixed;left:${board.x}px;top:${board.y}px;width:${board.width}px;` +
+          `height:${board.height}px;z-index:600;background:${color}`;
+        document.querySelector("[data-kinetic]")!.appendChild(el);
+      },
+      { board: BOARD, color },
+    );
+    await page.mouse.move(CENTER.x, CENTER.y);
+    await page.waitForTimeout(700);
+    const [dot, ring, backdrop] = await samplePixels(
+      page,
+      { x: BOARD.x, y: BOARD.y, width: BOARD.width, height: BOARD.height },
+      [
+        [CENTER.x - BOARD.x, CENTER.y - BOARD.y],
+        [CENTER.x - BOARD.x + RING_OFFSET, CENTER.y - BOARD.y],
+        [CENTER.x - BOARD.x + BACKDROP_OFFSET, CENTER.y - BOARD.y],
+      ],
+    );
+    return { dot: dot!, ring: ring!, backdrop: backdrop! };
+  }
+
+  test("光标在浅色纸面 / 深色纸面 / accent 暗红底上的渲染对比度均 ≥ 3:1", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile === true, "自定义光标为 pointer:fine 桌面限定");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+    await page.mouse.move(200, 200); // 让光标显形
+    await page.waitForTimeout(400);
+
+    await setTheme(page, "dark");
+    const darkPaper = await designToken(page, "--paper");
+    await setTheme(page, "light");
+    const lightPaper = await designToken(page, "--paper");
+    const accent = await designToken(page, "--accent");
+
+    const cases = [
+      { name: "浅色纸面", color: lightPaper },
+      { name: "深色纸面", color: darkPaper },
+      { name: "accent 暗红底", color: accent },
+    ];
+
+    for (const item of cases) {
+      const { dot, ring, backdrop } = await cursorOnBoard(page, item.color);
+      // 采样点自证：背景处必须真是该底板色，否则后面的对比度断言没有意义
+      expect(backdrop, `${item.name}：背景采样点应落在底板上`).toEqual(
+        parseHexColor(item.color),
+      );
+      expect(
+        contrastRatio(dot, backdrop),
+        `${item.name}：光标点与背景的实测渲染对比度（${JSON.stringify(dot)} vs ${JSON.stringify(backdrop)}）`,
+      ).toBeGreaterThanOrEqual(3);
+      expect(
+        contrastRatio(ring, backdrop),
+        `${item.name}：光标环与背景的实测渲染对比度（${JSON.stringify(ring)} vs ${JSON.stringify(backdrop)}）`,
+      ).toBeGreaterThanOrEqual(3);
+    }
+
+    // 圆环描边必须是能真实渲染的宽度：Blink 会把 border-width 取整，1.5px 实际只渲染 1px
+    const borderWidth = await page.evaluate(
+      () => getComputedStyle(document.querySelector<HTMLElement>("[data-kcursor-ring]")!).borderTopWidth,
+    );
+    expect(borderWidth, "圆环描边应为可真实渲染的 2px（非 1.5px 这类会被取整的值）").toBe("2px");
+  });
+
+  test("鼠标离开文档 / 页面失去焦点时，光标与语义标签一起隐藏", async ({ page, isMobile }) => {
+    test.skip(isMobile === true, "自定义光标为 pointer:fine 桌面限定");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+
+    const headline = page.locator(".k-entry .k-headline a").first();
+    const cursor = page.locator("[data-kcursor]");
+    const label = page.locator("[data-kcursor-label]");
+
+    // 文档级 mouseleave（站点以此判定鼠标离开窗口）
+    await headline.hover();
+    await expect(label).toHaveCSS("opacity", "1");
+    await page.evaluate(() => {
+      document.documentElement.dispatchEvent(new MouseEvent("mouseleave"));
+    });
+    await expect(cursor, "光标应隐藏").toHaveCSS("opacity", "0");
+    // 此处不断言标签：WebKit 在合成 mouseleave 之后会重放悬停链（out → over），而指针实际仍停在
+    // 链接上，标签于是被重新点亮——这是「指针并未真正离开」的模拟假象，真实移出窗口时不会发生
+    // （矩阵实测：Chromium/Firefox 无此重放；处置口径记在票 #14）。标签的隐藏由下面的失焦路径
+    // 覆盖——两条路径是同一个处理器 onLeaveDoc。
+
+    // 页面失去焦点（切换窗口/应用）：光标与语义标签一起隐藏，不留悬空残影
+    await page.mouse.move(200, 200); // 先移开：hover 到同一坐标不会产生 mousemove，光标不会重新显形
+    await page.waitForTimeout(200);
+    await headline.hover();
+    await expect(label).toHaveCSS("opacity", "1");
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("blur"));
+    });
+    await expect(cursor, "失焦后光标应隐藏").toHaveCSS("opacity", "0");
+    await expect(label, "失焦后语义标签应一起隐藏，不留悬空残影").toHaveCSS("opacity", "0");
+  });
+
+  test("语义标签保持主题 accent 原色，不随背景反相漂移", async ({ page, isMobile }) => {
+    test.skip(isMobile === true, "自定义光标为 pointer:fine 桌面限定");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+
+    const headline = page.locator(".k-entry .k-headline a").first();
+    const label = page.locator("[data-kcursor-label]");
+
+    for (const theme of ["light", "dark"] as const) {
+      await setTheme(page, theme);
+      await headline.hover();
+      await expect(label, `${theme}：标签应显示语义文案`).toHaveText("VIEW ↗");
+      // 淡入补间 0.2s：等透明度到位再采样，否则采到的是半透明字形
+      await expect(label, `${theme}：标签应完全淡入`).toHaveCSS("opacity", "1");
+      const box = await label.boundingBox();
+      expect(box, `${theme}：标签应有可见包围盒`).not.toBeNull();
+
+      // 标签已移出圆环，靠独立补间跟随：仍须居中于光标（圆环 translate 即光标坐标）
+      const ringCenter = await page.evaluate(() => {
+        const m = new DOMMatrixReadOnly(
+          getComputedStyle(document.querySelector<HTMLElement>("[data-kcursor-ring]")!).transform,
+        );
+        return { x: m.e, y: m.f };
+      });
+      expect(
+        Math.abs(box!.x + box!.width / 2 - ringCenter.x),
+        `${theme}：标签应水平居中于光标`,
+      ).toBeLessThan(6);
+      expect(
+        Math.abs(box!.y + box!.height / 2 - ringCenter.y),
+        `${theme}：标签应垂直居中于光标`,
+      ).toBeLessThan(6);
+      const x = Math.floor(box!.x);
+      const y = Math.floor(box!.y);
+      const width = Math.max(1, Math.ceil(box!.width));
+      const height = Math.max(1, Math.ceil(box!.height));
+
+      const points: Array<[number, number]> = [];
+      for (let px = 0; px < width; px += 2) {
+        for (let py = 0; py < height; py += 2) points.push([px, py]);
+      }
+      const pixels = await samplePixels(page, { x, y, width, height }, points);
+      // 字形芯饱和度远高于背景与光标点（点在同底色上近中性灰），取极差最大者
+      const glyph = pixels.reduce((best, p) => (channelSpread(p) > channelSpread(best) ? p : best));
+      expect(
+        channelSpread(glyph),
+        `${theme}：应采到标签字形像素（实测 ${JSON.stringify(glyph)}）`,
+      ).toBeGreaterThan(40);
+      // accent 为红系（R 最高）；若标签被反相混合漂移，浅色纸面上会变成青绿（G 最高）
+      expect(glyph[0], `${theme}：标签渲染色应偏红（R>G），实测 ${JSON.stringify(glyph)}`)
+        .toBeGreaterThan(glyph[1]!);
+      expect(glyph[0], `${theme}：标签渲染色应偏红（R>B），实测 ${JSON.stringify(glyph)}`)
+        .toBeGreaterThan(glyph[2]!);
+    }
+  });
+
+  test("语义分档：内容入口完整态、次级控件轻量态、未启用边界项无态", async ({ page, isMobile }) => {
+    test.skip(isMobile === true, "自定义光标为 pointer:fine 桌面限定");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+
+    const ringScale = () =>
+      page.evaluate(() => {
+        const ring = document.querySelector<HTMLElement>("[data-kcursor-ring]");
+        if (!ring) return 0;
+        const t = getComputedStyle(ring).transform;
+        return t === "none" ? 1 : new DOMMatrixReadOnly(t).a;
+      });
+    const labelOpacity = () =>
+      page.evaluate(() =>
+        Number.parseFloat(
+          getComputedStyle(document.querySelector<HTMLElement>("[data-kcursor-label]")!).opacity,
+        ),
+      );
+
+    /**
+     * 悬停目标并等待补间到位，返回圆环缩放与标签透明度。
+     * 用坐标移动鼠标而非 locator.hover()：主题切换是两段式动画，列表与分页器会被脚本重写，
+     * WebKit 下 locator 的稳定性门会因此报 "element is not attached"（本票矩阵实测）。
+     */
+    async function hoverState(
+      selector: string,
+    ): Promise<{ scale: number; label: number; text: string }> {
+      const target = page.locator(selector).first();
+      await target.waitFor({ state: "visible", timeout: 5_000 });
+      await target.evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" }));
+      await page.waitForTimeout(200);
+      const box = await target.boundingBox();
+      expect(box, `${selector} 应有可见包围盒`).not.toBeNull();
+      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      await page.waitForTimeout(600);
+      return {
+        scale: await ringScale(),
+        label: await labelOpacity(),
+        text: await page.evaluate(
+          () => document.querySelector<HTMLElement>("[data-kcursor-label]")?.textContent ?? "",
+        ),
+      };
+    }
+
+    // 完整语义态（内容入口三类）：圆环放大 + 语义标签
+    const fullTargets = [
+      ["条目标题链接", ".k-entry .k-headline a", "VIEW ↗"],
+      ["占位版画", ".k-entry.layout-a .k-media", "OPEN"],
+      ["条目外链", ".k-meta a.ext", "LINK"],
+    ] as const;
+    for (const [name, selector, expected] of fullTargets) {
+      const state = await hoverState(selector);
+      expect(state.scale, `${name} 应放大到完整语义态`).toBeGreaterThan(2);
+      expect(state.label, `${name} 应显示语义标签`).toBeGreaterThan(0.9);
+      expect(state.text, `${name} 的语义标签文案`).toBe(expected);
+    }
+
+    // 轻量可点击态（次级控件）：圆环轻微放大、不显示标签
+    await showHeader(page);
+    const softTargets = [
+      ["品牌标识", ".k-brand"],
+      ["主题筛选 Tab", '[data-ktabs] .tab'],
+      ["显示模式按钮", "[data-mode]"],
+      ["菜单入口", "[data-kmenu-open]"],
+    ] as const;
+    for (const [name, selector] of softTargets) {
+      const state = await hoverState(selector);
+      expect(state.scale, `${name} 应给出轻量可点击态（圆环轻微放大）`).toBeGreaterThan(1.15);
+      expect(state.scale, `${name} 不应放大到完整语义态`).toBeLessThan(2);
+      expect(state.label, `${name} 不应显示语义标签`).toBe(0);
+    }
+
+    // 客户端重渲染后的分页（筛选走客户端，分页器由脚本重写）同样带轻量态
+    await pickTopic(page, "新闻");
+    // 两段式切换期间列表与分页器会被重写，等动画标记消失再定位
+    await page.waitForFunction(
+      () => !document.documentElement.hasAttribute("data-oct-topic-anim"),
+      undefined,
+      { timeout: 10_000 },
+    );
+    await page.waitForTimeout(400);
+    const pager = await hoverState('.pager .page-btn[data-page="2"]');
+    expect(pager.scale, "分页按钮应给出轻量可点击态").toBeGreaterThan(1.15);
+    expect(pager.scale, "分页按钮不应放大到完整语义态").toBeLessThan(2);
+    expect(pager.label, "分页按钮不应显示语义标签").toBe(0);
+
+    // 未启用的分页边界项：不给任何可点击态
+    const disabled = await hoverState('.pager .page-btn[aria-disabled="true"]');
+    expect(disabled.scale, "未启用的分页边界项不应有可点击态").toBeCloseTo(1, 2);
+    expect(disabled.label, "未启用的分页边界项不应显示语义标签").toBe(0);
+
+    // 页脚导航
+    const foot = await hoverState(".k-foot-nav a");
+    expect(foot.scale, "页脚导航应给出轻量可点击态").toBeGreaterThan(1.15);
+    expect(foot.scale, "页脚导航不应放大到完整语义态").toBeLessThan(2);
+    expect(foot.label, "页脚导航不应显示语义标签").toBe(0);
+
+    // 返回顶部：滚到底才出现（.show），同属次级控件
+    await page.mouse.move(200, 300);
+    await wheelBy(page, 2000);
+    await expect(page.locator("[data-ktop]")).toHaveClass(/show/);
+    const top = await hoverState("[data-ktop]");
+    expect(top.scale, "返回顶部应给出轻量可点击态").toBeGreaterThan(1.15);
+    expect(top.scale, "返回顶部不应放大到完整语义态").toBeLessThan(2);
+    expect(top.label, "返回顶部不应显示语义标签").toBe(0);
+  });
+});
+
 test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
   test("prefers-reduced-motion：内容直显、无隐藏初态、功能完整、进度呈现可用", async ({
     browser,
@@ -801,6 +1106,7 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
     expect(state.headerTransform, "header 首屏可见").toBe("none");
     expect(state.summaryInlineClip, "摘要无 clip 遮蔽").toBe("");
     expect(state.metaInlineOpacity, "元信息无隐藏").toBe("");
+    expect(await cursorLabelOpacity(page), "语义标签不出现（UI 票 #14：标签为独立元素）").toBe(0);
 
     // 功能完整：筛选分页照常（无动画属性标记）
     await pickTopic(page, "新闻");
@@ -852,6 +1158,7 @@ test.describe("降级（reduced-motion / GSAP CDN 失败）", () => {
     expect(state.headerTransform, "header 可见").toBe("none");
     expect(state.summaryInlineClip, "无 clip 遮蔽").toBe("");
     expect(state.cursorHidden, "自定义光标不出现").toBe(true);
+    expect(await cursorLabelOpacity(page), "语义标签不出现（UI 票 #14：标签为独立元素，需单独隐藏）").toBe(0);
 
     // 静态可用：筛选、翻页、返回顶部（降级下 header 常显，Tab 直接可点）
     await pickTopic(page, "新闻");

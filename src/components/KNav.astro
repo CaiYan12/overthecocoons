@@ -24,11 +24,18 @@ const links = [
     <span class="k-marker" aria-hidden="true" data-kmarker></span>
     {
       links.map((link, index) => (
-        <a data-nav={index} href={link.href} aria-current={active === link.key ? "page" : undefined}>
+        <a
+          data-nav={index}
+          data-cursor-soft
+          href={link.href}
+          aria-current={active === link.key ? "page" : undefined}
+        >
           {link.label}
         </a>
       ))
     }
   </nav>
-  <p class="k-navfoot"><a href="https://caiyan12.github.io/" rel="noopener">↩ 返回主站</a></p>
+  <p class="k-navfoot">
+    <a href="https://caiyan12.github.io/" rel="noopener" data-cursor-soft>↩ 返回主站</a>
+  </p>
 </aside>

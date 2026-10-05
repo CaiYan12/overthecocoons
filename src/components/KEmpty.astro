@@ -12,5 +12,5 @@ const { topic } = Astro.props;
   <h3>「{topic}」暂无内容</h3>
   {/* UI 票 #10：用户视角文案（原「这里显示真实空状态」为规格用语外漏）；与 timeline-view.ts emptyHtml 保持同文 */}
   <p>首源为百度热点线索，收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p>
-  <a class="page-btn" data-all href={siteUrl("/")}>查看全部</a>
+  <a class="page-btn" data-all data-cursor-soft href={siteUrl("/")}>查看全部</a>
 </div>

@@ -46,7 +46,7 @@ const { count: todayCount } = latestDayStats(sortEntriesDesc(snapshot.entries));
     <SiteFooter isFixture={isFixture} active={activeNav} />
     <!-- 全局状态播报区（Ticket 05）：主题/位置/复制等反馈；fixed 定位，不随 DOM 位置变化 -->
     <p class="live-status" role="status" aria-live="polite" data-status></p>
-    <button class="k-top" type="button" data-ktop aria-label="返回顶部">
+    <button class="k-top" type="button" data-ktop data-cursor-soft aria-label="返回顶部">
       <svg viewBox="0 0 60 60" aria-hidden="true">
         <circle class="track" cx="30" cy="30" r="26"></circle>
         <circle class="prog" data-ring cx="30" cy="30" r="26"></circle>
@@ -65,10 +65,14 @@ const { count: todayCount } = latestDayStats(sortEntriesDesc(snapshot.entries));
       <div class="k-trans-num" data-ktrans-num></div>
       <div class="k-trans-label" data-ktrans-label></div>
     </div>
+    <!-- 自定义光标（UI 票 #14）：反相混合作用在 .k-cursor 容器上（写在子元素上会被容器自身的
+         隔离组屏蔽，实测渲染为原始白色）；语义标签必须留在容器之外——容器内会随背景一起反相，
+         accent 红会漂成青绿，故标签作为兄弟元素独立跟随鼠标 -->
     <div class="k-cursor" data-kcursor aria-hidden="true">
-      <span class="k-cursor-ring" data-kcursor-ring><span class="k-cursor-label" data-kcursor-label></span></span>
+      <span class="k-cursor-ring" data-kcursor-ring></span>
       <span class="k-cursor-dot" data-kcursor-dot></span>
     </div>
+    <span class="k-cursor-label" data-kcursor-label aria-hidden="true"></span>
   </div>
   <!-- 客户端增强入口（Ticket 05）：单模块按挂点初始化；无 JS 时页面保持静态可读 -->
   <script src="../client/index.ts"></script>

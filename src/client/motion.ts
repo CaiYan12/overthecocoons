@@ -24,6 +24,10 @@ const FINE_POINTER_QUERY = "(pointer:fine)";
 const RING_LENGTH = 163.4;
 /** Header Morph 滚动阈值（原型 gsap yPercent show=y>84）。 */
 const HEADER_SHOW_AT = 84;
+/** 自定义光标完整语义态（内容入口）圆环放大倍数（原型 initCursor 值）。 */
+const CURSOR_FULL_SCALE = 2.3;
+/** 自定义光标轻量可点击态（次级控件）圆环放大倍数（UI 票 #14：只给"可点"信号，不放大到语义态）。 */
+const CURSOR_SOFT_SCALE = 1.35;
 
 type TweenVars = Record<string, unknown>;
 type TweenTarget = Element | Element[] | NodeListOf<Element> | string | null | undefined;
@@ -578,8 +582,12 @@ function killMenuTl(): void {
 }
 
 /* ---- 自定义光标（原型 initCursor，仅 pointer:fine） ----
-   UI 票 #12（用户裁定，对原型偏离）：光标就绪时给根加 k-cursor-on 隐藏系统指针——
-   自定义指针成为唯一指针；降级路径（reduced-motion / GSAP 失败 / 触屏）不加类，系统指针照常。 */
+   UI 票 #12（用户裁定）：光标就绪时给根加 k-cursor-on 隐藏系统指针——自定义指针成为唯一指针；
+   降级路径（reduced-motion / GSAP 失败 / 触屏）不加类，系统指针照常。
+   UI 票 #14：反相混合已移到 .k-cursor 容器（写在子元素上会被容器自身的隔离组屏蔽），
+   语义标签移出容器独立跟随以保住 accent 原色；语义分两档——
+   内容入口 [data-cursor] 走完整态（圆环放大 + 语义标签），次级控件 [data-cursor-soft] 走轻量态
+   （圆环轻微放大、不显示标签），未标记元素回到静止态。 */
 
 function initCursor(root: HTMLElement): void {
   if (!window.matchMedia(FINE_POINTER_QUERY).matches) return;
@@ -589,10 +597,14 @@ function initCursor(root: HTMLElement): void {
   const labelEl = root.querySelector<HTMLElement>("[data-kcursor-label]");
   if (!cursor || !dot || !ringEl || !labelEl) return;
   root.classList.add("k-cursor-on");
+  // 标签是容器的兄弟元素（不在反相组内），自行居中——原先靠圆环的 grid 居中
+  gsap!.set(labelEl, { xPercent: -50, yPercent: -50 });
   const dx = gsap!.quickTo(dot, "x", { duration: 0.1, ease: "power3" });
   const dy = gsap!.quickTo(dot, "y", { duration: 0.1, ease: "power3" });
   const rx = gsap!.quickTo(ringEl, "x", { duration: 0.38, ease: "power3" });
   const ry = gsap!.quickTo(ringEl, "y", { duration: 0.38, ease: "power3" });
+  const lx = gsap!.quickTo(labelEl, "x", { duration: 0.38, ease: "power3" });
+  const ly = gsap!.quickTo(labelEl, "y", { duration: 0.38, ease: "power3" });
   let shown = false;
   const onMove = (event: MouseEvent) => {
     if (!shown) {
@@ -603,29 +615,40 @@ function initCursor(root: HTMLElement): void {
     dy(event.clientY);
     rx(event.clientX);
     ry(event.clientY);
+    lx(event.clientX);
+    ly(event.clientY);
   };
   const onOver = (event: MouseEvent) => {
-    const target = (event.target as Element | null)?.closest("[data-cursor]");
-    if (target) {
-      labelEl.textContent = target.getAttribute("data-cursor") ?? "";
-      gsap!.to(ringEl, { scale: 2.3, duration: 0.3, ease: "power3.out" });
+    const target = event.target as Element | null;
+    const full = target?.closest("[data-cursor]");
+    if (full) {
+      labelEl.textContent = full.getAttribute("data-cursor") ?? "";
+      // 标签与圆环同步放大：标签已不在圆环内，不再继承圆环的 transform
+      gsap!.to([ringEl, labelEl], { scale: CURSOR_FULL_SCALE, duration: 0.3, ease: "power3.out" });
       gsap!.to(labelEl, { autoAlpha: 1, duration: 0.2 });
+    } else if (target?.closest("[data-cursor-soft]")) {
+      gsap!.to(ringEl, { scale: CURSOR_SOFT_SCALE, duration: 0.3, ease: "power3.out" });
+      gsap!.to(labelEl, { scale: 1, autoAlpha: 0, duration: 0.15 });
     } else {
       gsap!.to(ringEl, { scale: 1, duration: 0.3, ease: "power3.out" });
-      gsap!.to(labelEl, { autoAlpha: 0, duration: 0.15 });
+      gsap!.to(labelEl, { scale: 1, autoAlpha: 0, duration: 0.15 });
     }
   };
   const onLeaveDoc = () => {
     shown = false;
-    gsap!.to(cursor, { autoAlpha: 0, duration: 0.2 });
+    // 标签是容器的兄弟元素（UI 票 #14），必须与光标一起隐藏，否则语义态下移出窗口会留下悬空残影
+    gsap!.to([cursor, labelEl], { autoAlpha: 0, duration: 0.2 });
   };
   document.addEventListener("mousemove", onMove, { passive: true });
   root.addEventListener("mouseover", onOver);
   document.documentElement.addEventListener("mouseleave", onLeaveDoc);
+  // 页面失去焦点（切换窗口/应用）同样隐藏，避免指针冻结在页面上
+  window.addEventListener("blur", onLeaveDoc);
   cleanups.push(() => {
     document.removeEventListener("mousemove", onMove);
     root.removeEventListener("mouseover", onOver);
     document.documentElement.removeEventListener("mouseleave", onLeaveDoc);
+    window.removeEventListener("blur", onLeaveDoc);
     root.classList.remove("k-cursor-on");
     gsap!.killTweensOf([cursor, dot, ringEl, labelEl]);
   });

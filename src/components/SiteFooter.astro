@@ -23,7 +23,11 @@ const links = [
   <nav class="k-foot-nav" aria-label="页面导航">
     {
       links.map((link) => (
-        <a href={link.href} aria-current={active === link.key ? "page" : undefined}>
+        <a
+          href={link.href}
+          data-cursor-soft
+          aria-current={active === link.key ? "page" : undefined}
+        >
           {link.label}
         </a>
       ))
@@ -32,7 +36,9 @@ const links = [
   <nav class="k-foot-topics" aria-label="主题导航">
     {
       TOPICS.map((topic) => (
-        <a href={siteUrl(topicPagePath(topic, 1))}>{topic}</a>
+        <a href={siteUrl(topicPagePath(topic, 1))} data-cursor-soft>
+          {topic}
+        </a>
       ))
     }
   </nav>

@@ -114,7 +114,7 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
 
 function emptyHtml(emptyTopic: string): string {
   // UI 票 #10：与 KEmpty.astro 保持同文（用户视角，不用规格用语）
-  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>首源为百度热点线索，收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p><a class="page-btn" data-all href="${base}/">查看全部</a></div>`;
+  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>首源为百度热点线索，收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p><a class="page-btn" data-all data-cursor-soft href="${base}/">查看全部</a></div>`;
 }
 
 function renderPager(page: number, totalPages: number, renderTopic: string): void {
@@ -127,14 +127,14 @@ function renderPager(page: number, totalPages: number, renderTopic: string): voi
   const href = (target: number) => `${base}${topicPagePath(renderTopic, target)}`;
   let html =
     page > 1
-      ? `<a class="page-btn" data-page="${page - 1}" href="${href(page - 1)}" rel="prev" aria-label="上一页">‹</a>`
+      ? `<a class="page-btn" data-page="${page - 1}" data-cursor-soft href="${href(page - 1)}" rel="prev" aria-label="上一页">‹</a>`
       : `<span class="page-btn" aria-disabled="true">‹</span>`;
   for (let p = 1; p <= totalPages; p++) {
-    html += `<a class="page-btn" data-page="${p}" href="${href(p)}"${p === page ? ' aria-current="page"' : ""} aria-label="第 ${p} 页">${pad2(p)}</a>`;
+    html += `<a class="page-btn" data-page="${p}" data-cursor-soft href="${href(p)}"${p === page ? ' aria-current="page"' : ""} aria-label="第 ${p} 页">${pad2(p)}</a>`;
   }
   html +=
     page < totalPages
-      ? `<a class="page-btn" data-page="${page + 1}" href="${href(page + 1)}" rel="next" aria-label="下一页">›</a>`
+      ? `<a class="page-btn" data-page="${page + 1}" data-cursor-soft href="${href(page + 1)}" rel="next" aria-label="下一页">›</a>`
       : `<span class="page-btn" aria-disabled="true">›</span>`;
   html += `<span class="of">第 ${page} / ${totalPages} 页</span>`;
   pager.innerHTML = html;

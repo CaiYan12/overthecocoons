@@ -102,3 +102,89 @@ export async function safeScreenshot(page: Page, path: string): Promise<void> {
   }));
   await page.screenshot({ path, fullPage: height * dpr <= 32767 });
 }
+
+/**
+ * 渲染像素采样（UI 票 #14）：对给定区域截一次图，在页面内用 canvas 读回真实 sRGB。
+ * points 为相对区域左上角的坐标（CSS px，内部按截图实际缩放换算）。
+ *
+ * 为什么走像素而不是读 CSS：光标可见性取决于「渲染后与背景的对比」，而 `mix-blend-mode`
+ * 是否真正生效、`border-width` 是否被取整，都只体现在渲染结果上（项目既有教训：对比度必须实测勿目测）。
+ * 区域必须完整落在视口内——Playwright 对越界 clip 直接报错，不做静默裁剪。
+ */
+export async function samplePixels(
+  page: Page,
+  clip: { x: number; y: number; width: number; height: number },
+  points: Array<[number, number]>,
+): Promise<Array<[number, number, number]>> {
+  const buf = await page.screenshot({ clip });
+  return page.evaluate(
+    async ({ b64, points, cssWidth }) => {
+      const img = new Image();
+      img.src = "data:image/png;base64," + b64;
+      await img.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+      const scale = img.width / cssWidth;
+      return points.map(([px, py]) => {
+        const d = ctx.getImageData(Math.round(px * scale), Math.round(py * scale), 1, 1).data;
+        return [d[0], d[1], d[2]] as [number, number, number];
+      });
+    },
+    { b64: buf.toString("base64"), points, cssWidth: clip.width },
+  );
+}
+
+/** WCAG 相对亮度对比度（1:1 ~ 21:1）。 */
+export function contrastRatio(a: readonly number[], b: readonly number[]): number {
+  const luminance = (rgb: readonly number[]): number => {
+    const channel = rgb.map((n) => {
+      const c = n / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * channel[0]! + 0.7152 * channel[1]! + 0.0722 * channel[2]!;
+  };
+  const [high, low] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+  return (high! + 0.05) / (low! + 0.05);
+}
+
+/** 读取站点设计 token 的当前计算值（如 `--paper`），避免在测试里硬编码配色。 */
+export async function designToken(page: Page, name: string): Promise<string> {
+  return page.evaluate(
+    (token) => getComputedStyle(document.documentElement).getPropertyValue(token).trim(),
+    name,
+  );
+}
+
+/** 解析 `#RGB` / `#RRGGBB` 为 sRGB 三元组（站点设计 token 均为 hex 字面量）。 */
+export function parseHexColor(value: string): [number, number, number] {
+  const hex = value.trim().replace(/^#/, "");
+  const full = hex.length === 3
+    ? hex
+        .split("")
+        .map((c) => c + c)
+        .join("")
+    : hex;
+  return [0, 2, 4].map((i) => Number.parseInt(full.slice(i, i + 2), 16)) as [
+    number,
+    number,
+    number,
+  ];
+}
+
+/** 通道极差（饱和度近似），用于在一组像素里挑出字形芯而非背景。 */
+export function channelSpread(rgb: readonly number[]): number {
+  return Math.max(...rgb) - Math.min(...rgb);
+}
+
+/** 语义标签的当前计算透明度（0 = 未显示）。降级与隐藏路径共用，避免各处重复取值。 */
+export async function cursorLabelOpacity(page: Page): Promise<number> {
+  return page.evaluate(() =>
+    Number.parseFloat(
+      getComputedStyle(document.querySelector<HTMLElement>("[data-kcursor-label]")!).opacity,
+    ),
+  );
+}
+

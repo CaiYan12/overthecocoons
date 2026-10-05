@@ -383,6 +383,73 @@ test("数据岛内容与构建快照一致（字段、条数、基路径）", ()
   }
 });
 
+test("自定义光标语义标记覆盖（UI 票 #14）：可点击元素都带标记、未启用控件不带", () => {
+  const html = readDist("index.html");
+  const anchors = [...html.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]);
+  const buttons = [...html.matchAll(/<button\b[^>]*>/g)].map((m) => m[0]);
+  const marked = (tag: string) => tag.includes("data-cursor");
+
+  // 首页应同时出现两档标记（断言前置：覆盖不成立时下面的「全带」是空真）
+  assert.ok(anchors.some((t) => t.includes('data-cursor="VIEW ↗"')), "应存在完整语义态锚点");
+  assert.ok(anchors.some((t) => t.includes("data-cursor-soft")), "应存在轻量可点击态锚点");
+
+  // 完整语义态：内容入口三类的数量（每页 20 条）
+  assert.equal(
+    anchors.filter((t) => t.includes('data-cursor="VIEW ↗"')).length,
+    20,
+    "每页 20 条条目标题链接都应带 VIEW ↗",
+  );
+  assert.equal(
+    [...html.matchAll(/data-cursor="OPEN"/g)].length,
+    20,
+    "每页 20 条占位版画都应带 OPEN",
+  );
+  assert.ok(anchors.some((t) => t.includes('data-cursor="LINK"')), "条目外链应带 LINK");
+
+  // 轻量可点击态：次级控件（品牌 / 主题 tab / 模式按钮 / 菜单入口 / 返回顶部 / 分页 / 页脚导航 / 左栏导航 / 菜单项 / HUD）
+  assert.match(html, /<a class="k-brand"[^>]*data-cursor-soft/, "品牌标识带轻量态");
+  assert.match(html, /<button class="mode-btn"[^>]*data-cursor-soft/, "显示模式按钮带轻量态");
+  assert.match(html, /<button class="k-menu-open"[^>]*data-cursor-soft/, "菜单入口带轻量态");
+  assert.match(html, /<button class="k-top"[^>]*data-cursor-soft/, "返回顶部带轻量态");
+  assert.match(html, /<button class="k-menu-close"[^>]*data-cursor-soft/, "菜单关闭带轻量态");
+  assert.match(html, /<a class="k-mi"[^>]*data-cursor-soft/, "菜单导航项带轻量态");
+
+  // 全站契约：所有锚点与按钮都必须带某一档标记（新增可点击元素漏标即失败）
+  const unmarkedAnchors = anchors.filter((t) => !marked(t));
+  assert.deepEqual(unmarkedAnchors, [], "所有锚点都应带语义标记");
+  const unmarkedButtons = buttons.filter((t) => !marked(t));
+  assert.deepEqual(unmarkedButtons, [], "所有按钮都应带语义标记");
+
+  // 未启用控件：分页边界项是 <span aria-disabled>，不得给任何可点击态
+  const disabledPageBtns = [...html.matchAll(/<span class="page-btn"[^>]*>/g)].map((m) => m[0]);
+  assert.ok(disabledPageBtns.length > 0, "首页应有未启用的分页边界项（断言前置）");
+  assert.deepEqual(
+    disabledPageBtns.filter((t) => marked(t)),
+    [],
+    "未启用的分页边界项不应带任何可点击态标记",
+  );
+  assert.ok(!/<span class="of"[^>]*data-cursor/.test(html), "页码说明文本不应带标记");
+
+  // 详情页：返回时间线（站内）与复制链接（按钮）都属次级控件
+  const detailRel = htmlFiles.find((rel) => /^items\/[0-9a-f]{64}\/index\.html$/.test(rel));
+  assert.ok(detailRel, "产物中应存在详情页（断言前置）");
+  const detail = readDist(detailRel!);
+  assert.match(detail, /<a href="[^"]*topics\/[^"]*" data-cursor-soft>← 返回时间线<\/a>/, "详情页返回链接带轻量态");
+  assert.match(detail, /<button class="ext" type="button" data-copy-link data-cursor-soft/, "复制链接按钮带轻量态");
+
+  // 空态与 404 的出口按钮同样带轻量态
+  assert.match(
+    readDist("topics/philosophy/index.html"),
+    /<a class="page-btn" data-all data-cursor-soft/,
+    "空态「查看全部」带轻量态",
+  );
+  assert.match(
+    readDist("404.html"),
+    /<a class="page-btn" href="[^"]*" data-cursor-soft>返回公共时间线<\/a>/,
+    "404 出口带轻量态",
+  );
+});
+
 test("隐私约束：无统计/广告/外部字体/CDN 引用（HTML、CSS 与本地 JS 一并检查；Ticket 08 起动效库自托管，产物零外链）", () => {
   const forbidden = [
     "googletagmanager", "google-analytics", "gtag(", "hm.baidu.com", "cnzz",

@@ -35,7 +35,7 @@ const snapshot = loadSnapshot();
       <nav class="k-toc" data-toc>
         <ol>
           {toc.map((item) => (
-            <li><a href={`#${item.id}`}>{item.label}</a></li>
+            <li><a href={`#${item.id}`} data-cursor-soft>{item.label}</a></li>
           ))}
         </ol>
       </nav>

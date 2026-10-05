@@ -54,7 +54,7 @@ const description = entry.summary
 
   <article class="k-detail layout-c" data-detail-page>
     <p class="k-detail-back">
-      <a href={siteUrl(topicPagePath(entry.topic, 1))}>← 返回时间线</a>
+      <a href={siteUrl(topicPagePath(entry.topic, 1))} data-cursor-soft>← 返回时间线</a>
     </p>
     <h1 class="k-headline">{entry.title}</h1>
     <KEntryMedia lab={lab} clock={clock} num="00" />
@@ -75,7 +75,7 @@ const description = entry.summary
             查看百度搜索结果 ↗
           </a>
           {/* 复制链接（Ticket 05）：静态层 hidden，脚本解除 hidden 后可用；无 JS 不出现死按钮 */}
-          <button class="ext" type="button" data-copy-link hidden>复制链接</button>
+          <button class="ext" type="button" data-copy-link data-cursor-soft hidden>复制链接</button>
         </p>
       )
     }

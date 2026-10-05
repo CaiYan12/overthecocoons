@@ -14,7 +14,7 @@ const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
   totalPages > 1 && (
     <nav class="pager" data-pager aria-label="分页">
       {page > 1 ? (
-        <a class="page-btn" data-page={page - 1} href={hrefFor(page - 1)} rel="prev" aria-label="上一页">
+        <a class="page-btn" data-page={page - 1} data-cursor-soft href={hrefFor(page - 1)} rel="prev" aria-label="上一页">
           ‹
         </a>
       ) : (
@@ -26,6 +26,7 @@ const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
         <a
           class="page-btn"
           data-page={p}
+          data-cursor-soft
           href={hrefFor(p)}
           aria-current={p === page ? "page" : undefined}
           aria-label={`第 ${p} 页`}
@@ -34,7 +35,7 @@ const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
         </a>
       ))}
       {page < totalPages ? (
-        <a class="page-btn" data-page={page + 1} href={hrefFor(page + 1)} rel="next" aria-label="下一页">
+        <a class="page-btn" data-page={page + 1} data-cursor-soft href={hrefFor(page + 1)} rel="next" aria-label="下一页">
           ›
         </a>
       ) : (
