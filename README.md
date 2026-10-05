@@ -45,11 +45,12 @@ data 更新编排说明见 `docs/mvp-architecture.md`（工作流与失败控制
 - [x] Lighthouse 口径：裁定维持单轮口径，不做多轮中位数复测，不把门槛写入验收档
 - [x] 客户端数据岛 41,419 B 内联进每个页面：随性能不立项一并记录为已知限制，暂不处理（仍随 7 天窗口线性膨胀）
 
-### 未核实项
+### 未核实项（2026-10-05 全部核实落档）
 
-- [ ] feed 时间（日期）语义核实（影响「可靠发布时间」标注口径）
-- [ ] 百度热搜「榜单规则」浮层文本获取（许可核查时实测 `display:none` 未取到）
+- [x] feed 时间（日期）语义核实：裁定 pubDate＝上游聚合器（aishort）抓取/入库时间，非百度发布时间（同批 66 条挤在 11 秒内、恒早于本站收录 2–16 小时）；产品口径不变（排序用首次收录时间、originalTime 恒 null）；证据见 `docs/mvp-dependency-evidence.md`，结论同步站内 sources 页
+- [x] 百度热搜「榜单规则」文本获取：正文在规则页 `top.baidu.com/board?page=rule&tab=realtime`（非浮层），已落档并接入站内 sources 页官方出处（热度排序、每 5 分钟更新）
 - [x] GSAP 自托管库许可条款落档核查（2026-10-05 实读 gsap.com/standard-license：免费含商用、自托管属许可用途、须保留版权声明——本项目合规，落档 `docs/mvp-dependency-evidence.md`）
+- [ ] 非阻塞观察项：跨生成周期 pubDate 稳定性（feed 实测有缓存，跨约 5 小时生成周期是否漂移未观测；不设截止，多源接入或异常时复核）
 
 ### deferred minor（41 条，2026-10-05 全清）
 

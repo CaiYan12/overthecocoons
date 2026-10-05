@@ -209,6 +209,11 @@ test("来源页：区分原始平台与 Feed 服务提供者，只写核实信�
   assert.ok(html.includes("rss.aishort.top"), "源地址");
   assert.ok(html.includes("热搜筛选"), "上游筛选如实说明");
   assert.ok(html.includes("尚未核实"), "未核实事项如实说明");
+  // 榜单规则官方出处（2026-10-05 裁定落档）：站内引用百度官方规则页
+  assert.ok(html.includes("top.baidu.com/board?page=rule"), "榜单规则官方出处链接");
+  assert.ok(html.includes("每 5 分钟更新"), "官方更新节奏如实引用");
+  // feed 日期语义已核实（2026-10-05）：pubDate＝上游抓取时间，站内如实说明
+  assert.ok(html.includes("上游聚合器"), "pubDate 语义核实结论如实说明");
   assert.ok(html.includes("隔离条目"), "隔离列表区");
   assert.ok(html.includes("baidu-aishort"), "公开来源状态 sourceId");
   assert.ok(html.includes("快照时间"), "快照时间分字段");
