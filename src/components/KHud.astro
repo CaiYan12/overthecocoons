@@ -33,7 +33,8 @@ const totalText = String(total).padStart(2, "0");
         <div class="sec">
           <p class="h">NOW READING</p>
           <p class="big k-count">
-            <span class="k-roll"><span data-rollin>01</span></span> / <span data-total>{totalText}</span>
+            {/* UI 票 #11（用户裁定）：初始无激活条目，NOW READING 归位显示 --；激活后由 motion.ts 跟随改写 */}
+            <span class="k-roll"><span data-rollin>--</span></span> / <span data-total>{totalText}</span>
           </p>
         </div>
         <div class="sec sec-readbar">

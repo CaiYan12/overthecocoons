@@ -343,6 +343,8 @@ export function onListRendered(deferred: boolean): void {
           toggleClass: { targets: entry, className: "is-active" },
           onToggle: (self: { isActive: boolean }) => {
             if (self.isActive) setHudIndex(gi);
+            // UI 票 #11：变 inactive 且全页已无激活条目（如滚回顶部）→ NOW READING 归位 --
+            else if (!root.querySelector(".k-entry.is-active")) setHudIdle();
           },
         });
       });
@@ -362,13 +364,24 @@ export function onListRendered(deferred: boolean): void {
 /* ---- HUD NOW READING 序号滚动（原型 setHudIndex） ---- */
 
 export function setHudIndex(gi: number): void {
+  setHudText(pad2(gi + 1));
+}
+
+/**
+ * NOW READING 归位（UI 票 #11 用户裁定，对原型的一次有意偏离）：
+ * 节点激活 toggle 变为 inactive 且全页无激活条目（如滚回顶部）时显示 --，
+ * 不保留上一个条目序号——顶部＝尚未开始阅读。
+ */
+export function setHudIdle(): void {
+  setHudText("--");
+}
+
+function setHudText(text: string): void {
   const roll = document.querySelector<HTMLElement>("[data-rollin]");
   if (!roll) return;
-  const n = gi + 1;
-  const current = Number.parseInt(roll.textContent ?? "", 10);
-  if (n === current) return;
+  if (roll.textContent === text) return;
   if (!enabled || !gsap) {
-    roll.textContent = pad2(n);
+    roll.textContent = text;
     return;
   }
   gsap.to(roll, {
@@ -376,7 +389,7 @@ export function setHudIndex(gi: number): void {
     duration: 0.22,
     ease: "power2.in",
     onComplete: () => {
-      roll.textContent = pad2(n);
+      roll.textContent = text;
       gsap!.fromTo(roll, { yPercent: 110 }, { yPercent: 0, duration: 0.26, ease: "power3.out" });
     },
   });
