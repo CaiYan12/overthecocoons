@@ -3,7 +3,7 @@
 ## 项目背景与当前状态
 
 - 项目：跳出茧房 Over the cocoons。
-- 先读 `CONTEXT.md` 领域术语与 `docs/README.md` 文档索引，再读 `docs/mvp-decisions.md` / `docs/mvp-spec.md` 已确认规格、`docs/mvp-architecture.md` / `docs/mvp-implementation-plan.md` 实施建议，以及产品/UI基线。原始 `初版需求细化.md` 示例与未确认项不是实现证据；后续用户明确决定优先于旧记录。
+- 先读 `GLOSSARY.md` 领域术语与 `docs/README.md` 文档索引，再读 `docs/mvp-decisions.md` / `docs/mvp-spec.md` 已确认规格、`docs/mvp-architecture.md` / `docs/mvp-implementation-plan.md` 实施建议，以及产品/UI基线。原始 `初版需求细化.md` 示例与未确认项不是实现证据；后续用户明确决定优先于旧记录。
 - Ticket 01 工程骨架已建立：Astro 7.3.5 + TypeScript 6.0.3 + Tailwind CSS 4.3.3（`@tailwindcss/vite`），pnpm 10.26.2 锁文件已提交；占位首页（基路径 `/overthecocoons`、无 JS 可读、标注“演示数据”）；四条命令 `pnpm run check` / `build` / `test:node` / `test:e2e` 已在本地全部通过（2026-10-03，Node 24.18.0）。演示数据机制见 `docs/fixtures.md`（`fixtures/` 目录 + `SNAPSHOT_PATH` 注入）。
 - Ticket 02 数据契约与身份规则已建立：`src/domain/contract.ts`（三文件契约 state/items/manifest、完整 SHA-256 稳定 ID＝来源 ID+NUL 分隔符+GUID、损坏校验）与 `src/domain/ingestion.ts`（可注入来源的纯函数合并管线：同 GUID 不重计首次收录、内容修订保留时间、wd 关键词冲突/缺 GUID/协议不合法/字段校验失败隔离、7 天窗口滚动、台账无限保留、失败降级保留旧快照、坏状态停写）；`src/lib/snapshot.ts` 公开快照校验随契约演进（新增 `quarantined`/`sources` 字段）。
 - Ticket 03 首源归一化接入已建立：`src/lib/url-guard.ts`（服务端请求 URL 安全校验：仅 http/https、拒绝 localhost/环回/私有/链路本地/保留地址与数字形式 IP 伪装、重定向逐跳复验）、`src/lib/feed-parse.ts`（rss-parser 3.13.0 字段映射按其源码核实：GUID 取文本、description→content/contentSnippet；热度后缀移除、摘要 300 字上限、wd 取第一个解码精确串、originalTime 恒 null）、`src/lib/source-fetch.ts`（单次尝试获取：超时、非 2xx、有界读取、严格 UTF-8）、`src/lib/baidu-source.ts`（首源适配：SOURCE_ID 冻结为 `baidu-aishort`、默认 feed `https://rss.aishort.top/?type=baidu`、最多 2 次尝试加短退避、产出可注入管线的 SourceFetchResult）；`pnpm smoke:source` 只读烟测通过（2026-10-03，100 条、0 缺 wd、10 缺摘要、0 隔离）。获取/解析层未被页面导入，build 不隐式抓源；数据落盘工作流属 Ticket 07。
@@ -56,7 +56,7 @@ Do not use for: refactoring, writing scripts from scratch, debugging business lo
 9. **Correctness.** 用户错了要指出，自己错了要纠正；新证据优先于旧结论，正确性优先于迎合。
 10. **Self-improvement.** use /self-improvement 从用户纠正、失败、调试和项目经验中提取可复用规律，避免重复犯错；重要经验沉淀到持久化记忆或项目文档，但不得自行改变核心规则或编造经验。
 11. **Diving Workflow.** 复杂任务采用特定 skill **Align→PRD→Issues→Execute**：
-    - **Align:** 用 `/grill-me` 或 `/grill-with-docs` 消除歧义，必要时记录 `CONTEXT.md`/ADR；简单任务跳过。
+    - **Align:** 用 `/grill-me` 或 `/grill-with-docs` 消除歧义，必要时记录 `GLOSSARY.md`/ADR；简单任务跳过。
     - **SPEC:** 用 `/to-spec` 固化目标、范围、约束、验收标准。
     - **Issues:** 用 `/to-issues` 拆为可验证的 Vertical Slices。
     - **Execute:** 按 `/implement` 依赖执行；条件允许时 `/tdd`：失败测试→实现→通过→重构→提交。可使用 `/subagent-driven-development`。
@@ -84,4 +84,4 @@ Do not use for: refactoring, writing scripts from scratch, debugging business lo
 
 ### Domain docs
 
-采用 single-context：根目录 `CONTEXT.md` + `docs/adr/`，按需创建。See `docs/agents/domain.md`.
+采用 single-context：根目录 `GLOSSARY.md` + `docs/adr/`，按需创建。See `docs/agents/domain.md`.

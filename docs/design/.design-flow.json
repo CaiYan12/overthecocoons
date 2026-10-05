@@ -31,5 +31,5 @@
     "Archived state only; no root implementation state or application code created."
   ],
   "blocked": [],
-  "next": "SPEC: read docs/ui-alignment.md and docs/ui-design.md alongside CONTEXT.md."
+  "next": "SPEC: read docs/ui-alignment.md and docs/ui-design.md alongside GLOSSARY.md."
 }

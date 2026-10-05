@@ -3,7 +3,7 @@
 日期：2026-10-03。状态：用户已确认设计风格及本轮讨论选择，保存到 docs 下备用；当前未实现站点。
 本轮用户已决定布局、功能、技术组合与动效类型。具体色号、字体回退、间距、断点和时长保留为建议工程起点，后续落地时固化并实测；它们不是实机验收结果。
 按用户选择定制报刊、暖纸白/墨黑/暗红与三栏布局；design-brief 的预设 token 表未覆盖这套组合，本规范优先遵守用户选择。
-产品、来源、排序和保留基线见 [product-alignment.md](product-alignment.md)，领域术语见 [CONTEXT.md](../CONTEXT.md)；本轮新增 UI 范围见 [ui-alignment.md](ui-alignment.md)。
+产品、来源、排序和保留基线见 [product-alignment.md](product-alignment.md)，领域术语见 [GLOSSARY.md](../GLOSSARY.md)；本轮新增 UI 范围见 [ui-alignment.md](ui-alignment.md)。
 
 ## 1. Visual Theme & Atmosphere
 
@@ -131,7 +131,7 @@
 
 ## 7. Do's and Don'ts
 
-- 遵守 CONTEXT.md 的产品/来源/隐私规则及 /overthecocoons 子路径。
+- 遵守 GLOSSARY.md 的产品/来源/隐私规则及 /overthecocoons 子路径。
 - 使用真实按钮/链接语义，键盘焦点清楚可见。
 - 手机模态导航以原生 dialog 为起点；焦点进入/返回、背景 inert、Escape 和滚动锁定均需实测。
 - 动画结束、取消和页面离开都清理状态与监听器。

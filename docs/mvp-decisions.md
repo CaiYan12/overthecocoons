@@ -1,7 +1,7 @@
 # MVP 架构对齐结论
 
 日期：2026-10-03。上轮按用户要求停止讨论并归档；本轮用户明确要求继续未决对齐，从 MVP-Q13 开始，不重问 Q1–Q12。本文记录已明确的决定；尚未确定事项与工程建议另列，不当作已批准实现。
-基线：[产品对齐](product-alignment.md)、[UI 对齐](ui-alignment.md)、[设计规范](ui-design.md)、[领域术语](../CONTEXT.md)。
+基线：[产品对齐](product-alignment.md)、[UI 对齐](ui-alignment.md)、[设计规范](ui-design.md)、[领域术语](../GLOSSARY.md)。
 
 ## MVP-Q1：公开保留与技术历史
 

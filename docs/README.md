@@ -7,7 +7,7 @@
 3. [页面与数据架构](mvp-architecture.md)
 4. [初版实现计划](mvp-implementation-plan.md)
 5. [运行时/依赖/源数据证据](mvp-dependency-evidence.md)
-6. [领域术语](../CONTEXT.md)
+6. [领域术语](../GLOSSARY.md)
 
 架构和计划中的“建议/待定”不等同于已批准或已验证。上轮停止讨论并归档后，用户于 2026-10-03 明确要求继续未决对齐；MVP-Q13–Q22 已全部确认并记入 [决定记录](mvp-decisions.md)。仍开放：lockfile 与依赖脚本许可待实际安装后确定；实际应用开发和发布未执行。来源内容公开使用许可已于 2026-10-04 由维护者核查裁定，见 [初版实现计划](mvp-implementation-plan.md) 发布闸门。
 

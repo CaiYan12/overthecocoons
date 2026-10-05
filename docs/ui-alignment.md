@@ -28,4 +28,4 @@
 - [配色对比度检查](design/color-contrast-checks.json)：12 组文本/背景计算结果，不是完整无障碍验收。
 - [设计流程备用记录](design/.design-flow.json)：brief 阶段与已讨论选择，未在根目录启用实施状态。
 
-原始聊天文档、根目录 CONTEXT.md / AGENTS.md 本轮保持不变；后续进入 SPEC 时应一并读取本记录。
+原始聊天文档、根目录 GLOSSARY.md / AGENTS.md 本轮保持不变；后续进入 SPEC 时应一并读取本记录。
