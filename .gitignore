@@ -1,6 +1,7 @@
 .mimosa/
 .playwright-mcp/
 .superpowers/
+.zcode/
 node_modules/
 dist/
 .astro/
@@ -8,6 +9,8 @@ test-results/
 playwright-report/
 .snapshot/
 docs/design/review-*.png
+audit/
+.design-flow.json
 .env
 .env.*
 !.env.example
