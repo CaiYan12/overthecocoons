@@ -266,30 +266,33 @@ test.describe("阅读位置（仅本次访问内存）", () => {
 });
 
 test.describe("三态主题（浅色/深色/跟随系统）", () => {
-  test("循环切换、html data-theme 同步、项目专属 key 本地保存并在重载后恢复", async ({ page }) => {
+  test("初值跟随系统（auto）、循环切换、html data-theme 同步、项目专属 key 本地保存并在重载后恢复", async ({ page }) => {
     await page.goto(BASE);
     await waitClientReady(page);
     await showHeader(page);
 
     const modeBtn = page.locator("[data-mode]");
+    // T4（UI 票 #21）：初值为 auto（跟随系统），不再是硬编码浅色
+    await expect(modeBtn).toHaveText("显示：跟随系统");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
+
+    await modeBtn.click(); // auto → 浅色
     await expect(modeBtn).toHaveText("显示：浅色");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 
-    await modeBtn.click();
+    await modeBtn.click(); // 浅色 → 深色
     await expect(modeBtn).toHaveText("显示：深色");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     expect(await statusText(page)).toContain("显示模式：深色");
 
-    await modeBtn.click();
+    await modeBtn.click(); // 深色 → 跟随系统
     await expect(modeBtn).toHaveText("显示：跟随系统");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
 
-    await modeBtn.click();
-    await expect(modeBtn).toHaveText("显示：浅色");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-
     // 保存偏好后重载恢复：切到深色 → 重载 → 仍为深色
-    await modeBtn.click();
+    await modeBtn.click(); // auto → 浅色
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await modeBtn.click(); // 浅色 → 深色
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await page.reload();
     await waitClientReady(page);
@@ -321,10 +324,13 @@ test.describe("三态主题（浅色/深色/跟随系统）", () => {
     await waitClientReady(page);
     await showHeader(page);
     const modeBtn = page.locator("[data-mode]");
-    await modeBtn.click();
+    await expect(modeBtn).toHaveText("显示：跟随系统");
+    await modeBtn.click(); // auto → 浅色
+    await expect(modeBtn).toHaveText("显示：浅色");
+    await modeBtn.click(); // 浅色 → 深色
     await expect(modeBtn).toHaveText("显示：深色");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await modeBtn.click();
+    await modeBtn.click(); // 深色 → 跟随系统
     await expect(modeBtn).toHaveText("显示：跟随系统");
     // 交互功能不受存储拒绝影响
     await pickTopic(page, "新闻");
@@ -379,6 +385,71 @@ test.describe("隐私断言（持久化仅限主题偏好）", () => {
     const themeValue = storage.local.find((item) => item.key === THEME_KEY)?.value;
     expect(["light", "dark", "auto"]).toContain(themeValue);
     expect(storage.session, "不得写入 sessionStorage").toEqual([]);
+  });
+});
+
+test.describe("默认主题跟随系统（T4，UI 票 #21）", () => {
+  /** 深色映射生效时 :root 的 --paper 应为深色 token（浅色为 #F8F5EC）。 */
+  const DARK_PAPER = "#191816";
+
+  async function rootPaper(page: Page): Promise<string> {
+    return page.evaluate(
+      () => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim(),
+    );
+  }
+
+  test("深色系统 + 无存储：首访即深色（auto 初值 + CSS prefers-color-scheme 映射）", async ({ browser }) => {
+    const context = await browser.newContext(); // 全新 context：无任何 localStorage 存储
+    const page = await context.newPage();
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto(BASE);
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
+    expect(await rootPaper(page), "深色系统无存储首访应解析到深色 --paper").toBe(DARK_PAPER);
+
+    await waitClientReady(page);
+    await expect(page.locator("[data-mode]")).toHaveText("显示：跟随系统");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
+    await context.close();
+  });
+
+  test("无 JS + 深色系统：CSS 映射独立生效（不依赖 head 恢复脚本）", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto(BASE);
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
+    expect(await rootPaper(page), "无 JS 时 auto 深色映射仍应生效").toBe(DARK_PAPER);
+    await context.close();
+  });
+});
+
+test.describe("移动端 Hero ghost 隐藏（T4，UI 票 #21）", () => {
+  test("≤767px：装饰 ghost 英文 display:none（叠压源移除，日期渲染正常）；桌面保留", async ({ page }) => {
+    // 390px 移动视口（原缺陷实测宽度）
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(BASE);
+    const heroEn = page.locator("[data-heroen]");
+    const mobile = await page.evaluate(() => {
+      const en = document.querySelector<HTMLElement>("[data-heroen]");
+      const date = document.querySelector<HTMLElement>(".k-hero-date");
+      return {
+        enDisplay: en ? getComputedStyle(en).display : null,
+        dateVisible: date !== null && date.getBoundingClientRect().height > 0,
+      };
+    });
+    expect(mobile.enDisplay, "≤767px ghost 英文应 display:none").toBe("none");
+    expect(mobile.dateVisible, "幽灵日期应正常渲染").toBe(true);
+    await expect(heroEn).toBeHidden();
+    await expect(page.locator(".k-hero-date")).toBeVisible();
+
+    // 桌面（≥768px）：ghost 英文保留渲染
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.waitForFunction(() => {
+      const en = document.querySelector<HTMLElement>("[data-heroen]");
+      return en !== null && getComputedStyle(en).display !== "none";
+    });
   });
 });
 
