@@ -239,6 +239,29 @@ test("主题筛选页：新闻主题有内容并独立分页；空主题渲染�
   assert.match(philosophy, /<span data-total>00<\/span>/, "空主题 HUD 总数为 00");
 });
 
+test("T8 Hero 仅时间线第一页：首页保留 Hero，其余时间线路由渲染轻量页头且无 Hero 挂点", () => {
+  const index = readDist("index.html");
+  assert.ok(index.includes('class="k-hero" data-hero'), "首页保留 Hero（data-hero 挂点）");
+  assert.ok(!index.includes("k-pagehead"), "首页不渲染轻量页头");
+
+  const page2 = readDist("page/2/index.html");
+  assert.ok(!page2.includes("data-hero"), "分页页不得有 Hero 挂点（T3 header 常显守卫依据）");
+  assert.ok(page2.includes('class="k-pagehead"'), "分页页渲染轻量页头");
+  assert.match(page2, /class="k-pagehead-big">公共时间线<\/h1>/, "「全部」页头大字");
+  assert.match(page2, /class="k-pagehead-sub">PUBLIC TIMELINE · 第 2 页 · 按收录时间排序（演示数据）<\/p>/);
+
+  const news = readDist("topics/news/index.html");
+  assert.ok(!news.includes("data-hero"), "主题页不得有 Hero 挂点");
+  assert.ok(news.includes('class="k-pagehead"'), "主题页渲染轻量页头");
+  assert.match(news, /class="k-pagehead-big">新闻<\/h1>/, "主题页页头大字为主题名");
+  assert.match(news, /class="k-pagehead-sub">NEWS · 按收录时间排序（演示数据）<\/p>/);
+
+  const philosophy = readDist("topics/philosophy/index.html");
+  assert.ok(!philosophy.includes("data-hero"), "空主题页不得有 Hero 挂点");
+  assert.ok(philosophy.includes('class="k-pagehead"'), "空主题页同样渲染轻量页头");
+  assert.match(philosophy, /class="k-pagehead-big">哲学<\/h1>/);
+});
+
 test("HUD：NOW READING 总数随主题口径变化，来源与快照时间呈现", () => {
   // data-total 是 T06 挂点属性，总数渲染为其元素文本
   assert.match(readDist("index.html"), /<span data-total>45<\/span>/, "全部=45");

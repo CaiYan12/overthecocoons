@@ -18,6 +18,8 @@
  * 两段式切换期间 html[data-oct-topic-anim]。
  */
 
+import { shouldPlayIntro } from "../lib/intro-rule.ts";
+
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 const FINE_POINTER_QUERY = "(pointer:fine)";
 /** 原型圆环周长（r=26，2πr≈163.36 → 163.4）。 */
@@ -223,37 +225,52 @@ function initHeroAndHeader(root: HTMLElement): void {
     return;
   }
 
-  const heroChars: HTMLElement[] = [];
-  root.querySelectorAll<HTMLElement>(".k-hero-title .line").forEach((line) => {
-    heroChars.push(...splitChars(line));
-  });
   const rule = root.querySelector<HTMLElement>("[data-herorule]");
   const metaItems = [...root.querySelectorAll<HTMLElement>("[data-herometa] li")];
   const dateBig = root.querySelector<HTMLElement>("[data-herodate]");
   const hint = root.querySelector<HTMLElement>("[data-hint]");
-  const ghostA = heroEn
-    ? Number.parseFloat(getComputedStyle(root).getPropertyValue("--ghost-a")) || 0.05
-    : 0.05;
 
-  // Intro 隐藏初态（总时长 ≤1.4s：0.95+0.4=1.35s）
-  if (heroEn) g.set(heroEn, { autoAlpha: 0, y: 40, filter: "blur(12px)", letterSpacing: "0.18em" });
-  if (rule) g.set(rule, { scaleX: 0 });
-  g.set(heroChars, { yPercent: 110, rotate: 2 });
-  if (metaItems.length) g.set(metaItems, { y: 18, autoAlpha: 0 });
-  if (dateBig) g.set(dateBig, { autoAlpha: 0, y: 60 });
-  if (hint) g.set(hint, { autoAlpha: 0 });
+  // 首次 intro（票 #25）：开场编排仅对「首次到达」播放——判定零存储（privacy 页明文
+  // 不写入 sessionStorage，e2e 断言其恒空），规则见 lib/intro-rule.ts（reload/back_forward
+  // 或站内同源跳转 → 跳过；直接到达/外源进入 → 播放）。跳过时立即打 data-oct-intro=done
+  // 且不建任何隐藏初态（内容直显）；Hero 页滚动显隐（84px 阈值）与 Parallax 不受影响。
+  if (
+    !shouldPlayIntro({
+      navigationType: readNavigationType(),
+      referrer: document.referrer,
+      origin: location.origin,
+    })
+  ) {
+    markIntroDone();
+  } else {
+    const heroChars: HTMLElement[] = [];
+    root.querySelectorAll<HTMLElement>(".k-hero-title .line").forEach((line) => {
+      heroChars.push(...splitChars(line));
+    });
+    const ghostA = heroEn
+      ? Number.parseFloat(getComputedStyle(root).getPropertyValue("--ghost-a")) || 0.05
+      : 0.05;
 
-  g.timeline({ defaults: { ease: "power3.out" }, onComplete: markIntroDone })
-    .to(
-      heroEn,
-      { autoAlpha: ghostA, y: 0, filter: "blur(0px)", letterSpacing: "0.02em", duration: 0.7, ease: "power2.out" },
-      0,
-    )
-    .to(rule, { scaleX: 1, duration: 0.5, ease: "power3.inOut" }, 0.15)
-    .to(heroChars, { yPercent: 0, rotate: 0, duration: 0.6, stagger: 0.045 }, 0.3)
-    .to(dateBig, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.55)
-    .to(metaItems, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.06 }, 0.65)
-    .to(hint, { autoAlpha: 1, duration: 0.4 }, 0.95);
+    // Intro 隐藏初态（总时长 ≤1.4s：0.95+0.4=1.35s）
+    if (heroEn) g.set(heroEn, { autoAlpha: 0, y: 40, filter: "blur(12px)", letterSpacing: "0.18em" });
+    if (rule) g.set(rule, { scaleX: 0 });
+    g.set(heroChars, { yPercent: 110, rotate: 2 });
+    if (metaItems.length) g.set(metaItems, { y: 18, autoAlpha: 0 });
+    if (dateBig) g.set(dateBig, { autoAlpha: 0, y: 60 });
+    if (hint) g.set(hint, { autoAlpha: 0 });
+
+    g.timeline({ defaults: { ease: "power3.out" }, onComplete: markIntroDone })
+      .to(
+        heroEn,
+        { autoAlpha: ghostA, y: 0, filter: "blur(0px)", letterSpacing: "0.02em", duration: 0.7, ease: "power2.out" },
+        0,
+      )
+      .to(rule, { scaleX: 1, duration: 0.5, ease: "power3.inOut" }, 0.15)
+      .to(heroChars, { yPercent: 0, rotate: 0, duration: 0.6, stagger: 0.045 }, 0.3)
+      .to(dateBig, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.55)
+      .to(metaItems, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.06 }, 0.65)
+      .to(hint, { autoAlpha: 1, duration: 0.4 }, 0.95);
+  }
 
   // Hero Parallax（scrub，仅主要视觉层）
   if (heroEn) {
@@ -277,6 +294,14 @@ function initHeroAndHeader(root: HTMLElement): void {
       scrollTrigger: { trigger: hero, start: "top top", end: "60% top", scrub: true },
     });
   }
+}
+
+/** Navigation Timing 导航类型（"navigate" | "reload" | "back_forward" | "prerender"）；API 不可用时 null（判定按 referrer 兜底）。 */
+function readNavigationType(): string | null {
+  const entry = performance.getEntriesByType("navigation")[0] as
+    | PerformanceNavigationTiming
+    | undefined;
+  return entry?.type ?? null;
 }
 
 /* ---- 时间线列表动效（原型 initListMotion；listCtx 随重渲染整体回收） ---- */

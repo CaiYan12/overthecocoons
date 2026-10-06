@@ -437,6 +437,132 @@ test.describe("非 Hero 页 header 常显（UI 票 #20）", () => {
       expect(await headerM42(), `${vp.label}：滚过 84px 后 header 滑入`).toBeGreaterThan(-5);
     }
   });
+
+  test("时间线非首页（T8）：/topics/news/ 与 /page/2/ 无 Hero、轻量页头存在、首屏 header 可见", async ({
+    page,
+  }) => {
+    for (const vp of VIEWPORTS) {
+      for (const path of ["topics/news/", "page/2/"]) {
+        await page.setViewportSize({ width: vp.width, height: vp.height });
+        await page.goto(`${BASE}${path}`);
+        await waitClientReady(page);
+        await waitMotionOn(page);
+        const state = await page.evaluate(() => {
+          const hero = document.querySelector("[data-hero]");
+          const head = document.querySelector<HTMLElement>("[data-pagehead]");
+          const big = head?.querySelector<HTMLElement>(".k-pagehead-big");
+          const header = document.querySelector<HTMLElement>("[data-kheader]");
+          const brand = header?.querySelector<HTMLElement>(".k-brand");
+          const box = brand?.getBoundingClientRect();
+          const hit = box
+            ? document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+            : null;
+          return {
+            hasHero: hero !== null,
+            hasHead: head !== null,
+            bigText: big?.textContent ?? "",
+            headerBottom: header?.getBoundingClientRect().bottom ?? -1,
+            brandReachable: hit !== null && hit.closest("[data-kheader]") === header,
+          };
+        });
+        expect(state.hasHero, `${path}（${vp.label}）：不得存在 Hero 挂点`).toBe(false);
+        expect(state.hasHead, `${path}（${vp.label}）：轻量页头应存在`).toBe(true);
+        expect(state.bigText.trim(), `${path}（${vp.label}）：页头大字非空`).not.toBe("");
+        expect(
+          state.headerBottom,
+          `${path}（${vp.label}）：scrollY=0 时 header 应有可见高度（衔接 T3 断言）`,
+        ).toBeGreaterThan(0);
+        expect(
+          state.brandReachable,
+          `${path}（${vp.label}）：header 品牌链接应可交互命中`,
+        ).toBe(true);
+      }
+    }
+  });
+});
+
+test.describe("首次 intro 判定（T8：零存储 referrer / Navigation Timing 规则）", () => {
+  /**
+   * 规则（docs/adr/0004-hero-lightweight-head-intro.md，实现者拟定）：reload/back_forward
+   * 或 navigate + 同源 referrer → 跳过 intro（立即 data-oct-intro="done"）；navigate 且
+   * 无 referrer 或跨源 referrer → 播放。判定零存储：privacy 页明文不写 sessionStorage，
+   * e2e 断言 sessionStorage 恒空、localStorage 仅主题 key（interactions.spec 隐私断言）。
+   */
+  test("站内导航返回首页不重播 intro：client ready 时 intro 已 done，无隐藏初态", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    // 首次直接到达：intro 正常播放并完成（作为「已看过」前提）
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+    await waitIntroDone(page);
+
+    // 站内整页导航到 about（左栏真实链接，非客户端接管），再点品牌回首页
+    await page.locator('.k-nav nav a[href*="/about/"]').click();
+    await waitClientReady(page);
+    await page.locator(".k-brand").click();
+    await waitClientReady(page);
+
+    // 立即取值（零容差）：intro 若重播，此刻应无 done 标记（补间需 ~1.35s）
+    const doneNow = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-oct-intro"),
+    );
+    expect(doneNow, "站内返回：client ready 时 intro 应已跳过并打标").toBe("done");
+    const chars = await page.evaluate(
+      () => document.querySelectorAll("[data-herotitle] .ch").length,
+    );
+    expect(chars, "intro 跳过：不做字符拆分（无隐藏初态，内容直显）").toBe(0);
+
+    // 零存储：导航全程 sessionStorage 恒空，localStorage 仅主题 key（privacy 约束不变）
+    const storage = await page.evaluate(() => ({
+      session: Object.keys(window.sessionStorage),
+      local: Object.keys(window.localStorage),
+    }));
+    expect(storage.session, "不得写入 sessionStorage（零存储判定）").toEqual([]);
+    expect(
+      storage.local.filter((key) => key !== "overthecocoons.theme"),
+      "localStorage 仅允许主题 key",
+    ).toEqual([]);
+  });
+
+  test("直接到达首页：intro 正常播放（既有行为不回退）", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+
+    // 直接到达（无 referrer）：client ready 时不得已打 done（未跳过）
+    const doneNow = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-oct-intro"),
+    );
+    expect(doneNow, "直接到达不应立即打 done（intro 正常播放）").toBeNull();
+
+    await waitIntroDone(page);
+    const chars = await page.evaluate(
+      () => document.querySelectorAll("[data-herotitle] .ch").length,
+    );
+    expect(chars, "intro 播放：标题已拆分字符并揭示").toBeGreaterThan(0);
+  });
+
+  test("刷新首页：不重播 intro（reload 类型跳过，立即 done）", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+    await waitIntroDone(page);
+
+    await page.reload();
+    await waitClientReady(page);
+    const doneNow = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-oct-intro"),
+    );
+    expect(doneNow, "刷新：client ready 时 intro 应已跳过并打标").toBe("done");
+    const chars = await page.evaluate(
+      () => document.querySelectorAll("[data-herotitle] .ch").length,
+    );
+    expect(chars, "刷新：无隐藏初态").toBe(0);
+  });
 });
 
 test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", () => {

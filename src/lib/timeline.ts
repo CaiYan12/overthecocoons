@@ -202,3 +202,21 @@ export function latestDayStats(sorted: PublicEntry[]): { date: string; count: nu
   const date = sorted[0] ? beijingDate(sorted[0].firstSeenAt) : "";
   return { date, count: sorted.filter((entry) => beijingDate(entry.firstSeenAt) === date).length };
 }
+
+/**
+ * 轻量页头文案（票 #25「Hero 仅时间线第一页」）：时间线非首页路由的大字时刻与说明行，
+ * 与日组头同族（serif 大字 + k-day-sub 同款说明行）；文案由主题与页码规则驱动，
+ * 服务端（KPageHead.astro）与客户端重渲染（timeline-view.ts）共用，防止切主题后页头陈旧。
+ */
+export function pageHeadInfo(
+  topic: string,
+  page: number,
+  isFixture: boolean,
+): { big: string; sub: string } {
+  const big = topic === "全部" ? "公共时间线" : topic;
+  const en = topic === "全部" ? "PUBLIC TIMELINE" : (EN_LABEL[topic] ?? "INDEX");
+  const parts = [en];
+  if (page > 1) parts.push(`第 ${page} 页`);
+  parts.push(`按收录时间排序${isFixture ? "（演示数据）" : ""}`);
+  return { big, sub: parts.join(" · ") };
+}

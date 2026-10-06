@@ -27,6 +27,7 @@ import {
   formatClock,
   formatDateTime,
   monthEn,
+  pageHeadInfo,
   paginate,
   sortEntriesDesc,
   topicPagePath,
@@ -161,7 +162,21 @@ function renderPager(page: number, totalPages: number, renderTopic: string): voi
   pager.innerHTML = html;
 }
 
-/* ---- 同步 header/菜单/HUD ---- */
+/* ---- 同步 header/菜单/HUD/轻量页头 ---- */
+
+/**
+ * 轻量页头同步（票 #25）：非首页时间线路由的静态页头（KPageHead）在客户端切主题/翻页后
+ * 改写为主题与页码的同一文案口径（pageHeadInfo）；首页是 Hero（无 data-pagehead），空转。
+ */
+function updatePageHead(renderTopic: string, page: number): void {
+  const head = document.querySelector<HTMLElement>("[data-pagehead]");
+  if (!head) return;
+  const { big, sub } = pageHeadInfo(renderTopic, page, isFixture);
+  const bigEl = head.querySelector<HTMLElement>(".k-pagehead-big");
+  const subEl = head.querySelector<HTMLElement>(".k-pagehead-sub");
+  if (bigEl) bigEl.textContent = big;
+  if (subEl) subEl.textContent = sub;
+}
 
 function syncTopicUi(nextTopic: string, total: number): void {
   document
@@ -252,6 +267,7 @@ function renderView(nextTopic: string, requestedPage: number, options?: { deferr
   list.innerHTML = filtered.length === 0 ? emptyHtml(nextTopic) : dayGroupsHtml(slice, start);
   renderPager(page, totalPages, nextTopic);
   syncTopicUi(nextTopic, filtered.length);
+  updatePageHead(nextTopic, page);
   // 列表动效（进度线/节点激活/分层揭示）随本次渲染重建；两段式切换时条目揭示延迟 +120ms
   onListRendered(options?.deferredListMotion === true);
   const previousTopic = topic;
