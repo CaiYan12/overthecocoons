@@ -188,19 +188,23 @@ function initHeroAndHeader(root: HTMLElement): void {
   let lastPct = -1;
 
   // Header Morph：首屏隐藏由 GSAP yPercent 控制（CSS 不同时控制 transform）。
+  // 仅存在 Hero 的页面做首屏隐藏与滚动显隐（UI 票 #20）：非 Hero 页 header 常显——
+  // 显隐分支若照跑，headerShown 初值 false 会在回落到 84px 以下时错误触发滑出。
   // 显式 y:0 中和预绘制遮蔽期（data-oct-pending）遗留的 CSS translateY(-100%)——
   // 否则 GSAP 首次 set 会把已计算的 -68px 解析进 y 分量，与 yPercent:-100 叠加成 -136px，
   // 且 morph 补间只动 yPercent，header 将永远停在半隐藏位置。
-  if (header) g.set(header, { y: 0, yPercent: -100 });
+  if (hero && header) g.set(header, { y: 0, yPercent: -100 });
   stl.create({
     start: 0,
     end: "max",
     onUpdate: (self: { scroll(): number; progress: number }) => {
       const y = self.scroll();
-      const show = y > HEADER_SHOW_AT;
-      if (show !== headerShown) {
-        headerShown = show;
-        g.to(header, { yPercent: show ? 0 : -100, duration: 0.4, ease: "power3.out" });
+      if (hero) {
+        const show = y > HEADER_SHOW_AT;
+        if (show !== headerShown) {
+          headerShown = show;
+          g.to(header, { yPercent: show ? 0 : -100, duration: 0.4, ease: "power3.out" });
+        }
       }
       const p = self.progress;
       if (readbarSet) readbarSet(p);
