@@ -6,7 +6,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import KHeader from "./KHeader.astro";
 import KMenu from "./KMenu.astro";
 import SiteFooter from "./SiteFooter.astro";
-import { formatDateTime, latestDayStats, sortEntriesDesc } from "../lib/timeline.ts";
+import { formatDateTime, latestDayStats, sortEntriesDesc, topicTabs } from "../lib/timeline.ts";
 import { loadSnapshot } from "../lib/snapshot.ts";
 
 interface Props {
@@ -26,16 +26,18 @@ interface Props {
 }
 const { title, description, isFixture, activeTopic = "全部", activeNav, hudMobileFirst } = Astro.props;
 
-// 构建期读取快照，仅为 header/菜单/页脚提供时间基准与当日条数；页面主体数据由各页自行渲染。
+// 构建期读取快照，仅为 header/菜单/页脚提供时间基准、当日条数与主题 tab 降权视图；页面主体数据由各页自行渲染。
 const snapshot = loadSnapshot();
 const snapTime = formatDateTime(snapshot.generatedAt);
 const { count: todayCount } = latestDayStats(sortEntriesDesc(snapshot.entries));
+// T9 空主题 tab 降权：构建期按快照统计，非空按条数置前、空主题置后（规则确定性，入口保留）
+const tabs = topicTabs(snapshot.entries);
 ---
 
 <BaseLayout title={title} description={description}>
   <div class="v-kinetic" data-kinetic>
     <div class="k-grain" aria-hidden="true"></div>
-    <KHeader activeTopic={activeTopic} />
+    <KHeader activeTopic={activeTopic} topicTabs={tabs} />
     <slot name="hero" />
     <div class={`k-cols${hudMobileFirst ? " hud-first" : ""}`}>
       <slot name="col-start" />
@@ -60,6 +62,7 @@ const { count: todayCount } = latestDayStats(sortEntriesDesc(snapshot.entries));
       snapTime={snapTime}
       isFixture={isFixture}
       todayCount={todayCount}
+      topicTabs={tabs}
     />
     <!-- 页面过渡面板 DOM 已删除（T4，UI 票 #21）：见本文件头注释 -->
     <!-- 自定义光标（UI 票 #14）：反相混合作用在 .k-cursor 容器上（写在子元素上会被容器自身的

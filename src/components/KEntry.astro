@@ -6,14 +6,14 @@
 // - 日组头为批次形态（同日分钟全相同）时省略条目行时间（omitTime）。
 // 标题为站内详情链接（data-detail 为 Ticket 05/06 挂点）。
 import type { PublicEntry } from "../domain/contract.ts";
-import { EN_LABEL, entryLayout, formatClock, formatDateTime, itemPath } from "../lib/timeline.ts";
+import { entryLayout, formatClock, formatDateTime, itemPath } from "../lib/timeline.ts";
 import { siteUrl } from "../lib/paths.ts";
 import KEntryMedia from "./KEntryMedia.astro";
 import KEntryMeta from "./KEntryMeta.astro";
 
 interface Props {
   entry: PublicEntry;
-  /** 全局序号（0 起，跨页连续），用于数据版画出血大序号与 data-gi。 */
+  /** 全局序号（0 起，跨页连续），用于 data-gi（客户端阅读位定位与恢复）。 */
   gi: number;
   /** 日内序号（0 起），标准版式按奇偶交替取版面。 */
   di: number;
@@ -24,8 +24,6 @@ const { entry, gi, di, omitTime } = Astro.props;
 const layout = entryLayout(di, Boolean(entry.summary));
 const clock = formatClock(entry.firstSeenAt);
 const collected = formatDateTime(entry.firstSeenAt);
-const lab = EN_LABEL[entry.topic] ?? "INDEX";
-const num = String(gi + 1).padStart(2, "0");
 const detailHref = siteUrl(itemPath(entry.id));
 ---
 
@@ -61,14 +59,14 @@ const detailHref = siteUrl(itemPath(entry.id));
                   {entry.summary && <p class="k-summary">{entry.summary}</p>}
                   <KEntryMeta topic={entry.topic} collected={collected} url={entry.url} />
                 </div>
-                <KEntryMedia lab={lab} clock={clock} num={num} />
+                <KEntryMedia clock={clock} />
               </Fragment>
             )
           }
           {
             layout === "layout-b" && (
               <Fragment>
-                <KEntryMedia lab={lab} clock={clock} num={num} />
+                <KEntryMedia clock={clock} />
                 <div class="k-text">
                   <h3 class="k-headline">
                     <a href={detailHref} data-detail data-cursor="VIEW">{entry.title}</a>

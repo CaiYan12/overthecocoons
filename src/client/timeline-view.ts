@@ -70,10 +70,10 @@ function currentFiltered(): PublicEntry[] {
 
 /* ---- 客户端渲染（与 T04 静态输出同构） ---- */
 
-function mediaHtml(entry: PublicEntry, gi: number): string {
-  const lab = EN_LABEL[entry.topic] ?? "INDEX";
+function mediaHtml(entry: PublicEntry): string {
+  // T9 版面减负：与 KEntryMedia.astro 同构——无竖排主题词与出血大序号，art 层纯装饰 aria-hidden
   const clock = formatClock(entry.firstSeenAt);
-  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-tilt"><div class="k-media-art" role="img" aria-label="编辑占位图：${esc(lab)}"><span class="tag" aria-hidden="true"><i></i><span class="tm">${clock}</span></span><span class="lab" aria-hidden="true">${esc(lab)}</span><span class="num" aria-hidden="true">${pad2(gi + 1)}</span></div></div></div>`;
+  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-tilt"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span></div></div></div>`;
 }
 
 function metaHtml(entry: PublicEntry): string {
@@ -98,7 +98,7 @@ function entryHtml(entry: PublicEntry, gi: number, di: number, omitTime: boolean
     inner = `<div class="k-text">${headline}${meta}</div>`;
   } else {
     const summary = entry.summary ? `<p class="k-summary">${esc(entry.summary)}</p>` : "";
-    const media = mediaHtml(entry, gi);
+    const media = mediaHtml(entry);
     if (layout === "layout-a") inner = `<div class="k-text">${headline}${summary}${meta}</div>${media}`;
     else inner = `${media}<div class="k-text">${headline}${summary}${meta}</div>`;
   }

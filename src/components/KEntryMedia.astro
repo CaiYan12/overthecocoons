@@ -1,28 +1,25 @@
 ---
-// 数据版画占位图（无图条目的本站占位）：网格底纹 + 色块时间 + 竖排主题词 + 出血大序号。
+// 数据版画占位图（无图条目的本站占位）：网格底纹 + 色块时间。
 // 结构与原型 .k-media/.k-media-tilt/.k-media-art 三层一致（Tilt 动效属 Ticket 06）。
-// 出血大序号可选：时间线传全局序号（T9 才去除），详情页不传——
-// 详情页只有单一条目，不存在快照内位置语境，序号「00」不渲染（T7 版式诚实化）。
+// T9 版面减负（UI 票 #26）：移除出血大序号与竖排英文主题词——线上真实数据主题恒为单一值，
+// 逐条重复同词零信息量；序号是快照内可数位置而非编辑编排（ADR 0003），不再以大字呈现，
+// 阅读位计数仍由 HUD NOW READING n/N 承担。色块时间与网格底纹保留。
+// 语义重订：版画为纯装饰占位，整块 aria-hidden（不再 role="img"+aria-label 逐条播报）——
+// 唯一文本（色块时间）在条目行时间/日组头批次行/详情 meta 中均有可读等价文本，不臆造图片语义。
 interface Props {
-  /** 竖排英文主题词。 */
-  lab: string;
   /** 色块时间（HH:mm）。 */
   clock: string;
-  /** 出血大序号（两位）；缺省时不渲染序号。 */
-  num?: string;
 }
-const { lab, clock, num } = Astro.props;
+const { clock } = Astro.props;
 ---
 
 <div class="k-media" data-cursor="OPEN">
   <div class="k-media-tilt">
-    <div class="k-media-art" role="img" aria-label={`编辑占位图：${lab}`}>
-      <span class="tag" aria-hidden="true">
+    <div class="k-media-art" aria-hidden="true">
+      <span class="tag">
         <i></i>
         <span class="tm">{clock}</span>
       </span>
-      <span class="lab" aria-hidden="true">{lab}</span>
-      {num && <span class="num" aria-hidden="true">{num}</span>}
     </div>
   </div>
 </div>

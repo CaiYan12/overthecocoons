@@ -13,7 +13,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 import type { PublicEntry, PublicSnapshot } from "../../src/domain/contract.ts";
-import { sortEntriesDesc, EN_LABEL, TOPICS, topicPagePath } from "../../src/lib/timeline.ts";
+import { sortEntriesDesc, TOPICS, topicPagePath } from "../../src/lib/timeline.ts";
 
 const DIST = join(process.cwd(), "dist");
 const BASE = "/overthecocoons";
@@ -94,13 +94,99 @@ test("header 主题导航：12 个主题 tab 链接，当前主题 aria-current=
   const html = readDist("index.html");
   const tabsNav = firstMatch(html, /(<nav class="k-tabs"[\s\S]*?<\/nav>)/);
   assert.ok(tabsNav, "应存在 k-tabs 导航");
-  const tabs = tabsNav!.match(/<a class="tab" role="tab" aria-current="(true|false)" data-topic="[^"]+"/g);
+  const tabs = tabsNav!.match(/<a class="tab(?: tab-empty)?" role="tab" aria-current="(true|false)" data-topic="[^"]+"/g);
   assert.ok(tabs, "应存在 a.tab 元素");
   assert.equal(tabs.length, 12);
   assert.ok(tabsNav!.includes('aria-current="true" data-topic="全部"'));
-  // 全屏菜单里还有一份主题列表（T06 挂点），同样 12 个
+  // 全屏菜单里还有一份主题列表（T06 挂点），同样 12 个（空主题降权类见 T9 专项断言）
   const menuTopics = firstMatch(html, /(<div class="k-menu-topics"[\s\S]*?<\/div>)/);
-  assert.equal((menuTopics?.match(/class="tab" /g) ?? []).length, 12);
+  assert.equal((menuTopics?.match(/<a class="tab/g) ?? []).length, 12);
+});
+
+test("空主题 tab 降权（T9）：非空主题按条数置前，空主题置后带 tab-empty 类，入口保留为真实链接", () => {
+  const html = readDist("index.html");
+  const tabsNav = firstMatch(html, /(<nav class="k-tabs"[\s\S]*?<\/nav>)/);
+  assert.ok(tabsNav, "应存在 k-tabs 导航");
+  const tabs = [
+    ...tabsNav!.matchAll(
+      /<a class="tab( tab-empty)?" role="tab" aria-current="(?:true|false)" data-topic="([^"]+)"/g,
+    ),
+  ];
+  assert.equal(tabs.length, 12, "12 个主题 tab 全部保留（只降权不删入口）");
+  // fixture 前置：全部 45 / 新闻 23 / 社会 22，其余 9 主题为空
+  assert.deepEqual(
+    tabs.map((m) => m[2]),
+    ["全部", "新闻", "社会", "科技", "文化", "科学", "经济", "环境", "健康", "教育", "艺术", "哲学"],
+    "非空主题按条数降序置前，空主题按 TOPICS 原序置后（构建期确定，无编辑挑选）",
+  );
+  const emptyTopics = new Set(["科技", "文化", "科学", "经济", "环境", "健康", "教育", "艺术", "哲学"]);
+  for (const [, emptyClass, topic] of tabs) {
+    assert.equal(
+      Boolean(emptyClass),
+      emptyTopics.has(topic),
+      `「${topic}」的 tab-empty 类必须与空态判定一致`,
+    );
+  }
+  // 入口保留：空主题 tab 仍指向真实主题页（键盘可达的 <a href>，可达性不降）
+  for (const topic of emptyTopics) {
+    const slug = topicPagePath(topic, 1);
+    assert.ok(
+      tabsNav!.includes(`href="${BASE}${slug}"`),
+      `空主题「${topic}」tab 仍链接到 ${slug}`,
+    );
+  }
+  // 全屏菜单主题列同步降权
+  const menuTopics = firstMatch(html, /(<div class="k-menu-topics"[\s\S]*?<\/div>)/);
+  assert.ok(menuTopics, "应存在菜单主题列");
+  const menuTabs = [
+    ...menuTopics!.matchAll(/<a class="tab( tab-empty)?" role="tab" aria-current="(?:true|false)" data-topic="([^"]+)"/g),
+  ];
+  assert.equal(menuTabs.length, 12, "菜单主题列同样 12 个入口");
+  assert.deepEqual(
+    menuTabs.filter((m) => Boolean(m[1])).map((m) => m[2]),
+    [...emptyTopics],
+    "菜单主题列空主题同样带 tab-empty 类",
+  );
+});
+
+test("HUD 小标规格（T9）：.k-hud .h 字号 10.5px→11.5px、字距 .3em→.14em（HUD 结构与文案不动）", () => {
+  const css = cssFiles.map(readDist).join("\n");
+  const rule = css.match(/\.k-hud \.h\{([^}]*)\}/);
+  assert.ok(rule, "应存在 .k-hud .h 规则");
+  assert.ok(rule[1]!.includes("font-size:11.5px"), `.h 字号应为 11.5px（区间 11–12px 取中）：${rule[1]}`);
+  assert.ok(
+    rule[1]!.includes("letter-spacing:.14em"),
+    `.h 字距应为 .14em（区间 .12–.16em 取中，与 .k-hero-meta 同频）：${rule[1]}`,
+  );
+});
+
+test("长文页排版对齐（T9）：版宽 62ch 对齐时间线阅读文本，h1 对齐大字族规格，目录对齐左栏导航", () => {
+  const css = cssFiles.map(readDist).join("\n");
+  const h1 = css.match(/\.k-doc h1\{([^}]*)\}/);
+  assert.ok(h1, "应存在 .k-doc h1 规则");
+  assert.ok(
+    h1[1]!.includes("/1.1 "),
+    `h1 行高应对齐 .k-day-big/.k-pagehead-big 的 1.1（原 1.15）：${h1[1]}`,
+  );
+  assert.ok(
+    h1[1]!.includes("letter-spacing:.04em"),
+    `h1 字距应对齐大字族的 .04em：${h1[1]}`,
+  );
+  const body = css.match(/\.k-doc p,\.k-doc li\{([^}]*)\}/);
+  assert.ok(body, "应存在 .k-doc p/li 规则");
+  assert.ok(
+    body[1]!.includes("max-width:62ch"),
+    `版宽应对齐时间线阅读文本 .k-summary 的 62ch（原 65ch）：${body[1]}`,
+  );
+  const lede = css.match(/\.k-doc \.k-doc-lede\{([^}]*)\}/);
+  assert.ok(lede, "应存在 .k-doc-lede 规则");
+  assert.ok(lede[1]!.includes("max-width:62ch"), `导语版宽同口径 62ch：${lede[1]}`);
+  const toc = css.match(/\.k-toc a\{([^}]*)\}/);
+  assert.ok(toc, "应存在 .k-toc a 规则");
+  assert.ok(
+    toc[1]!.includes("padding:7px 0"),
+    `目录行距应对齐左栏导航 .k-nav nav a 的 7px 0（原 6px 0）：${toc[1]}`,
+  );
 });
 
 test("时间线倒序：产物中 k-entry 的 datetime 依渲染顺序单调不增，日期组严格降序", () => {
@@ -142,12 +228,18 @@ test("两档版式与数据版画结构正确（有摘要奇偶交替、无摘�
   const first = chunks[0]!;
   assert.ok(first.includes('class="k-media"'), "数据版画外层");
   assert.ok(first.includes('class="k-media-tilt"'), "tilt 层");
-  assert.ok(first.includes('class="k-media-art"'), "art 层");
-  const firstLab = EN_LABEL[firstEntry.topic];
-  assert.match(first, new RegExp(`aria-label="编辑占位图：${firstLab}"`));
-  assert.ok(first.includes(`<span class="lab" aria-hidden="true">${firstLab}</span>`), "竖排主题词");
-  assert.match(first, /<span class="num" aria-hidden="true">\d{2}<\/span>/, "出血大序号（时间线内保留，T9 移除）");
-  assert.match(first, /<span class="tm">\d{2}:\d{2}<\/span>/, "色块时间");
+  assert.ok(
+    first.includes('class="k-media-art" aria-hidden="true"'),
+    "art 层为纯装饰占位（aria-hidden，T9 语义重订）",
+  );
+  assert.ok(!first.includes("编辑占位图"), "不再以 role=img+aria-label 逐条播报占位图（T9）");
+  assert.match(
+    first,
+    /<span class="tag">\s*<i><\/i>\s*<span class="tm">\d{2}:\d{2}<\/span>/,
+    "色块时间保留（T9 版画减负后唯一内容）",
+  );
+  assert.ok(!first.includes('class="lab"'), "竖排英文主题词已移除（T9：单一主题下逐条重复零信息量）");
+  assert.ok(!first.includes('class="num"'), "出血大序号已移除（T9：位置计数由 HUD NOW READING 承担）");
   assert.ok(first.includes('data-cursor="VIEW"'), "T06 光标挂点保留");
 
   const compact = chunks[3]!;
@@ -308,8 +400,13 @@ test("详情页：/items/<64hex>/ 直达，标题/摘要/来源/收录时间/主
   assert.ok(html.includes("<h1"), "详情页 h1");
   assert.ok(html.includes("查看百度搜索结果"), "独立百度搜索入口");
   assert.ok(html.includes(`href="${firstEntry.url}"`), "外链指向条目目标链接");
-  assert.ok(html.includes('aria-label="编辑占位图'), "占位图保留");
+  assert.ok(
+    html.includes('class="k-media-art" aria-hidden="true"'),
+    "占位图保留（纯装饰 aria-hidden，T9 语义重订）",
+  );
+  assert.ok(!html.includes("编辑占位图"), "T9 后全页不再出现「编辑占位图」label");
   assert.ok(!html.includes('class="num"'), "详情页版画不渲染序号（T7：单一条目无快照内位置语境）");
+  assert.ok(!html.includes('class="lab"'), "竖排主题词已移除（T9）");
   assert.ok(html.includes('class="tpc"'), "主题标注");
   assert.ok(html.includes(`<time datetime="${firstEntry.firstSeenAt}"`), "收录时间");
   assert.ok(html.includes(`${BASE}/`), "站内链接带基路径");
