@@ -192,6 +192,36 @@ export function topicPagePath(topic: string, page: number): string {
   return page <= 1 ? base : `${base}page/${page}/`;
 }
 
+/** 主题 tab 降权视图（T9 版面减负）：主题 + 快照内条数 + 是否空主题。 */
+export interface TopicTab {
+  topic: string;
+  /** 该主题在快照内的条目数（「全部」=快照总数）。 */
+  count: number;
+  /** true = 空主题（零条目）：tab 降权呈现（更弱字色/字号），入口保留。 */
+  empty: boolean;
+}
+
+/**
+ * 空主题 tab 降权规则（T9，UI 票 #26）：构建期按快照统计各主题条数，非空主题按条数降序
+ * 置前，空主题（count=0）置后；同条数（含全零）保持 TOPICS 原序（sort 稳定性）。
+ * 规则完全由条数驱动，无编辑挑选；「空主题真实空态」是 MVP 已确认决定——只降权、不删入口，
+ * tab 仍渲染为真实链接。该视图是构建期静态产物：客户端切主题仅改 aria-current，
+ * 不重渲染 tab DOM（timeline-view syncTopicUi），权重态无漂移。
+ */
+export function topicTabs(entries: Array<{ topic: string }>): TopicTab[] {
+  const counts = new Map<string, number>();
+  for (const item of entries) {
+    counts.set(item.topic, (counts.get(item.topic) ?? 0) + 1);
+  }
+  return [...TOPICS]
+    .map((topic) => {
+      // 「全部」是伪主题（无条目携带该 topic），其口径 = 快照总数（与 HUD total 一致）
+      const count = topic === "全部" ? entries.length : (counts.get(topic) ?? 0);
+      return { topic, count, empty: count === 0 };
+    })
+    .sort((a, b) => b.count - a.count);
+}
+
 /** 详情页站点根相对路径：/items/<64hex>/。 */
 export function itemPath(id: string): string {
   return `/items/${id}/`;

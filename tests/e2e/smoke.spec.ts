@@ -129,16 +129,90 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     await expect(standard.locator(".k-media-art")).toBeVisible();
     await expect(standard.locator(".k-summary")).toBeVisible();
 
+    // T9 版面减负：版画无竖排主题词与出血大序号，色块时间保留，art 层为纯装饰（aria-hidden）
+    await expect(standard.locator(".k-media-art .lab")).toHaveCount(0);
+    await expect(standard.locator(".k-media-art .num")).toHaveCount(0);
+    await expect(standard.locator(".k-media-art .tag .tm")).toBeVisible();
+    await expect(standard.locator(".k-media-art")).toHaveAttribute("aria-hidden", "true");
+
     // 日组头规则（fixtures 每日分钟互异 → 混合分钟分支）：无批次行，日组头为日期大字
     await expect(page.locator(".k-day-batch")).toHaveCount(0);
     await expect(page.locator(".k-day-big").first()).toBeVisible();
+
+    // T9 空主题 tab 降权：非空置前、空主题置后带 tab-empty 类，入口保留且键盘可达
+    const tabState = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-ktabs] .tab')].map((el) => ({
+        topic: el.getAttribute("data-topic"),
+        empty: el.classList.contains("tab-empty"),
+      })),
+    );
+    expect(tabState.map((t) => t.topic)).toEqual([
+      "全部", "新闻", "社会", "科技", "文化", "科学",
+      "经济", "环境", "健康", "教育", "艺术", "哲学",
+    ]);
+    expect(tabState.filter((t) => t.empty).map((t) => t.topic)).toEqual([
+      "科技", "文化", "科学", "经济", "环境", "健康", "教育", "艺术", "哲学",
+    ]);
+    const emptyTab = page.locator('[data-ktabs] .tab[data-topic="哲学"]');
+    await emptyTab.focus();
+    await expect(emptyTab, "空主题 tab 键盘可达（入口可达性不降）").toBeFocused();
 
     // 详情页版画不渲染序号（单一条目无快照内位置语境），其余版画结构保留
     const first = sortedEntries()[0]!;
     await page.goto(`${BASE}items/${first.id}/`);
     await expect(page.locator(".k-media-art .num")).toHaveCount(0);
-    await expect(page.locator(".k-media-art .lab")).toBeVisible();
+    await expect(page.locator(".k-media-art .lab")).toHaveCount(0);
     await context.close();
+  });
+
+  test("空主题 tab 降权对比度实测（T9）：降权字色对纸面 ≥4.5:1（WCAG AA 正文阈值，浅色主题）", async ({ page }) => {
+    await page.goto(BASE);
+    // header 背景为 color-mix(paper 84%, transparent) 叠在纸面上，有效背景 = 纸面
+    const measured = await page.evaluate(() => {
+      const styles = getComputedStyle(document.documentElement);
+      const paper = styles.getPropertyValue("--paper").trim();
+      const muted = styles.getPropertyValue("--muted").trim();
+      const hexToRgb = (hex: string): [number, number, number] => [
+        parseInt(hex.slice(1, 3), 16),
+        parseInt(hex.slice(3, 5), 16),
+        parseInt(hex.slice(5, 7), 16),
+      ];
+      const fgColor = getComputedStyle(
+        document.querySelector<HTMLElement>('[data-ktabs] .tab[data-topic="哲学"]')!,
+      ).color;
+      // Chrome 对 color-mix 结果返回 color(srgb r g b / a)（0–1 分量）；旧引擎返回 rgba(r, g, b, a)
+      const srgb = fgColor.match(/color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)/);
+      const rgba = fgColor.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);
+      let fg: number[];
+      let alpha: number;
+      if (srgb) {
+        alpha = srgb[4] ? Number(srgb[4]) : 1;
+        fg = [Number(srgb[1]), Number(srgb[2]), Number(srgb[3])].map((c) => c * 255);
+      } else if (rgba) {
+        alpha = rgba[4] ? Number(rgba[4]) : 1;
+        fg = [Number(rgba[1]), Number(rgba[2]), Number(rgba[3])];
+      } else {
+        alpha = 0;
+        fg = [0, 0, 0];
+      }
+      const bg = hexToRgb(paper);
+      fg = fg.map((c, i) => c * alpha + bg[i] * (1 - alpha));
+      const lin = (v: number) => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      };
+      const lum = (rgb: number[]) => 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+      // WCAG 对比度恒以较亮者为分子（浅色主题下纸面更亮）
+      const lFg = lum(fg);
+      const lBg = lum(bg);
+      const ratio = (Math.max(lFg, lBg) + 0.05) / (Math.min(lFg, lBg) + 0.05);
+      return { ratio, fgColor, muted, paper };
+    });
+    expect(measured.muted, "断言前置：tokens 应已解析").not.toBe("");
+    expect(
+      measured.ratio,
+      `空主题 tab 降权色 ${measured.fgColor} 对纸面 ${measured.paper} 的对比度`,
+    ).toBeGreaterThanOrEqual(4.5);
   });
 
   test("详情页直达：/items/<64hex>/ 可达且内容齐备", async ({ page }) => {

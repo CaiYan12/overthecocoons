@@ -1,13 +1,17 @@
 ---
-// 紧凑吸顶导航：品牌、主题 tab（真实链接，无 JS 可点）、显示模式与菜单入口（Ticket 06 接管行为）。
-import { TOPICS, topicPagePath } from "../lib/timeline.ts";
+// 紧凑吸顶导航：品牌、主题 tab（真实链接，无 JS 可点；T9 空主题 tab 降权——置后 + tab-empty 类，
+// 入口保留可点击）、显示模式与菜单入口（Ticket 06 接管行为）。
+// 降权视图来自构建期快照统计（KSite 下发），客户端只切 aria-current 不重渲染 tab DOM，权重态无漂移。
 import { siteUrl } from "../lib/paths.ts";
+import { topicPagePath, type TopicTab } from "../lib/timeline.ts";
 
 interface Props {
   /** 当前激活主题（决定 tab 的 aria-current）。 */
   activeTopic?: string;
+  /** 主题 tab 降权视图（T9）：非空按条数置前，空主题置后。 */
+  topicTabs: TopicTab[];
 }
-const { activeTopic = "全部" } = Astro.props;
+const { activeTopic = "全部", topicTabs } = Astro.props;
 ---
 
 <header class="k-header" data-kheader>
@@ -15,9 +19,9 @@ const { activeTopic = "全部" } = Astro.props;
   <nav class="k-tabs" role="tablist" aria-label="主题筛选" data-ktabs>
     <span class="k-indicator" aria-hidden="true" data-indicator></span>
     {
-      TOPICS.map((topic) => (
+      topicTabs.map(({ topic, empty }) => (
         <a
-          class="tab"
+          class={`tab${empty ? " tab-empty" : ""}`}
           role="tab"
           aria-current={topic === activeTopic ? "true" : "false"}
           data-topic={topic}

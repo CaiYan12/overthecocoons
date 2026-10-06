@@ -7,7 +7,7 @@ import KHud from "../../components/KHud.astro";
 import KEntryMedia from "../../components/KEntryMedia.astro";
 import { loadSnapshot } from "../../lib/snapshot.ts";
 import type { PublicEntry } from "../../domain/contract.ts";
-import { EN_LABEL, formatClock, formatDateTime, topicPagePath } from "../../lib/timeline.ts";
+import { formatClock, formatDateTime, topicPagePath } from "../../lib/timeline.ts";
 import { siteUrl } from "../../lib/paths.ts";
 
 export function getStaticPaths() {
@@ -25,7 +25,6 @@ const { entry } = Astro.props;
 
 const snapshot = loadSnapshot();
 const isFixture = snapshot.isFixture;
-const lab = EN_LABEL[entry.topic] ?? "INDEX";
 const clock = formatClock(entry.firstSeenAt);
 const summaryText = entry.summary || "来源未提供摘要，本站不编造。";
 const description = entry.summary
@@ -57,8 +56,8 @@ const description = entry.summary
       <a href={siteUrl(topicPagePath(entry.topic, 1))} data-cursor-soft>← 返回时间线</a>
     </p>
     <h1 class="k-headline">{entry.title}</h1>
-    {/* T7 版式诚实化：详情页单一条目无快照内位置语境，版画不渲染序号（数据版画其余结构保留） */}
-    <KEntryMedia lab={lab} clock={clock} />
+    {/* T7：详情页单一条目无快照内位置语境，不渲染序号；T9：竖排主题词移除，版画为纯装饰占位 */}
+    <KEntryMedia clock={clock} />
     <p class={`k-summary${entry.summary ? "" : " k-summary-empty"}`}>{summaryText}</p>
     <p class="k-meta">
       {/* UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂 */}

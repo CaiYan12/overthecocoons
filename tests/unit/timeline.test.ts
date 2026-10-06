@@ -24,6 +24,7 @@ import {
   paginate,
   sortEntriesDesc,
   topicPagePath,
+  topicTabs,
 } from "../../src/lib/timeline.ts";
 
 function entry(partial: Partial<SnapshotEntry> & { id: string }): SnapshotEntry {
@@ -251,4 +252,51 @@ test("URL 路径：主题页与详情页为站点根相对路径（基路径在�
   assert.equal(topicPagePath("新闻", 1), "/topics/news/");
   assert.equal(topicPagePath("社会", 3), "/topics/society/page/3/");
   assert.equal(itemPath("a".repeat(64)), `/items/${"a".repeat(64)}/`);
+});
+
+test("topicTabs：按条数降序排列，空主题置后并标记 empty（T9 空主题 tab 降权规则）", () => {
+  // 仿 fixture 形态：新闻 23、社会 22，其余主题空
+  const entries = [
+    ...Array.from({ length: 23 }, (_, i) => entry({ id: `n${String(i).padStart(2, "0")}`, topic: "新闻" })),
+    ...Array.from({ length: 22 }, (_, i) => entry({ id: `s${String(i).padStart(2, "0")}`, topic: "社会" })),
+  ];
+  const tabs = topicTabs(entries);
+  assert.deepEqual(
+    tabs.map((t) => t.topic),
+    // 非空按条数降序（全部 45 > 新闻 23 > 社会 22），空主题按 TOPICS 原序置后
+    ["全部", "新闻", "社会", "科技", "文化", "科学", "经济", "环境", "健康", "教育", "艺术", "哲学"],
+  );
+  assert.equal(tabs[0].count, 45);
+  assert.equal(tabs[1].count, 23);
+  assert.equal(tabs[2].count, 22);
+  for (const tab of tabs.slice(3)) {
+    assert.equal(tab.count, 0, `「${tab.topic}」应为零条目`);
+    assert.equal(tab.empty, true, `「${tab.topic}」应标记为空主题`);
+  }
+  for (const tab of tabs.slice(0, 3)) {
+    assert.equal(tab.empty, false, `「${tab.topic}」非空，不得标记降权`);
+  }
+});
+
+test("topicTabs：条数相同时保持 TOPICS 原序（稳定排序，规则确定性、无编辑挑选）", () => {
+  const entries = [
+    entry({ id: "a", topic: "哲学" }),
+    entry({ id: "b", topic: "科技" }),
+    entry({ id: "c", topic: "经济" }),
+  ];
+  const tabs = topicTabs(entries);
+  assert.deepEqual(
+    tabs.map((t) => t.topic),
+    ["全部", "科技", "经济", "哲学", "新闻", "文化", "科学", "社会", "环境", "健康", "教育", "艺术"],
+    "三条 1 条主题按原序排列于前，零条目主题按原序置后",
+  );
+});
+
+test("topicTabs：空快照全部主题 empty，仅「全部」count=0（空快照下各 tab 同为空态）", () => {
+  const tabs = topicTabs([]);
+  assert.equal(tabs.length, TOPICS.length);
+  for (const tab of tabs) {
+    assert.equal(tab.count, 0);
+    assert.equal(tab.empty, true);
+  }
 });
