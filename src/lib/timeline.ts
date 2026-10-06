@@ -68,16 +68,16 @@ export function sortEntriesDesc(entries: PublicEntry[]): PublicEntry[] {
 }
 
 export interface DayGroup {
-  /** 日期前缀（ISO 字符串截取，不做时区换算）。 */
+  /** 北京时间日期「YYYY-MM-DD」（日界按北京时间归属，UI 票 #18）。 */
   date: string;
   entries: PublicEntry[];
 }
 
-/** 按日期前缀对已排序条目做连续分组。 */
+/** 按北京时间日期对已排序条目做连续分组（倒序输入保证日期严格降序）。 */
 export function groupEntriesByDay(sorted: PublicEntry[]): DayGroup[] {
   const groups: DayGroup[] = [];
   for (const item of sorted) {
-    const date = item.firstSeenAt.slice(0, 10);
+    const date = beijingDate(item.firstSeenAt);
     const last = groups[groups.length - 1];
     if (last && last.date === date) last.entries.push(item);
     else groups.push({ date, entries: [item] });
@@ -112,14 +112,39 @@ export function entryWeights(di: number): { layout: EntryLayout; weight: EntryWe
   return { layout, weight };
 }
 
-/** “HH:mm”（ISO 字符串截取，不做时区换算）。 */
-export function formatClock(iso: string): string {
-  return iso.slice(11, 16);
+/** 北京时间固定偏移 +08:00（中国无夏令时，固定偏移换算安全；UI 票 #18）。 */
+const BEIJING_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+/**
+ * 把 ISO 时间换算为「北京时间墙钟」的纪元毫秒：加固定 +08:00 后按 UTC 读各字段。
+ * 输入必须带时区偏移（Z 或 ±HH:MM）——数据管线写 toISOString()（Z 结尾），仓库 fixtures 用 +08:00；
+ * 无偏移字符串会被 Date.parse 按运行环境本地时区解释（构建机与浏览器结果不同），直接拒绝，不做模糊猜测。
+ * 只用 Date/字符串运算，Node（构建期静态渲染）与浏览器（客户端增强）行为一致。
+ */
+function beijingShiftedMs(iso: string): number {
+  if (!/(?:Z|[+-]\d{2}:\d{2})$/.test(iso)) {
+    throw new Error(`时间字符串缺少时区偏移（需要 Z 或 ±HH:MM），拒绝按本地时区猜测：${iso}`);
+  }
+  const ms = Date.parse(iso);
+  if (Number.isNaN(ms)) {
+    throw new Error(`无法解析的 ISO 时间：${iso}`);
+  }
+  return ms + BEIJING_OFFSET_MS;
 }
 
-/** “YYYY-MM-DD HH:mm”（ISO 字符串截取，不做时区换算）。 */
+/** 北京时间日期「YYYY-MM-DD」（日期组头、Hero 幽灵日期、今日条数等日界统一口径）。 */
+export function beijingDate(iso: string): string {
+  return new Date(beijingShiftedMs(iso)).toISOString().slice(0, 10);
+}
+
+/** 北京时间「HH:mm」（可见时刻文本；UTC 数据直读会让中文读者少看 8 小时，UI 票 #18）。 */
+export function formatClock(iso: string): string {
+  return new Date(beijingShiftedMs(iso)).toISOString().slice(11, 16);
+}
+
+/** 北京时间「YYYY-MM-DD HH:mm」（可见时间文本；机器可读的 datetime 属性由调用方保留 UTC 原值）。 */
 export function formatDateTime(iso: string): string {
-  return iso.slice(0, 16).replace("T", " ");
+  return new Date(beijingShiftedMs(iso)).toISOString().slice(0, 16).replace("T", " ");
 }
 
 /** 英文月份名（“01”→JANUARY）。 */
@@ -145,8 +170,8 @@ export function itemPath(id: string): string {
   return `/items/${id}/`;
 }
 
-/** 最新收录日期（已排序首条的日期前缀）与当日条数（Hero 幽灵日期与菜单数据列用）。 */
+/** 最新收录日（北京时间日界）与当日条数（Hero 幽灵日期与菜单数据列用）。 */
 export function latestDayStats(sorted: PublicEntry[]): { date: string; count: number } {
-  const date = sorted[0]?.firstSeenAt.slice(0, 10) ?? "";
-  return { date, count: sorted.filter((entry) => entry.firstSeenAt.slice(0, 10) === date).length };
+  const date = sorted[0] ? beijingDate(sorted[0].firstSeenAt) : "";
+  return { date, count: sorted.filter((entry) => beijingDate(entry.firstSeenAt) === date).length };
 }

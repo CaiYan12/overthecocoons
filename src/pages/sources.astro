@@ -82,7 +82,7 @@ const snapTime = formatDateTime(snapshot.generatedAt);
     </ul>
 
     <h2 id="status">数据状态</h2>
-    <p>快照时间：{snapTime}（时间按记录值展示，不做时区换算；尝试、成功获取、失败时间分字段记录，不混称“更新成功”）</p>
+    <p>快照时间：{snapTime}（可见时间按北京时间展示；尝试、成功获取、失败时间分字段记录，不混称“更新成功”）</p>
     {
       snapshot.sources.map((source) => (
         <dl>

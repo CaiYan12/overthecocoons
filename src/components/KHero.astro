@@ -1,7 +1,7 @@
 ---
 // Hero 静态构图：ghost 英文、尺规线、双行大字标题、幽灵日期（取最新条目日期）、元信息与滚动提示。
 // GSAP 动效属 Ticket 06；DOM/类名/data-* 挂点与原型一致。
-import { monthEn } from "../lib/timeline.ts";
+import { beijingDate, monthEn } from "../lib/timeline.ts";
 
 interface Props {
   isFixture: boolean;
@@ -9,9 +9,11 @@ interface Props {
   latestFirstSeenAt: string | null;
 }
 const { isFixture, latestFirstSeenAt } = Astro.props;
-const day = latestFirstSeenAt ? latestFirstSeenAt.slice(8, 10) : "--";
-const month = latestFirstSeenAt ? monthEn(latestFirstSeenAt.slice(5, 7)) : "";
-const year = latestFirstSeenAt ? latestFirstSeenAt.slice(0, 4) : "";
+// 幽灵日期按北京时间归属（UI 票 #18），与时间线日组头同口径
+const latestBeijingDate = latestFirstSeenAt ? beijingDate(latestFirstSeenAt) : null;
+const day = latestBeijingDate ? latestBeijingDate.slice(8, 10) : "--";
+const month = latestBeijingDate ? monthEn(latestBeijingDate.slice(5, 7)) : "";
+const year = latestBeijingDate ? latestBeijingDate.slice(0, 4) : "";
 ---
 
 <section class="k-hero" data-hero>

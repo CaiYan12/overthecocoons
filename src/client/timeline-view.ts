@@ -20,6 +20,7 @@ import {
   EN_LABEL,
   PAGE_SIZE,
   TOPICS,
+  beijingDate,
   entryWeights,
   formatClock,
   formatDateTime,
@@ -97,7 +98,8 @@ function entryHtml(entry: PublicEntry, gi: number, di: number): string {
 function dayGroupsHtml(slice: PublicEntry[], start: number): string {
   const groups: Array<{ date: string; items: Array<{ entry: PublicEntry; gi: number; di: number }> }> = [];
   slice.forEach((entry, index) => {
-    const date = entry.firstSeenAt.slice(0, 10);
+    // 日组键按北京时间归属（UI 票 #18）：与 TimelinePage.astro、groupEntriesByDay 同一口径
+    const date = beijingDate(entry.firstSeenAt);
     const last = groups[groups.length - 1];
     if (last && last.date === date) {
       last.items.push({ entry, gi: start + index, di: last.items.length });
@@ -155,8 +157,9 @@ function syncTopicUi(nextTopic: string, total: number): void {
   if (menuTopic) menuTopic.textContent = EN_LABEL[nextTopic] ?? "INDEX";
   const menuCount = document.querySelector<HTMLElement>("[data-menu-count]");
   if (menuCount) {
-    const today = sorted[0]?.firstSeenAt.slice(0, 10) ?? "";
-    const count = sorted.filter((entry) => entry.firstSeenAt.slice(0, 10) === today).length;
+    // 与 latestDayStats（KSite 服务端初值）同口径：按北京时间日界计「今日」
+    const today = sorted[0] ? beijingDate(sorted[0].firstSeenAt) : "";
+    const count = sorted.filter((entry) => beijingDate(entry.firstSeenAt) === today).length;
     menuCount.textContent = `今日 ${count} 条 · 当前主题 ${nextTopic}`;
   }
 }
