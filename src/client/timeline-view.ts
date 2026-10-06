@@ -3,7 +3,7 @@
  *
  * 渐进增强契约：
  * - 静态层（T04）是可独立工作的链接式页面；本模块只在存在 [data-klist] 与数据岛时初始化；
- * - 渲染口径复用 src/lib/timeline.ts（sortEntriesDesc/paginate/topicPagePath/entryWeights 等），
+ * - 渲染口径复用 src/lib/timeline.ts（sortEntriesDesc/paginate/topicPagePath/entryLayout/dayHeadInfo 等），
  *   不镜像逻辑；DOM 结构与 KEntry/KEmpty/KPager/TimelinePage 输出一致，CSS 不区分两种来源；
  * - 筛选优先于分页；主题切换重置页码；空主题渲染真实空态与「查看全部」；
  * - 主题切换（Ticket 06）：GSAP 可用时走两段式内容过渡（出 260ms blur+scale / 入 340ms，
@@ -16,12 +16,14 @@
  */
 import type { PublicEntry } from "../domain/contract.ts";
 import type { ClientData } from "../lib/client-data.ts";
+import type { DayHeadInfo } from "../lib/timeline.ts";
 import {
   EN_LABEL,
   PAGE_SIZE,
   TOPICS,
   beijingDate,
-  entryWeights,
+  dayHeadInfo,
+  entryLayout,
   formatClock,
   formatDateTime,
   monthEn,
@@ -82,17 +84,31 @@ function metaHtml(entry: PublicEntry): string {
   return `<p class="k-meta"><span>百度热点</span><span class="seg"><span class="sep">·</span><span class="tpc">${esc(entry.topic)}</span></span><span class="seg"><span class="sep">·</span>收录 ${collected}</span>${ext}</p>`;
 }
 
-function entryHtml(entry: PublicEntry, gi: number, di: number): string {
-  const { layout, weight } = entryWeights(di);
+function entryHtml(entry: PublicEntry, gi: number, di: number, omitTime: boolean): string {
+  const layout = entryLayout(di, Boolean(entry.summary));
+  const time = omitTime
+    ? ""
+    : `<div class="k-time"><time datetime="${entry.firstSeenAt}">${formatClock(entry.firstSeenAt)}</time></div>`;
   const headline = `<h3 class="k-headline"><a href="${base}/items/${entry.id}/" data-detail data-cursor="VIEW">${esc(entry.title)}</a></h3>`;
-  const summary = entry.summary ? `<p class="k-summary">${esc(entry.summary)}</p>` : "";
-  const media = mediaHtml(entry, gi);
   const meta = metaHtml(entry);
   let inner: string;
-  if (layout === "layout-a") inner = `<div class="k-text">${headline}${summary}${meta}</div>${media}`;
-  else if (layout === "layout-b") inner = `${media}<div class="k-text">${headline}${summary}${meta}</div>`;
-  else inner = `<div class="k-text">${headline}${media}${summary}${meta}</div>`;
-  return `<article class="k-entry ${layout} ${weight}" data-entry data-gi="${gi}"><div class="k-time"><time datetime="${entry.firstSeenAt}">${formatClock(entry.firstSeenAt)}</time></div><div class="k-node-rail" aria-hidden="true"><span class="k-node"></span></div><div class="k-body"><div class="k-body-inner">${inner}</div></div></article>`;
+  if (layout === "layout-compact") {
+    // 紧凑行（无摘要）：无版画、无摘要段，标题 + meta 紧凑呈现（ADR 0003）
+    inner = `<div class="k-text">${headline}${meta}</div>`;
+  } else {
+    const summary = entry.summary ? `<p class="k-summary">${esc(entry.summary)}</p>` : "";
+    const media = mediaHtml(entry, gi);
+    if (layout === "layout-a") inner = `<div class="k-text">${headline}${summary}${meta}</div>${media}`;
+    else inner = `${media}<div class="k-text">${headline}${summary}${meta}</div>`;
+  }
+  return `<article class="k-entry ${layout}" data-entry data-gi="${gi}">${time}<div class="k-node-rail" aria-hidden="true"><span class="k-node"></span></div><div class="k-body"><div class="k-body-inner">${inner}</div></div></article>`;
+}
+
+function dayHeadHtml(date: string, head: DayHeadInfo, fixtureSuffix: string): string {
+  const batch = head.batch
+    ? `<p class="k-day-batch">批次 ${head.clock} · ${head.count} 条</p>`
+    : "";
+  return `<header class="k-day-head"><h2 class="k-day-big">${monthEn(date.slice(5, 7))} ${date.slice(8, 10)}</h2>${batch}<p class="k-day-sub">${date.slice(0, 4)} · 按收录时间排序${fixtureSuffix}</p></header>`;
 }
 
 function dayGroupsHtml(slice: PublicEntry[], start: number): string {
@@ -108,9 +124,12 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
     }
   });
   return groups
-    .map(
-      (group) => `<section class="k-day" data-day="${group.date}"><div class="k-line" aria-hidden="true"></div><div class="k-progress" aria-hidden="true"></div><header class="k-day-head"><h2 class="k-day-big">${monthEn(group.date.slice(5, 7))} ${group.date.slice(8, 10)}</h2><p class="k-day-sub">${group.date.slice(0, 4)} · 按收录时间排序${isFixture ? "（演示数据）" : ""}</p></header>${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di)).join("")}</section>`,
-    )
+    .map((group) => {
+      // 日组头规则在分组收敛后按全组条目计算（与 TimelinePage.astro 同口径）
+      const head = dayHeadInfo(group.items.map(({ entry }) => entry));
+      const fixtureSuffix = isFixture ? "（演示数据）" : "";
+      return `<section class="k-day" data-day="${group.date}"><div class="k-line" aria-hidden="true"></div><div class="k-progress" aria-hidden="true"></div>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
+    })
     .join("");
 }
 

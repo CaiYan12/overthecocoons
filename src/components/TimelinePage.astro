@@ -9,13 +9,16 @@ import KEntry from "./KEntry.astro";
 import KPager from "./KPager.astro";
 import KEmpty from "./KEmpty.astro";
 import { loadSnapshot } from "../lib/snapshot.ts";
-import type { PublicEntry } from "../domain/contract.ts";
-import { beijingDate, monthEn, paginate, sortEntriesDesc, topicPagePath } from "../lib/timeline.ts";
+import type { PublicEntry } from "../../src/domain/contract.ts";
+import type { DayHeadInfo } from "../lib/timeline.ts";
+import { beijingDate, dayHeadInfo, monthEn, paginate, sortEntriesDesc, topicPagePath } from "../lib/timeline.ts";
 import { buildTimelineData, serializeClientData } from "../lib/client-data.ts";
 import { SITE_BASE, siteUrl } from "../lib/paths.ts";
 
 interface DayView {
   date: string;
+  /** 日组头规则（ADR 0003）：批次形态时显示「批次 hh:mm · N 条」并省略条目行时间。 */
+  head: DayHeadInfo;
   items: Array<{ entry: PublicEntry; gi: number; di: number }>;
 }
 
@@ -36,7 +39,7 @@ if (currentPage !== page) {
   );
 }
 
-// 组内全局序号（跨页连续）与日内序号（权重三档），与原型 gi/di 语义一致
+// 组内全局序号（跨页连续）与日内序号（标准版式奇偶交替），与客户端 dayGroupsHtml 同口径
 const groups: DayView[] = [];
 slice.forEach((entry, index) => {
   // 日组键按北京时间归属（UI 票 #18）：与客户端 dayGroupsHtml、groupEntriesByDay 同一口径
@@ -45,9 +48,13 @@ slice.forEach((entry, index) => {
   if (last && last.date === date) {
     last.items.push({ entry, gi: start + index, di: last.items.length });
   } else {
-    groups.push({ date, items: [{ entry, gi: start + index, di: 0 }] });
+    groups.push({ date, head: dayHeadInfo([]), items: [{ entry, gi: start + index, di: 0 }] });
   }
 });
+// 日组头规则在分组收敛后按全组条目计算（分钟全相同 → 批次形态）
+for (const group of groups) {
+  group.head = dayHeadInfo(group.items.map(({ entry }) => entry));
+}
 
 const total = filtered.length;
 const hrefFor = (target: number) => siteUrl(topicPagePath(topic, target));
@@ -89,12 +96,17 @@ const description =
             <div class="k-progress" aria-hidden="true" />
             <header class="k-day-head">
               <h2 class="k-day-big">{monthEn(group.date.slice(5, 7))} {group.date.slice(8, 10)}</h2>
+              {group.head.batch && (
+                <p class="k-day-batch">
+                  批次 {group.head.clock} · {group.head.count} 条
+                </p>
+              )}
               <p class="k-day-sub">
                 {group.date.slice(0, 4)} · 按收录时间排序{isFixture && "（演示数据）"}
               </p>
             </header>
             {group.items.map(({ entry, gi, di }) => (
-              <KEntry entry={entry} gi={gi} di={di} />
+              <KEntry entry={entry} gi={gi} di={di} omitTime={group.head.batch} />
             ))}
           </section>
         ))

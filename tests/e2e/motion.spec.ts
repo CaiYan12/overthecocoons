@@ -440,7 +440,7 @@ test.describe("非 Hero 页 header 常显（UI 票 #20）", () => {
 });
 
 test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", () => {
-  test("隐藏初态：摘要 clip、元信息透明、占位图按版面左/右/上方向交替 clip", async ({ page }) => {
+  test("隐藏初态：摘要 clip、元信息透明、占位图按版面左/右方向交替 clip；紧凑行无媒体不参与", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
     await waitClientReady(page);
@@ -463,7 +463,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
       return {
         a: read(document.querySelector(".k-entry.layout-a")!),
         b: read(document.querySelector(".k-entry.layout-b")!),
-        c: read(document.querySelectorAll(".k-entry.layout-c")[1]!),
+        compact: read(document.querySelector(".k-entry.layout-compact")!),
       };
     });
     expect(clipNumbers(states.a.summaryClip), "摘要自上 clip 遮蔽").toEqual([0, 0, 100, 0]);
@@ -474,11 +474,12 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     expect(clipNumbers(states.b.mediaClip), "layout-b：图自右揭示（left 100%）").toEqual([
       0, 0, 0, 100,
     ]);
-    // 原型 layout-c 的 from 态是 inset(0 0 100% 0)：bottom 内缩 100%，揭示时底边自顶向下展开（上入）
-    expect(clipNumbers(states.c.mediaClip), "layout-c：图自上揭示（bottom 100% 遮蔽）").toEqual([
-      0, 0, 100, 0,
-    ]);
-    for (const state of [states.a, states.b, states.c]) {
+    // T7 紧凑行（无摘要）：无版画无摘要段，不参与媒体/摘要动效，仅标题与元信息分层揭示
+    expect(states.compact.summaryClip, "紧凑行无摘要段").toBe("(missing)");
+    expect(states.compact.mediaClip, "紧凑行无版画").toBe("(missing)");
+    expect(states.compact.artScale, "紧凑行无 art 层").toBe("(missing)");
+    expect(states.compact.metaOpacity, "紧凑行元信息同样隐藏初态").toBe("0");
+    for (const state of [states.a, states.b]) {
       expect(clipNumbers(state.artScale).slice(0, 1)[0], "art 层初态 scale 1.08").toBeCloseTo(
         1.08,
         2,

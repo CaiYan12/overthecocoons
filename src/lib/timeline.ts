@@ -1,8 +1,9 @@
 /**
- * 时间线渲染纯函数（Ticket 04）：排序、按日分组、分页、日内权重三档、时间格式化与站点内路径。
- * 版面规则与 docs/design/prototype-timeline.html 的 v-kinetic 变体一致：
- * - 每个日期组内 di=0 为头条（layout-c + w1），di=1 为 w2，其余 w3；
- * - di>0 的版面按奇偶交替（奇 layout-a，偶 layout-b）；
+ * 时间线渲染纯函数（Ticket 04 起，T7 版式诚实化演进）：排序、按日分组、分页、两档版式、
+ * 日组头规则、时间格式化与站点内路径。
+ * 版式口径见 docs/adr/0003-timeline-hierarchy-and-time-presentation.md：
+ * - 不设位置型头条档；条目两档由「有无摘要」驱动（entryLayout），有摘要按日内序号奇偶交替；
+ * - 日组头规则驱动（dayHeadInfo）：同日条目分钟全相同 → 批次形态，条目行省略时间；
  * - 同一首次收录时间的条目以稳定 ID 升序作确定性次序（docs/mvp-architecture.md 建议）。
  *
  * 本模块只做纯计算（字符串进、字符串/数组出），不读文件、不触网、不用 import.meta.env，
@@ -102,14 +103,40 @@ export function paginate<T>(items: T[], page: number): PageSlice<T> {
   return { page: current, totalPages, start, slice: items.slice(start, start + PAGE_SIZE) };
 }
 
-export type EntryLayout = "layout-a" | "layout-b" | "layout-c";
-export type EntryWeight = "w1" | "w2" | "w3";
+export type EntryLayout = "layout-a" | "layout-b" | "layout-compact";
 
-/** 日内权重三档与版面分配（与原型 kineticEntryHTML 一致）。 */
-export function entryWeights(di: number): { layout: EntryLayout; weight: EntryWeight } {
-  const layout: EntryLayout = di === 0 ? "layout-c" : di % 2 === 1 ? "layout-a" : "layout-b";
-  const weight: EntryWeight = di === 0 ? "w1" : di === 1 ? "w2" : "w3";
-  return { layout, weight };
+/**
+ * 两档版式（ADR 0003「取消位置型头条档」）：条目同级，层级由内容事实驱动——
+ * 有摘要 = 标准版式，按日内序号奇偶交替（di 奇图右 layout-a，di 偶图左 layout-b，di=0 归偶）；
+ * 无摘要 = 紧凑行 layout-compact（无版画、无摘要段），不参与左右交替。
+ * 判定只用「有无摘要」这一确定性内容事实，无展示位置语义、无编辑挑选。
+ */
+export function entryLayout(di: number, hasSummary: boolean): EntryLayout {
+  if (!hasSummary) return "layout-compact";
+  return di % 2 === 1 ? "layout-a" : "layout-b";
+}
+
+/** 日组头规则输出（ADR 0003「日组头规则驱动」）。 */
+export interface DayHeadInfo {
+  /** true = 批次形态（同日条目首次收录分钟全相同）：日组头显示「批次 hh:mm · N 条」，条目行省略时间。 */
+  batch: boolean;
+  /** 批次时刻（北京时间 HH:mm）；batch=false 时为 null。 */
+  clock: string | null;
+  /** 该日条目数。 */
+  count: number;
+}
+
+/**
+ * 日组头规则：同日条目首次收录时间分钟全相同 → 批次形态；一旦出现不同分钟 → 非批次，
+ * 条目行显示各自时间（北京时间）。分钟比较用北京时间墙钟口径（与排序/分组同源换算）；
+ * 单条条目分钟自相同，按规则归批次形态（不特判条数）；空组恒为非批次。
+ */
+export function dayHeadInfo(entries: Array<{ firstSeenAt: string }>): DayHeadInfo {
+  const count = entries.length;
+  if (count === 0) return { batch: false, clock: null, count };
+  const clocks = new Set(entries.map((item) => formatClock(item.firstSeenAt)));
+  const batch = clocks.size === 1;
+  return { batch, clock: batch ? formatClock(entries[0]!.firstSeenAt) : null, count };
 }
 
 /** 北京时间固定偏移 +08:00（中国无夏令时，固定偏移换算安全；UI 票 #18）。 */

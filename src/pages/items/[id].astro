@@ -57,7 +57,8 @@ const description = entry.summary
       <a href={siteUrl(topicPagePath(entry.topic, 1))} data-cursor-soft>← 返回时间线</a>
     </p>
     <h1 class="k-headline">{entry.title}</h1>
-    <KEntryMedia lab={lab} clock={clock} num="00" />
+    {/* T7 版式诚实化：详情页单一条目无快照内位置语境，版画不渲染序号（数据版画其余结构保留） */}
+    <KEntryMedia lab={lab} clock={clock} />
     <p class={`k-summary${entry.summary ? "" : " k-summary-empty"}`}>{summaryText}</p>
     <p class="k-meta">
       {/* UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂 */}

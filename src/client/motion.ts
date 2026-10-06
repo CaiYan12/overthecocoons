@@ -312,7 +312,8 @@ export function onListRendered(deferred: boolean): void {
         const meta = entry.querySelector<HTMLElement>(".k-meta");
         const media = entry.querySelector<HTMLElement>(".k-media");
         const art = entry.querySelector<HTMLElement>(".k-media-art");
-        // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入 / C 上入）
+        // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入，其余上入兜底；
+        // T7 紧凑行无媒体，media 为空时下方 clip 分支整体跳过）
         const clipFrom = entry.classList.contains("layout-a")
           ? "inset(0 100% 0 0)"
           : entry.classList.contains("layout-b")

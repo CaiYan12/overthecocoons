@@ -1,7 +1,8 @@
 /**
- * 时间线渲染纯函数（Ticket 04）：排序、按日分组、分页、日内权重三档、时间格式化、URL 路径。
- * 逻辑与 docs/design/prototype-timeline.html 的 v-kinetic 变体一致（di=0 头条 layout-c/w1，
- * di=1 layout-a/w2，其余 w3 且 layout 按 di 奇偶交替）。
+ * 时间线渲染纯函数（Ticket 04 起，T7 版式诚实化演进）：排序、按日分组、分页、两档版式、
+ * 日组头规则、时间格式化、URL 路径。
+ * 层级口径见 docs/adr/0003-timeline-hierarchy-and-time-presentation.md：
+ * 不设位置型头条档，条目两档由「有无摘要」驱动，日组头规则驱动批次形态。
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -12,7 +13,8 @@ import {
   TOPICS,
   TOPIC_SLUGS,
   beijingDate,
-  entryWeights,
+  dayHeadInfo,
+  entryLayout,
   formatClock,
   formatDateTime,
   groupEntriesByDay,
@@ -127,12 +129,49 @@ test("paginate：切片与全局序号起点正确，页码越界收敛到边界
   assert.equal(empty.slice.length, 0);
 });
 
-test("entryWeights：日内三档权重与版面交替规则（di=0 头条，di 奇偶交替 A/B）", () => {
-  assert.deepEqual(entryWeights(0), { layout: "layout-c", weight: "w1" });
-  assert.deepEqual(entryWeights(1), { layout: "layout-a", weight: "w2" });
-  assert.deepEqual(entryWeights(2), { layout: "layout-b", weight: "w3" });
-  assert.deepEqual(entryWeights(3), { layout: "layout-a", weight: "w3" });
-  assert.deepEqual(entryWeights(4), { layout: "layout-b", weight: "w3" });
+test("entryLayout：两档版式——有摘要按日内序号奇偶交替（di=0 归偶），无摘要恒为紧凑行（ADR 0003）", () => {
+  assert.equal(entryLayout(0, true), "layout-b", "di=0 与其他条目同级，归偶交替（图左）");
+  assert.equal(entryLayout(1, true), "layout-a", "di 奇图右");
+  assert.equal(entryLayout(2, true), "layout-b", "di 偶图左");
+  assert.equal(entryLayout(3, true), "layout-a");
+  for (const di of [0, 1, 2, 7, 20]) {
+    assert.equal(entryLayout(di, false), "layout-compact", `di=${di} 无摘要恒为紧凑行，不参与交替`);
+  }
+});
+
+test("dayHeadInfo：同日条目分钟全相同 → 批次形态（批次时刻 + N 条计数）", () => {
+  const batch = dayHeadInfo([
+    entry({ id: "1", firstSeenAt: "2026-10-03T08:57:00+08:00" }),
+    entry({ id: "2", firstSeenAt: "2026-10-03T08:57:00+08:00" }),
+    entry({ id: "3", firstSeenAt: "2026-10-03T08:57:00+08:00" }),
+  ]);
+  assert.deepEqual(batch, { batch: true, clock: "08:57", count: 3 });
+});
+
+test("dayHeadInfo：出现不同分钟 → 非批次（条目行显示各自时间）", () => {
+  const mixed = dayHeadInfo([
+    entry({ id: "1", firstSeenAt: "2026-10-03T08:57:00+08:00" }),
+    entry({ id: "2", firstSeenAt: "2026-10-03T08:29:00+08:00" }),
+    entry({ id: "3", firstSeenAt: "2026-10-03T08:57:00+08:00" }),
+  ]);
+  assert.deepEqual(mixed, { batch: false, clock: null, count: 3 });
+});
+
+test("dayHeadInfo：跨时区输入按北京时间分钟判定（UTC 00:57 = 北京 08:57，与 +08:00 同批次）", () => {
+  const batch = dayHeadInfo([
+    entry({ id: "1", firstSeenAt: "2026-10-03T00:57:00Z" }),
+    entry({ id: "2", firstSeenAt: "2026-10-03T08:57:00+08:00" }),
+  ]);
+  assert.deepEqual(batch, { batch: true, clock: "08:57", count: 2 });
+});
+
+test("dayHeadInfo：单条条目分钟自相同 → 批次形态「1 条」（规则只看分钟事实，不特判条数）", () => {
+  const single = dayHeadInfo([entry({ id: "1", firstSeenAt: "2026-10-03T08:57:00+08:00" })]);
+  assert.deepEqual(single, { batch: true, clock: "08:57", count: 1 });
+});
+
+test("dayHeadInfo：空组返回非批次零计数", () => {
+  assert.deepEqual(dayHeadInfo([]), { batch: false, clock: null, count: 0 });
 });
 
 test("时间格式化：UTC（Z）输入换算为北京时间输出（规格 #18）", () => {

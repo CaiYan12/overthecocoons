@@ -111,22 +111,22 @@ test("时间线倒序：产物中 k-entry 的 datetime 依渲染顺序单调不�
   }
 });
 
-test("日内权重三档与数据版画结构正确（每日首条头条，A/B 版面交替）", () => {
+test("两档版式与数据版画结构正确（有摘要奇偶交替、无摘要紧凑行；无位置型头条档）", () => {
   const html = readDist("index.html");
   const chunks = entryChunks(html);
-  const classes = chunks.map((c) => {
-    const m = c.match(/^ ([\w-]+) ([\w-]+)"/);
-    return m ? [m[1], m[2]] : null;
-  });
-  assert.deepEqual(classes[0], ["layout-c", "w1"], "每日首条为头条（layout-c + w1）");
-  assert.deepEqual(classes[1], ["layout-a", "w2"]);
-  assert.deepEqual(classes[2], ["layout-b", "w3"]);
-  assert.deepEqual(classes[3], ["layout-a", "w3"]);
-  // 第二个日期组首条重新从头条权重开始
+  const classes = chunks.map((c) => c.match(/^ ([\w-]+)"/)?.[1] ?? null);
+  assert.equal(classes[0], "layout-b", "di=0 归偶交替（图左），与其他条目同级（ADR 0003）");
+  assert.equal(classes[1], "layout-a", "di 奇图右");
+  assert.equal(classes[2], "layout-b", "di 偶图左");
+  assert.equal(classes[3], "layout-compact", "gi=3 无摘要 → 紧凑行（fixtures 前置：该条无 summary）");
+  assert.ok(!html.includes('k-entry layout-c"'), "layout-c 位置型版式已取消");
+  const articleClasses = (html.match(/<article class="k-entry[^"]*"/g) ?? []).join("\n");
+  assert.ok(!/\bw[123]\b/.test(articleClasses), "条目不再携带 w1/w2/w3 位置权重类");
+  // 第二个日期组首条重新从 di=0 起算
   const secondDayStart = html.indexOf('<section class="k-day" data-day', 1 + html.indexOf('<section class="k-day" data-day'));
   const afterSecondDay = html.slice(secondDayStart);
   const secondDayFirst = entryChunks(afterSecondDay)[0];
-  assert.match(secondDayFirst ?? "", /layout-c w1/, "每个日期组首条独立分配头条权重");
+  assert.match(secondDayFirst ?? "", /^ layout-b"/, "每个日期组首条独立从 di=0 交替");
 
   const first = chunks[0]!;
   assert.ok(first.includes('class="k-media"'), "数据版画外层");
@@ -135,9 +135,27 @@ test("日内权重三档与数据版画结构正确（每日首条头条，A/B �
   const firstLab = EN_LABEL[firstEntry.topic];
   assert.match(first, new RegExp(`aria-label="编辑占位图：${firstLab}"`));
   assert.ok(first.includes(`<span class="lab" aria-hidden="true">${firstLab}</span>`), "竖排主题词");
-  assert.match(first, /<span class="num" aria-hidden="true">\d{2}<\/span>/, "出血大序号");
+  assert.match(first, /<span class="num" aria-hidden="true">\d{2}<\/span>/, "出血大序号（时间线内保留，T9 移除）");
   assert.match(first, /<span class="tm">\d{2}:\d{2}<\/span>/, "色块时间");
   assert.ok(first.includes('data-cursor="VIEW"'), "T06 光标挂点保留");
+
+  const compact = chunks[3]!;
+  assert.ok(!compact.includes('class="k-media"'), "紧凑行无版画（无摘要条目不假装有图）");
+  assert.ok(!compact.includes('class="k-summary"'), "紧凑行无摘要段");
+  assert.ok(compact.includes('class="k-headline"'), "紧凑行保留标题链接");
+  assert.ok(compact.includes('class="k-meta"'), "紧凑行保留元信息");
+});
+
+test("日组头规则驱动：fixtures 每日分钟互异 → 无批次行，条目行显示各自时间", () => {
+  const html = readDist("index.html");
+  assert.ok(!html.includes("k-day-batch"), "fixtures 各日期内分钟互异，不应出现批次行");
+  for (const c of entryChunks(html)) {
+    assert.match(
+      c,
+      /<div class="k-time"><time datetime="[^"]+">\d{2}:\d{2}<\/time><\/div>/,
+      "混合分钟分支：条目行保留各自时间",
+    );
+  }
 });
 
 test("分页结构：每页独立 URL、页 2/页 3 存在且条数正确、aria-current 指示当前页", () => {
@@ -213,6 +231,7 @@ test("详情页：/items/<64hex>/ 直达，标题/摘要/来源/收录时间/主
   assert.ok(html.includes("查看百度搜索结果"), "独立百度搜索入口");
   assert.ok(html.includes(`href="${firstEntry.url}"`), "外链指向条目目标链接");
   assert.ok(html.includes('aria-label="编辑占位图'), "占位图保留");
+  assert.ok(!html.includes('class="num"'), "详情页版画不渲染序号（T7：单一条目无快照内位置语境）");
   assert.ok(html.includes('class="tpc"'), "主题标注");
   assert.ok(html.includes(`<time datetime="${firstEntry.firstSeenAt}"`), "收录时间");
   assert.ok(html.includes(`${BASE}/`), "站内链接带基路径");
@@ -420,8 +439,8 @@ test("自定义光标语义标记覆盖（UI 票 #14）：可点击元素都带�
   );
   assert.equal(
     [...html.matchAll(/data-cursor="OPEN"/g)].length,
-    20,
-    "每页 20 条占位版画都应带 OPEN",
+    18,
+    "标准条目占位版画带 OPEN（首页 20 条中 2 条无摘要走紧凑行，无版画；fixtures 前置）",
   );
   assert.ok(anchors.some((t) => t.includes('data-cursor="LINK"')), "条目外链应带 LINK");
 

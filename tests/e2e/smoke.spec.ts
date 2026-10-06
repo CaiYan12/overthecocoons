@@ -103,6 +103,44 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     await context.close();
   });
 
+  test("版式诚实化（T7/ADR 0003）：两档版式与日组头规则结构正确（无 JS 上下文即静态层保证）", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto(BASE);
+
+    // 无位置型头条档：条目只有 layout-a/b/compact 三类，不再携带 w1/w2/w3 权重类
+    const classes = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-entry]")].map((el) => el.className),
+    );
+    expect(classes.length, "首页应渲染 20 条").toBe(20);
+    for (const cls of classes) {
+      expect(cls).toMatch(/^k-entry (layout-a|layout-b|layout-compact)$/);
+    }
+
+    // 紧凑行（fixtures 无摘要条目）：无版画、无摘要段，保留标题链接与条目行时间（混合分钟分支）
+    const compact = page.locator(".k-entry.layout-compact").first();
+    await expect(compact.locator(".k-media")).toHaveCount(0);
+    await expect(compact.locator(".k-summary")).toHaveCount(0);
+    await expect(compact.locator(".k-headline a")).toBeVisible();
+    await expect(compact.locator(".k-time time")).toBeVisible();
+
+    // 标准条目保留版画与摘要
+    const standard = page.locator(".k-entry.layout-b").first();
+    await expect(standard.locator(".k-media-art")).toBeVisible();
+    await expect(standard.locator(".k-summary")).toBeVisible();
+
+    // 日组头规则（fixtures 每日分钟互异 → 混合分钟分支）：无批次行，日组头为日期大字
+    await expect(page.locator(".k-day-batch")).toHaveCount(0);
+    await expect(page.locator(".k-day-big").first()).toBeVisible();
+
+    // 详情页版画不渲染序号（单一条目无快照内位置语境），其余版画结构保留
+    const first = sortedEntries()[0]!;
+    await page.goto(`${BASE}items/${first.id}/`);
+    await expect(page.locator(".k-media-art .num")).toHaveCount(0);
+    await expect(page.locator(".k-media-art .lab")).toBeVisible();
+    await context.close();
+  });
+
   test("详情页直达：/items/<64hex>/ 可达且内容齐备", async ({ page }) => {
     const first = sortedEntries()[0];
     const response = await page.goto(`${BASE}items/${first.id}/`);
