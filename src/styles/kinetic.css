@@ -182,7 +182,7 @@ footer p { margin: 0 0 8px }
 .k-day .k-progress { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 2px; background: var(--accent); transform: scaleY(0); transform-origin: top center; will-change: transform }
 .k-day-head { padding: 0 0 32px calc(72px + 28px + 24px) }
 /* T7 版式诚实化（ADR 0003）：取消位置型头条档，大字时刻由日组头承担——
-   日期大字提级；批次形态（同日分钟全相同）追加「批次 hh:mm · N 条」中字行（票面参数，总审定稿） */
+   日期大字提级；批次形态（同日分钟全相同）追加「批次 hh:mm · N 条」中字行——T7 票面级设计参数（实现者拟定，总审裁定） */
 .k-day-big { margin: 0; font: 700 clamp(36px, 4.5vw, 64px)/1.1 var(--serif); letter-spacing: .04em }
 .k-day-batch { margin: 12px 0 0; font: 600 clamp(16px, 1.4vw, 20px)/1.3 var(--serif); letter-spacing: .04em; color: var(--ink); font-variant-numeric: tabular-nums }
 .k-day-sub { margin: 6px 0 0; font-size: 11px; letter-spacing: .26em; color: var(--muted) }

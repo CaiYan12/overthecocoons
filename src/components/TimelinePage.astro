@@ -9,7 +9,7 @@ import KEntry from "./KEntry.astro";
 import KPager from "./KPager.astro";
 import KEmpty from "./KEmpty.astro";
 import { loadSnapshot } from "../lib/snapshot.ts";
-import type { PublicEntry } from "../../src/domain/contract.ts";
+import type { PublicEntry } from "../domain/contract.ts";
 import type { DayHeadInfo } from "../lib/timeline.ts";
 import { beijingDate, dayHeadInfo, monthEn, paginate, sortEntriesDesc, topicPagePath } from "../lib/timeline.ts";
 import { buildTimelineData, serializeClientData } from "../lib/client-data.ts";
