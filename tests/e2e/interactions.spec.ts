@@ -7,6 +7,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { pickTopic, sortedEntries, wheelBy, wheelEntryToLine } from "./helpers.ts";
+import { ANNOUNCE_CLEAR_MS } from "../../src/client/status.ts";
 
 const BASE = "/overthecocoons/";
 const THEME_KEY = "overthecocoons.theme";
@@ -591,6 +592,39 @@ test.describe("返回顶部", () => {
     await expect(topBtn).toHaveClass(/show/);
     await topBtn.click();
     await page.waitForFunction(() => window.scrollY === 0, undefined, { timeout: 5_000 });
+  });
+});
+
+test.describe("播报 chip 自动消退（T5，#22）", () => {
+  test("写入后 ANNOUNCE_CLEAR_MS 内自动清空，清空恢复 live 语义且后续播报照常", async ({
+    page,
+  }) => {
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await showHeader(page);
+
+    await page.locator("[data-mode]").click(); // auto → 浅色：写入「显示模式：浅色」
+    await expectStatusContains(page, "显示模式：浅色");
+
+    // 自动消退：写入起 ANNOUNCE_CLEAR_MS 后清空（等待时长由实现导出常量驱动，不硬编码睡眠）
+    await expect
+      .poll(async () => statusText(page), { timeout: ANNOUNCE_CLEAR_MS + 5_000 })
+      .toBe("");
+    const liveState = await page.evaluate(() => {
+      const status = document.querySelector<HTMLElement>("[data-status]")!;
+      return {
+        display: getComputedStyle(status).display,
+        role: status.getAttribute("role"),
+        live: status.getAttribute("aria-live"),
+      };
+    });
+    expect(liveState.display, "清空后 chip 隐藏（.live-status:empty → display:none）").toBe("none");
+    expect(liveState.role, "静默清空后 role=status 已恢复").toBe("status");
+    expect(liveState.live, "静默清空后 aria-live=polite 已恢复").toBe("polite");
+
+    // 恢复后的区域后续播报照常（a11y 手法回归守卫）
+    await pickTopic(page, "新闻");
+    await expectStatusContains(page, "已切换主题：新闻");
   });
 });
 

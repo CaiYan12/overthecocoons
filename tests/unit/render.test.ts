@@ -60,13 +60,20 @@ test("首页为动态编辑场 v-kinetic 结构：Hero、紧凑 header、三栏�
   assert.ok(html.includes('class="k-grain"'), "背景材质");
   assert.ok(html.includes('class="k-header"'), "紧凑 header");
   assert.ok(html.includes("OVER THE COCOONS"), "Hero ghost 英文");
-  assert.ok(html.includes("跳　出") && html.includes("茧　房"), "Hero 双行大字标题");
+  assert.match(html, /<span class="line">跳出<\/span>/, "Hero 双行大字标题（无全角空格）");
+  assert.match(html, /<span class="line l2">茧房<\/span>/, "Hero 第二行大字");
   assert.ok(html.includes('class="k-hero-rule"'), "尺规线");
   assert.ok(html.includes('class="k-hero-date"'), "Hero 幽灵日期");
   assert.ok(html.includes('class="k-hero-meta"'), "Hero 元信息列表");
   assert.ok(html.includes('class="k-cols hud-first"'), "三栏容器（时间线页 HUD 移动端前置，UI 票 #10）");
   assert.ok(html.includes('class="k-hud"'), "右侧 HUD");
   assert.ok(html.includes("<footer"), "页脚");
+});
+
+test("h1 全角空格移除（T5，#22）：dist 全部 HTML 不含 U+3000（读屏按完整词朗读）", () => {
+  for (const rel of htmlFiles) {
+    assert.ok(!readDist(rel).includes("\u3000"), `${rel} 不应包含全角空格 U+3000`);
+  }
 });
 
 test("Hero 幽灵日期取最新条目日期（日 + 英文月份 + 年）", () => {

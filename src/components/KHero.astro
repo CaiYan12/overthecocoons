@@ -20,8 +20,10 @@ const year = latestBeijingDate ? latestBeijingDate.slice(0, 4) : "";
   <p class="k-hero-en" aria-hidden="true" data-heroen>OVER THE COCOONS</p>
   <div class="k-hero-rule" data-herorule aria-hidden="true"></div>
   <h1 class="k-hero-title" data-herotitle>
-    <span class="line">跳　出</span>
-    <span class="line l2">茧　房</span>
+    {/* T5（UI 票 #22）：行内间距不用全角空格 U+3000（读屏碎读「跳 出茧 房」），
+         视觉间距由 CSS letter-spacing 呈现（见 kinetic.css .k-hero-title） */}
+    <span class="line">跳出</span>
+    <span class="line l2">茧房</span>
   </h1>
   <div class="k-hero-date" aria-hidden="true" data-herodate>
     <span class="d" data-herodate-d>{day}</span>
