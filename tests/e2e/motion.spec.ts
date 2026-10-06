@@ -291,6 +291,120 @@ test.describe("GSAP 动效层（Hero Intro / Header Morph / 全局进度）", ()
   });
 });
 
+test.describe("非 Hero 页 header 常显（UI 票 #20）", () => {
+  /**
+   * 缺陷基准（2026-10-06 实测）：initHeroAndHeader 的初始隐藏语句位于「无 Hero 提前返回」
+   * 之前，全部页面首屏 header 都被 yPercent -100 藏起（桌面 -68px / 移动 -60px，bottom=0）。
+   * 修复口径：初始隐藏与滚动显隐分支仅作用于存在 Hero 的页面；非 Hero 页 header 常显，
+   * 且 scrollY 0–84 区间（含滚过 84 后回落）不得消失。Hero 页行为不变（既有 84px 阈值）。
+   * 路径基准为 P0 审计的 6 路径；其中「/」是 Hero 页，按票面验收第 2 条断言行为不变，
+   * 不适用「bottom>0」判据（首屏隐藏本就是 Hero 页设计行为，既有 Header Morph 用例在守）。
+   */
+  const NON_HERO_PATHS = ["about/", "sources/", "principles/", "privacy/", "nope-404/"];
+  const VIEWPORTS = [
+    { label: "桌面 1440×900", width: 1440, height: 900 },
+    { label: "移动 390×844", width: 390, height: 844 },
+  ] as const;
+
+  /** header 首屏状态：可见高度（bottom）与品牌链接命中测试是否落在 header 内（交互可达）。 */
+  async function headerFirstScreenState(page: Page): Promise<{ bottom: number; reachable: boolean }> {
+    return page.evaluate(() => {
+      const header = document.querySelector<HTMLElement>("[data-kheader]");
+      if (!header) return { bottom: -1, reachable: false };
+      const brand = header.querySelector<HTMLElement>(".k-brand");
+      const box = brand?.getBoundingClientRect();
+      const hit = box
+        ? document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+        : null;
+      return {
+        bottom: header.getBoundingClientRect().bottom,
+        reachable: hit !== null && hit.closest("[data-kheader]") === header,
+      };
+    });
+  }
+
+  for (const vp of VIEWPORTS) {
+    test(`非 Hero 页首屏 header 可见且可交互（5 路径 × ${vp.label}）`, async ({ page }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      for (const path of NON_HERO_PATHS) {
+        await page.goto(`${BASE}${path}`);
+        await waitClientReady(page);
+        await waitMotionOn(page);
+        const state = await headerFirstScreenState(page);
+        expect(
+          state.bottom,
+          `${path}：scrollY=0 时 header 应有可见高度（实测缺陷：bottom=0 完全位于视口上方）`,
+        ).toBeGreaterThan(0);
+        expect(
+          state.reachable,
+          `${path}：header 品牌链接应可交互命中（不被遮挡、不悬空于视口外）`,
+        ).toBe(true);
+      }
+    });
+  }
+
+  for (const vp of VIEWPORTS) {
+    test(`非 Hero 页 0–84px 区间 header 不消失：滚入区间与滚过 84 回落均保持可见（${vp.label}）`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto(`${BASE}about/`);
+      await waitClientReady(page);
+      await waitMotionOn(page);
+      // morph 补间 0.4s：每次滚动后等足补间窗口再断言——若实现错误触发滑出，此刻应已落定
+      await page.evaluate(() => window.scrollTo({ top: 40, behavior: "instant" }));
+      await page.waitForTimeout(600);
+      expect(
+        (await headerFirstScreenState(page)).bottom,
+        "40px（0–84 区间内）header 不应消失",
+      ).toBeGreaterThan(0);
+      await page.evaluate(() => window.scrollTo({ top: 300, behavior: "instant" }));
+      await page.waitForTimeout(600);
+      await page.evaluate(() => window.scrollTo({ top: 40, behavior: "instant" }));
+      await page.waitForTimeout(600);
+      expect(
+        (await headerFirstScreenState(page)).bottom,
+        "滚过 84 回落 40px 后 header 不应消失（headerShown 不得误触发滑出）",
+      ).toBeGreaterThan(0);
+    });
+  }
+
+  test("Hero 页行为不变：首屏隐藏、滚过 84 滑入（/ × 2 视口，含移动端口径）", async ({ page }) => {
+    for (const vp of VIEWPORTS) {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto(BASE);
+      await waitClientReady(page);
+      await waitMotionOn(page);
+      const headerM42 = () =>
+        page.evaluate(() => {
+          const header = document.querySelector("[data-kheader]");
+          if (!header) return 0;
+          const transform = getComputedStyle(header).transform;
+          return transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42;
+        });
+      expect(
+        await headerM42(),
+        // 位移恰好为负的 header 高度（桌面 68 / 移动 60）：完全隐藏时 m42 ≤ -60；
+        // 半隐藏态（如 -30）不会满足，判据仍有鉴别力
+        `${vp.label}：Hero 页首屏 header 应保持隐藏（既有设计行为）`,
+      ).toBeLessThanOrEqual(-60);
+      await page.mouse.move(200, 300);
+      await wheelBy(page, 300);
+      await page.waitForFunction(
+        () => {
+          const header = document.querySelector("[data-kheader]");
+          if (!header) return false;
+          const transform = getComputedStyle(header).transform;
+          return transform !== "none" && new DOMMatrixReadOnly(transform).m42 > -5;
+        },
+        undefined,
+        { timeout: 15_000 },
+      );
+      expect(await headerM42(), `${vp.label}：滚过 84px 后 header 滑入`).toBeGreaterThan(-5);
+    }
+  });
+});
+
 test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", () => {
   test("隐藏初态：摘要 clip、元信息透明、占位图按版面左/右/上方向交替 clip", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
