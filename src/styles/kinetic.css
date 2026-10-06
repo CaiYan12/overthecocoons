@@ -142,6 +142,15 @@ footer p { margin: 0 0 8px }
 @keyframes k-hint { 45% { transform: translateX(0) } 90%, 100% { transform: translateX(101%) } }
 @media (prefers-reduced-motion: reduce) { .k-scrollhint i::after { animation: none; transform: none } }
 
+/* T8 轻量页头（票 #25「Hero 仅时间线第一页」）：时间线非首页路由的大字时刻——
+   与日组头同族字阶（serif 700 + .04em + .k-day-sub 同款说明行），整体压缩为页头而非整屏 Hero；
+   不带 data-hero：T3 header 显隐守卫仅看 [data-hero]，本页 header 常显。
+   设计参数为票面级「实现者拟定，总审定稿」：顶部净空 128px（清 68px 固定 header + 呼吸），
+   大字与 .k-day-big 同档 clamp(36px,4.5vw,64px)，说明行与 .k-day-sub 同档 11px/.26em/muted。 */
+.k-pagehead { position: relative; z-index: var(--z-content); padding: 128px 0 0 }
+.k-pagehead-big { margin: 0; font: 700 clamp(36px, 4.5vw, 64px)/1.1 var(--serif); letter-spacing: .04em }
+.k-pagehead-sub { margin: 10px 0 0; font-size: 11px; letter-spacing: .26em; color: var(--muted) }
+
 /* 三栏 */
 .k-cols { position: relative; z-index: var(--z-content); display: grid; grid-template-columns: 168px minmax(0, 1fr) 216px; column-gap: 40px; align-items: start }
 /* 左侧竖向导航 */
@@ -352,6 +361,8 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
   .k-tabs { display: none }               /* 移动端主题入口在全屏菜单 */
   .k-menu-open { padding: 8px 10px; letter-spacing: .14em }
   .k-hero { min-height: max(74svh, 560px); padding: 110px 0 56px }
+  /* T8：轻量页头移动端压缩顶部净空（60px 固定 header + 呼吸），大字沿用日组头移动档 36px */
+  .k-pagehead { padding: 96px 0 0 }
   .k-hero-meta { grid-template-columns: 1fr 1fr; gap: 20px 16px }   /* P1-9：2×2，压缩高度 */
   .k-hero-date { top: 8%; right: -2vw; bottom: auto }                  /* P1-9：ghost 03 让开 meta 区 */
   .k-hero-date .d { font-size: clamp(120px, 36vw, 180px) }

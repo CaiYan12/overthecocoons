@@ -20,6 +20,7 @@ import {
   groupEntriesByDay,
   itemPath,
   monthEn,
+  pageHeadInfo,
   paginate,
   sortEntriesDesc,
   topicPagePath,
@@ -219,6 +220,29 @@ test("groupEntriesByDay：按北京时间日期分组（UTC 傍晚条目归北�
     groups[0]!.entries.map((e) => e.id),
     ["1", "2"],
   );
+});
+
+test("pageHeadInfo：轻量页头文案规则（T8，服务端与客户端重渲染共用）", () => {
+  // 「全部」第 2 页起：大字为「公共时间线」，页码进说明行
+  assert.deepEqual(pageHeadInfo("全部", 2, false), {
+    big: "公共时间线",
+    sub: "PUBLIC TIMELINE · 第 2 页 · 按收录时间排序",
+  });
+  // 主题页第 1 页：大字为主题名，无页码段
+  assert.deepEqual(pageHeadInfo("新闻", 1, false), {
+    big: "新闻",
+    sub: "NEWS · 按收录时间排序",
+  });
+  // 主题页第 3 页：页码段按北京时间口径外的纯页序（不涉时间换算）
+  assert.deepEqual(pageHeadInfo("社会", 3, false), {
+    big: "社会",
+    sub: "SOCIETY · 第 3 页 · 按收录时间排序",
+  });
+  // 演示快照：说明行带「（演示数据）」后缀（与日组头 k-day-sub 同口径）
+  assert.deepEqual(pageHeadInfo("科技", 1, true), {
+    big: "科技",
+    sub: "TECH · 按收录时间排序（演示数据）",
+  });
 });
 
 test("URL 路径：主题页与详情页为站点根相对路径（基路径在渲染层拼接）", () => {

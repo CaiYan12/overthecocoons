@@ -1,0 +1,23 @@
+---
+// 轻量页头（票 #25「Hero 仅时间线第一页」）：时间线非首页路由（分页 / 主题页）的大字时刻——
+// 主题名或「公共时间线」+ 英文标签与页码说明行，与日组头同族字阶（serif 700 + .04em、
+// k-day-sub 同款说明行）；不携带 data-hero——T3 的 header 显隐守卫仅看 [data-hero]，
+// 本组件所在页面 header 常显（首屏可见，0–84px 区间不消失）。
+// 文案口径 pageHeadInfo 与客户端重渲染共用：客户端切主题/翻页后由 timeline-view 同步改写，
+// 避免静态页头与客户端渲染的列表主题不一致。
+// 设计参数（字阶/间距）见 kinetic.css「T8 轻量页头」段：实现者拟定，总审定稿。
+import { pageHeadInfo } from "../lib/timeline.ts";
+
+interface Props {
+  topic: string;
+  page: number;
+  isFixture: boolean;
+}
+const { topic, page, isFixture } = Astro.props;
+const { big, sub } = pageHeadInfo(topic, page, isFixture);
+---
+
+<header class="k-pagehead" data-pagehead>
+  <h1 class="k-pagehead-big">{big}</h1>
+  <p class="k-pagehead-sub">{sub}</p>
+</header>

@@ -1,8 +1,10 @@
 ---
-// 时间线页（主题 × 页码）：Hero、左右栏、日期组时间线、aria-live 播报与链接式分页。
+// 时间线页（主题 × 页码）：Hero 或轻量页头、左右栏、日期组时间线、aria-live 播报与链接式分页。
 // 排序/分组/分页口径与原型 renderKineticList 一致：先按主题筛选，再按首次收录时间倒序，每页 20 条。
+// Hero 仅时间线第一页（票 #25）：「全部」第 1 页渲染 KHero；其余路由渲染轻量页头 KPageHead。
 import KSite from "./KSite.astro";
 import KHero from "./KHero.astro";
+import KPageHead from "./KPageHead.astro";
 import KNav from "./KNav.astro";
 import KHud from "./KHud.astro";
 import KEntry from "./KEntry.astro";
@@ -78,7 +80,11 @@ const description =
   hudMobileFirst
 >
   <Fragment slot="hero">
-    <KHero isFixture={isFixture} latestFirstSeenAt={sortedAll[0]?.firstSeenAt ?? null} />
+    {topic === "全部" && page === 1 ? (
+      <KHero isFixture={isFixture} latestFirstSeenAt={sortedAll[0]?.firstSeenAt ?? null} />
+    ) : (
+      <KPageHead topic={topic} page={page} isFixture={isFixture} />
+    )}
   </Fragment>
   <Fragment slot="col-start">
     <KNav active="home" />
