@@ -8,8 +8,9 @@
  */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { test } from "node:test";
 import type { PublicEntry, PublicSnapshot } from "../../src/domain/contract.ts";
 import { sortEntriesDesc, EN_LABEL, TOPICS, topicPagePath } from "../../src/lib/timeline.ts";
@@ -156,6 +157,50 @@ test("日组头规则驱动：fixtures 每日分钟互异 → 无批次行，条
       "混合分钟分支：条目行保留各自时间",
     );
   }
+});
+
+test("日组头批次分支接线（T7 审查修复）：合成快照同日分钟全相同，走完整 astro build 渲染路径", async () => {
+  // 合成快照：3 条同日条目 firstSeenAt 完全相同（分钟全相同 → dayHeadInfo 批次形态）。
+  // 04:54Z 经北京时间换算 = 12:54（UI 票 #18 口径）；isFixture=true 遵守演示数据约定。
+  const batchSnapshot: PublicSnapshot = {
+    schemaVersion: 1,
+    isFixture: true,
+    generatedAt: "2026-10-06T04:54:02.396Z",
+    entries: ["a", "b", "c"].map((c) => ({
+      id: c.repeat(64),
+      title: `【演示】批次条目 ${c}`,
+      summary: "演示摘要：批次分支接线测试用合成条目。",
+      topic: "新闻",
+      firstSeenAt: "2026-10-06T04:54:02.396Z",
+      url: `https://example.com/s?wd=batch-${c}`,
+    })),
+    quarantined: [],
+    sources: [],
+  };
+  const snapshotPath = join(tmpdir(), "oct-t7-batch-snapshot.json");
+  writeFileSync(snapshotPath, JSON.stringify(batchSnapshot), "utf-8");
+  const previousSnapshotPath = process.env.SNAPSHOT_PATH;
+  process.env.SNAPSHOT_PATH = snapshotPath;
+  process.env.ASTRO_TELEMETRY_DISABLED = "1";
+  try {
+    // 完整渲染路径 = 真实 astro build（编程式 API，读同一份 astro.config.mjs；
+    // outDir 隔离到 node_modules 下（已 gitignore），避免覆盖主 dist 断言产物）
+    const { build } = await import("astro");
+    await build({ outDir: "./node_modules/.t7-batch-dist", logLevel: "error" });
+  } finally {
+    if (previousSnapshotPath === undefined) delete process.env.SNAPSHOT_PATH;
+    else process.env.SNAPSHOT_PATH = previousSnapshotPath;
+    rmSync(snapshotPath, { force: true });
+  }
+  const html = readFileSync(join(process.cwd(), "node_modules", ".t7-batch-dist", "index.html"), "utf-8");
+  assert.ok(html.includes('data-day="2026-10-06"'), "UTC 04:54Z 按北京时间归属 10-06 日组");
+  assert.ok(html.includes('class="k-day-batch"'), "批次形态应渲染 k-day-batch 行");
+  assert.match(
+    html.replace(/\s+/g, " "),
+    /批次 12:54 · 3 条/,
+    "批次行文本：04:54Z → 北京时间 12:54 · 3 条",
+  );
+  assert.ok(!html.includes('class="k-time"'), "批次形态下条目行省略 k-time 时间（ADR 0003）");
 });
 
 test("分页结构：每页独立 URL、页 2/页 3 存在且条数正确、aria-current 指示当前页", () => {
