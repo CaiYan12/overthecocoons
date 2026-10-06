@@ -60,13 +60,23 @@ test("首页为动态编辑场 v-kinetic 结构：Hero、紧凑 header、三栏�
   assert.ok(html.includes('class="k-grain"'), "背景材质");
   assert.ok(html.includes('class="k-header"'), "紧凑 header");
   assert.ok(html.includes("OVER THE COCOONS"), "Hero ghost 英文");
-  assert.ok(html.includes("跳　出") && html.includes("茧　房"), "Hero 双行大字标题");
+  assert.match(html, /<span class="line">跳出<\/span>/, "Hero 双行大字标题（无全角空格）");
+  assert.match(html, /<span class="line l2">茧房<\/span>/, "Hero 第二行大字");
   assert.ok(html.includes('class="k-hero-rule"'), "尺规线");
   assert.ok(html.includes('class="k-hero-date"'), "Hero 幽灵日期");
   assert.ok(html.includes('class="k-hero-meta"'), "Hero 元信息列表");
   assert.ok(html.includes('class="k-cols hud-first"'), "三栏容器（时间线页 HUD 移动端前置，UI 票 #10）");
   assert.ok(html.includes('class="k-hud"'), "右侧 HUD");
   assert.ok(html.includes("<footer"), "页脚");
+});
+
+test("h1 全角空格移除（T5，#22）：Hero 标题模板区块不含 U+3000（读屏按完整词朗读）", () => {
+  // 只守 Hero 标题模板（T5 改排版的区块）；条目标题/摘要渲染原文、不改写内容是站点核心约束，
+  // 正文里正当的全角空格不构成缺陷，不得扫描全产物 HTML 打红构建（审查裁定，#22）。
+  const html = readDist("index.html");
+  const heroTitle = html.match(/<h1[^>]*data-herotitle>[\s\S]*?<\/h1>/);
+  assert.ok(heroTitle, "index.html 存在 Hero 标题区块（断言前置）");
+  assert.ok(!heroTitle[0].includes("\u3000"), "Hero 标题区块不应包含全角空格 U+3000");
 });
 
 test("Hero 幽灵日期取最新条目日期（日 + 英文月份 + 年）", () => {

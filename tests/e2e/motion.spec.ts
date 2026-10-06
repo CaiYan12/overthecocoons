@@ -1798,6 +1798,95 @@ test.describe("桌面限定动效门槛（pointer:fine）", () => {
   });
 });
 
+test.describe("拆字 aria 与 h1 排版（T5，#22）", () => {
+  test("拆字命名点收窄至语义元素（h1/链接）、字符 span 全部 aria-hidden（Hero 与列表标题；重渲染后仍生效）", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+    await waitIntroDone(page);
+
+    const hero = await page.evaluate(() => {
+      const title = document.querySelector<HTMLElement>("[data-herotitle]")!;
+      const lines = [...title.querySelectorAll<HTMLElement>(".line")];
+      const allSpansHidden = (scope: ParentNode) =>
+        [...scope.querySelectorAll(".kw, .ch")].every(
+          (el) => el.getAttribute("aria-hidden") === "true",
+        );
+      return {
+        titleLabel: title.getAttribute("aria-label"),
+        lineLabels: lines.map((line) => line.getAttribute("aria-label")),
+        lineTexts: lines.map((line) => line.textContent ?? ""),
+        spansHidden: lines.every((line) => allSpansHidden(line)),
+      };
+    });
+    expect(hero.titleLabel, "h1 容器 aria-label=完整标题（读屏按词朗读，不逐字）").toBe(
+      "跳出茧房",
+    );
+    expect(hero.lineTexts, "h1 文本不含全角空格（U+3000 已移除）").toEqual(["跳出", "茧房"]);
+    expect(
+      hero.lineLabels,
+      "行拆字容器（generic 角色）不设 aria-label（规范禁止项），命名点在 h1[data-herotitle]",
+    ).toEqual([null, null]);
+    expect(hero.spansHidden, "Hero 拆出的 .kw/.ch 全部 aria-hidden").toBe(true);
+
+    const headline = await page.evaluate(() => {
+      const a = document.querySelector<HTMLElement>(".k-entry .k-headline a")!;
+      return {
+        label: a.getAttribute("aria-label"),
+        text: a.textContent ?? "",
+        spansHidden: [...a.querySelectorAll(".kw, .ch")].every(
+          (el) => el.getAttribute("aria-hidden") === "true",
+        ),
+      };
+    });
+    expect(headline.label, "断言前置：列表标题链接已拆字").not.toBe("");
+    expect(headline.label, "列表标题链接 aria-label=完整标题文本").toBe(headline.text);
+    expect(headline.spansHidden, "列表拆出的 .kw/.ch 全部 aria-hidden").toBe(true);
+
+    // 客户端重渲染（切主题重建列表）后，新拆字同样带 aria（幂等路径）
+    await showHeader(page);
+    await pickTopic(page, "新闻");
+    await waitTopicAnimDone(page);
+    const reHeadline = await page.evaluate(() => {
+      const a = document.querySelector<HTMLElement>(".k-entry .k-headline a")!;
+      return {
+        label: a.getAttribute("aria-label"),
+        text: a.textContent ?? "",
+        spansHidden: [...a.querySelectorAll(".kw, .ch")].every(
+          (el) => el.getAttribute("aria-hidden") === "true",
+        ),
+      };
+    });
+    expect(reHeadline.label, "断言前置：重渲染后标题非空").not.toBe("");
+    expect(reHeadline.label, "重渲染后标题链接仍带 aria-label=完整标题").toBe(reHeadline.text);
+    expect(reHeadline.spansHidden, "重渲染后拆字仍全部 aria-hidden").toBe(true);
+  });
+
+  test("320px 最窄视口：h1 每行保持单行不折行（全角空格改 CSS 间距的排版守卫）", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    const lines = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>(".k-hero-title .line")].map((line) => ({
+        height: line.getBoundingClientRect().height,
+        fontSize: Number.parseFloat(getComputedStyle(line).fontSize),
+      })),
+    );
+    expect(lines, "Hero 两行标题").toHaveLength(2);
+    for (const [index, line] of lines.entries()) {
+      expect(
+        line.height,
+        `第 ${index + 1} 行应为单行（高度 ≈ line-height 1.05×字号；折行则 ≈2 倍）`,
+      ).toBeLessThanOrEqual(line.fontSize * 1.4);
+    }
+  });
+});
+
 test.describe("截图矩阵（320/390/768/1024/1440 × 浅/深）", () => {
   for (const width of [320, 390, 768, 1024, 1440]) {
     for (const theme of ["light", "dark"] as const) {

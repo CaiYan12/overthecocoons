@@ -91,17 +91,33 @@ function pad2(value: number): string {
   return String(value).padStart(2, "0");
 }
 
-/** 把元素文本拆为 span.kw > span.ch 遮罩字符（与原型 splitChars 一致，重复拆分幂等）。 */
+/**
+ * 把元素文本拆为 span.kw > span.ch 遮罩字符（与原型 splitChars 一致，重复拆分幂等）。
+ * T5 a11y（#22，审查修复）：拆出的 .kw/.ch 标 aria-hidden——读屏不逐字、按命名点完整词朗读。
+ * 命名点只保留在语义元素上：列表标题=链接 a 本身（拆分前补 aria-label=原文本）；Hero 的 .line
+ * 是 generic 角色（span 容器上 aria-label 属规范禁止项，读屏会忽略），命名点在 h1[data-herotitle]，
+ * 由调用方在拆字清空前设置。
+ * 二次拆分守卫：text 为空或与现有 label 一致时跳过覆写——同元素再次拆分不得置空已有 label。
+ */
 function splitChars(el: Element): HTMLElement[] {
   const text = el.textContent ?? "";
+  if (
+    text &&
+    text !== el.getAttribute("aria-label") &&
+    !el.matches("span:not([role]), div:not([role])")
+  ) {
+    el.setAttribute("aria-label", text);
+  }
   el.textContent = "";
   const frag = document.createDocumentFragment();
   const chars: HTMLElement[] = [];
   for (const ch of text) {
     const kw = document.createElement("span");
     kw.className = "kw";
+    kw.setAttribute("aria-hidden", "true");
     const c = document.createElement("span");
     c.className = "ch";
+    c.setAttribute("aria-hidden", "true");
     c.textContent = ch;
     kw.appendChild(c);
     frag.appendChild(kw);
@@ -244,6 +260,18 @@ function initHeroAndHeader(root: HTMLElement): void {
     markIntroDone();
   } else {
     const heroChars: HTMLElement[] = [];
+    // T5 a11y（#22）：h1 是标题唯一的有效命名点——.line 是 generic 角色（span 上 aria-label
+    // 属规范禁止项，部分读屏会忽略，而其子树字符又被 aria-hidden 藏起，届时 h1 名将落空），
+    // 故在 h1 上补完整标题 label（须在拆字清空前读取各行文本）。
+    const heroTitle = root.querySelector<HTMLElement>("[data-herotitle]");
+    if (heroTitle) {
+      heroTitle.setAttribute(
+        "aria-label",
+        [...heroTitle.querySelectorAll<HTMLElement>(".line")]
+          .map((line) => (line.textContent ?? "").trim())
+          .join(""),
+      );
+    }
     root.querySelectorAll<HTMLElement>(".k-hero-title .line").forEach((line) => {
       heroChars.push(...splitChars(line));
     });
