@@ -110,6 +110,40 @@ async function waitMenuClosed(page: Page): Promise<void> {
   );
 }
 
+/** #19 观测记录：页面内包装 startViewTransition 后的逐 rAF 采样（finished 结算即停）。 */
+interface VtFrameSample {
+  t: number;
+  hasVt: boolean;
+  clipPath: string;
+  vtClip: Array<{ state: string; current: number | null }>;
+}
+
+interface VtObservation {
+  readyAt: number | null;
+  finishedAt: number | null;
+  done: boolean;
+  samples: VtFrameSample[];
+}
+
+/**
+ * circle(...) 半径的百分比当量：% 直接取值、px 按根快照参考半径折算
+ * （clip-path circle 的百分比参考值为 sqrt(w²+h²)/√2）。兼容插值中间态的
+ * calc(A% + Bpx) 形态——同一半径的三种表示折算后收敛于同一数值。
+ */
+function circleRadiusPercent(clip: string, refPx: number): number | null {
+  if (!clip.startsWith("circle(")) return null;
+  const openAt = clip.indexOf("(");
+  const at = clip.indexOf(" at ");
+  const inner = clip.slice(openAt + 1, at > 0 ? at : clip.indexOf(")", openAt));
+  let percent = 0;
+  let seen = false;
+  for (const m of inner.matchAll(/(-?[\d.]+)(%|px)/g)) {
+    seen = true;
+    percent += m[2] === "%" ? Number(m[1]) : (Number(m[1]) / refPx) * 100;
+  }
+  return seen ? percent : null;
+}
+
 /** 从 clip-path 字符串提取数值并按 CSS inset 简写语义补齐为 [top, right, bottom, left]。 */
 function clipNumbers(value: string): number[] {
   const nums = (value.match(/-?\d*\.?\d+/g) ?? []).map(Number);
@@ -709,6 +743,146 @@ test.describe("显示模式切换（View Transition 径向 + 兜底）", () => {
         ),
     );
     expect(ghost, "深色场景 ghost 强度 0.1（token 重同步）").toBeCloseTo(0.1, 1);
+  });
+
+  test("径向动画真实播放：vt-clip 出现且 running、clip 半径增长至完成、data-vt 存续至 finished（#19）", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+    await waitIntroDone(page);
+    await showHeader(page);
+
+    // 页面内包装 startViewTransition：ready 起逐 rAF 采样，finished 结算即停。
+    // 观测法为 15 帧采样实测核实（#19）：vt-clip 只在 html[data-vt] 与
+    // ::view-transition-new(root) 匹配期间存在，属性一撤动画即被取消。
+    await page.evaluate(() => {
+      const w = window as unknown as { __vtObs?: VtObservation };
+      const obs: VtObservation = { readyAt: null, finishedAt: null, done: false, samples: [] };
+      w.__vtObs = obs;
+      const doc = document as unknown as {
+        startViewTransition?: (cb: () => void) => {
+          ready: Promise<void>;
+          finished: Promise<void>;
+          skipTransition(): void;
+        };
+      };
+      const original = doc.startViewTransition!.bind(document);
+      doc.startViewTransition = (cb) => {
+        const vt = original(cb);
+        vt.ready.then(() => {
+          obs.readyAt = performance.now();
+          const sample = () => {
+            if (obs.finishedAt !== null) {
+              obs.done = true;
+              return;
+            }
+            obs.samples.push({
+              t: performance.now(),
+              hasVt: document.documentElement.hasAttribute("data-vt"),
+              clipPath: getComputedStyle(
+                document.documentElement,
+                "::view-transition-new(root)",
+              ).clipPath,
+              vtClip: document
+                .getAnimations()
+                .filter(
+                  (a): a is CSSAnimation =>
+                    a instanceof CSSAnimation && a.animationName === "vt-clip",
+                )
+                .map((a) => ({
+                  state: a.playState,
+                  current: a.currentTime === null ? null : Number(a.currentTime),
+                })),
+            });
+            requestAnimationFrame(sample);
+          };
+          requestAnimationFrame(sample);
+        });
+        vt.finished.then(
+          () => {
+            obs.finishedAt = performance.now();
+          },
+          () => {
+            obs.finishedAt = performance.now();
+          },
+        );
+        return vt;
+      };
+    });
+
+    await page.locator("[data-mode]").click();
+    await expect
+      .poll(
+        () => page.evaluate(() => (window as unknown as { __vtObs?: VtObservation }).__vtObs?.done),
+        { timeout: 8_000 },
+      )
+      .toBe(true);
+    const obs = await page.evaluate(
+      (): VtObservation => (window as unknown as { __vtObs: VtObservation }).__vtObs,
+    );
+    const dump = (frames: VtFrameSample[]): string =>
+      JSON.stringify(
+        frames.slice(0, 4).map((s) => ({ t: +s.t.toFixed(0), hasVt: s.hasVt, clip: s.clipPath, a: s.vtClip })),
+      );
+
+    expect(obs.readyAt, "ready 应正常 resolve（本用例不走看门狗路径）").not.toBeNull();
+
+    // 1) vt-clip 出现且覆盖动画主段（450ms；缺陷态：ready ~25ms 即摘属性，动画 ≤35ms 内被取消）
+    const withClip = obs.samples.filter((s) => s.vtClip.length > 0);
+    const clipSpan = withClip.length ? withClip[withClip.length - 1]!.t - withClip[0]!.t : 0;
+    expect(
+      clipSpan,
+      `vt-clip 应持续播放（采样 ${obs.samples.length} 帧，vt-clip 帧 ${withClip.length}，跨度 ${clipSpan.toFixed(0)}ms，样例 ${dump(obs.samples)}）`,
+    ).toBeGreaterThanOrEqual(250);
+
+    // 2) running 且 currentTime 推进至动画主段
+    expect(
+      withClip.some((s) => s.vtClip.some((a) => a.state === "running")),
+      "vt-clip 应处于 running 状态",
+    ).toBe(true);
+    const maxCurrent = Math.max(...withClip.flatMap((s) => s.vtClip.map((a) => a.current ?? 0)));
+    expect(maxCurrent, "vt-clip currentTime 应推进（450ms 时长的 ≥250ms）").toBeGreaterThanOrEqual(
+      250,
+    );
+
+    // 3) clipPath 呈 circle(r) 且半径逐帧增长至完成（keyframes：0 → 142%）
+    const refPx = await page.evaluate(
+      () => Math.hypot(document.documentElement.clientWidth, document.documentElement.clientHeight) / Math.SQRT2,
+    );
+    const radii = withClip
+      .map((s) => circleRadiusPercent(s.clipPath, refPx))
+      .filter((r): r is number => r !== null);
+    expect(
+      radii.length,
+      `clipPath 应全程为 circle(...) 形态（${withClip.length - radii.length} 帧非 circle）`,
+    ).toBe(withClip.length);
+    expect(radii[0]!, `起始帧半径应接近 0（实测 ${radii[0]!.toFixed(1)}%）`).toBeLessThanOrEqual(25);
+    let grows = false;
+    for (let i = 1; i < radii.length; i++) {
+      expect(radii[i]!, `clip 半径不应回退（第 ${i} 帧）`).toBeGreaterThanOrEqual(radii[i - 1]!);
+      if (radii[i]! > radii[i - 1]!) grows = true;
+    }
+    expect(grows, "clip 半径应逐帧增长").toBe(true);
+    expect(
+      Math.max(...radii),
+      `clip 半径应增长至完成段（142% 的 ≥100，实测峰值 ${Math.max(...radii).toFixed(1)}%）`,
+    ).toBeGreaterThanOrEqual(100);
+
+    // 4) data-vt 在 finished 前不消失（缺陷态：ready 即摘除，UA 默认 cross-fade 期间无属性）
+    const lostVt = obs.samples.filter((s) => !s.hasVt);
+    expect(
+      lostVt,
+      `data-vt 应存续至 finished（失配帧 ${lostVt.length}/${obs.samples.length}，样例 ${dump(lostVt)}）`,
+    ).toEqual([]);
+
+    // 5) finished 后仍要收尾摘除（防「永不摘除」的过修）
+    expect(
+      await page.evaluate(() => document.documentElement.hasAttribute("data-vt")),
+      "finished 后 data-vt 应被摘除",
+    ).toBe(false);
   });
 
   test("ready 超时兜底：startViewTransition 的 ready 永不 resolve 时强制 skipTransition", async ({

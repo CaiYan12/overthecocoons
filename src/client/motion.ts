@@ -503,7 +503,10 @@ export function themeApplyMotion(apply: () => void, origin: Element | null): voi
       done();
       return;
     }
-    // ready 未按时 resolve（渲染被抑制等异常）时强制跳过，避免整页动画停摆
+    // 看门狗只管「ready 挂起」：渲染被抑制等异常时 ready 迟迟不 resolve，强制跳过避免整页动画停摆。
+    // 摘除 data-vt 的动画收尾只属于 finished——ready 即摘除会让
+    // html[data-vt]::view-transition-new(root) 在 vt-clip 起始帧失配、径向动画被取消，
+    // 退化为 UA 默认 cross-fade（#19）。
     const timer = setTimeout(() => {
       if (!settled) {
         try {
@@ -516,7 +519,6 @@ export function themeApplyMotion(apply: () => void, origin: Element | null): voi
     }, 250);
     vt.ready
       .then(() => {
-        done();
         clearTimeout(timer);
       })
       .catch(() => {
