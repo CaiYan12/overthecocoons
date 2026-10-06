@@ -469,6 +469,35 @@ test("动效库（Ticket 06 引入，Ticket 08 自托管）：vendor 双脚本 +
   assert.ok(css.includes("k-themefade"), "无 View Transition API 的颜色过渡降级样式应在构建 CSS 中");
 });
 
+test("默认主题初值 auto（T4，UI 票 #21）：所有页面 html 标签为 data-theme=auto，auto 深色映射随 prefers-color-scheme 入构建 CSS", () => {
+  for (const rel of htmlFiles) {
+    const html = readDist(rel);
+    assert.match(
+      html,
+      /<html[^>]*\sdata-theme="auto"/,
+      `${rel} 默认主题初值应为 auto（跟随系统），不得硬编码 light`,
+    );
+  }
+  const css = cssFiles.map(readDist).join("\n");
+  assert.match(css, /:root\[data-theme=auto\]/, "auto 深色变量映射应在构建 CSS 中");
+  assert.match(
+    css,
+    /@media \(prefers-color-scheme: ?dark\)[^{]*\{[^@]*?:root\[data-theme=auto\]/,
+    "auto 深色映射必须挂在 prefers-color-scheme 媒体查询下（无 JS 亦生效）",
+  );
+});
+
+test("过场面板死代码已删除（T4，UI 票 #21）：k-transition 样式与 data-ktrans DOM、--z-trans 变量全仓零残留", () => {
+  const all = [
+    ...htmlFiles.map((rel) => readDist(rel)),
+    ...cssFiles.map((rel) => readDist(rel)),
+    ...jsFiles.map((rel) => readDist(rel)),
+  ].join("\n");
+  for (const needle of ["k-transition", "k-trans-num", "k-trans-label", "k-trans-note", "ktrans", "z-trans"]) {
+    assert.ok(!all.includes(needle), `构建产物中不得残留死代码标识「${needle}」`);
+  }
+});
+
 test("数据岛内容与构建快照一致（字段、条数、基路径）", () => {
   for (const rel of ["index.html", "page/2/index.html", "topics/news/index.html"]) {
     const html = readDist(rel);

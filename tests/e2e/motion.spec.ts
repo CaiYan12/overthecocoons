@@ -850,6 +850,15 @@ test.describe("两段式主题切换（出 260ms / 入 340ms，日期组头先�
 test.describe("显示模式切换（View Transition 径向 + 兜底）", () => {
   test("正常路径：data-vt 短暂存在后移除，ghost 透明度随场景重同步", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
+    // T4（UI 票 #21）：默认初值改为 auto——本用例测 VT 时序，预置 light 存储保持
+    // 「点击一次 → 深色」的断言基准不随默认主题漂移
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem("overthecocoons.theme", "light");
+      } catch {
+        /* 存储不可用时用例自然失败，不吞错误 */
+      }
+    });
     await page.goto(BASE);
     await waitClientReady(page);
     await waitMotionOn(page);
@@ -876,6 +885,14 @@ test.describe("显示模式切换（View Transition 径向 + 兜底）", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
+    // T4（UI 票 #21）：默认初值改为 auto——预置 light 存储保持「点击一次 → 深色」基准
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem("overthecocoons.theme", "light");
+      } catch {
+        /* 存储不可用时用例自然失败，不吞错误 */
+      }
+    });
     await page.goto(BASE);
     await waitClientReady(page);
     await waitMotionOn(page);
@@ -1016,6 +1033,14 @@ test.describe("显示模式切换（View Transition 径向 + 兜底）", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
+    // T4（UI 票 #21）：默认初值改为 auto——预置 light 存储保持「点击一次 → 深色」基准
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem("overthecocoons.theme", "light");
+      } catch {
+        /* 存储不可用时用例自然失败，不吞错误 */
+      }
+    });
     await page.goto(BASE);
     await waitClientReady(page);
     await waitMotionOn(page);
@@ -1063,6 +1088,14 @@ test.describe("显示模式切换（View Transition 径向 + 兜底）", () => {
 
   test("无 View Transition API：降级为 k-themefade 颜色过渡", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
+    // T4（UI 票 #21）：默认初值改为 auto——预置 light 存储保持「点击一次 → 深色」基准
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem("overthecocoons.theme", "light");
+      } catch {
+        /* 存储不可用时用例自然失败，不吞错误 */
+      }
+    });
     await page.goto(BASE);
     await waitClientReady(page);
     await waitMotionOn(page);

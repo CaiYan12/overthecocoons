@@ -1,6 +1,7 @@
 ---
 // 站点外壳（v-kinetic）：背景材质、紧凑 header、可选 Hero、三栏（左右栏经插槽注入）、
-// 页脚、返回顶部与 Ticket 06 动效挂点（过渡面板/自定义光标，静态层不可见）。
+// 页脚、返回顶部与 Ticket 06 动效挂点（自定义光标，静态层不可见）。
+// T4（UI 票 #21）：页面过渡面板 DOM 已删除（客户端零驱动的死代码，P2 改用原生 View Transition）。
 import BaseLayout from "../layouts/BaseLayout.astro";
 import KHeader from "./KHeader.astro";
 import KMenu from "./KMenu.astro";
@@ -60,11 +61,7 @@ const { count: todayCount } = latestDayStats(sortEntriesDesc(snapshot.entries));
       isFixture={isFixture}
       todayCount={todayCount}
     />
-    <!-- 页面过渡面板：Ticket 06 挂点，静态层保持隐藏空壳（原型的桩文案不再渲染） -->
-    <div class="k-transition" data-ktrans aria-hidden="true">
-      <div class="k-trans-num" data-ktrans-num></div>
-      <div class="k-trans-label" data-ktrans-label></div>
-    </div>
+    <!-- 页面过渡面板 DOM 已删除（T4，UI 票 #21）：见本文件头注释 -->
     <!-- 自定义光标（UI 票 #14）：反相混合作用在 .k-cursor 容器上（写在子元素上会被容器自身的
          隔离组屏蔽，实测渲染为原始白色）；语义标签必须留在容器之外——容器内会随背景一起反相，
          accent 红会漂成青绿，故标签作为兄弟元素独立跟随鼠标 -->

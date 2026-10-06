@@ -34,7 +34,9 @@
   --rule: #716A61; --accent: #E18B86;
 }
 @media (prefers-color-scheme: dark) {
-  :root[data-theme=auto] {
+  /* T4（UI 票 #21）：auto 为默认初值，深色系统首访走此块——补 color-scheme 与
+     data-theme=dark 语义等价（原型此块缺 color-scheme，移植时按等价性修正） */
+  :root[data-theme=auto] { color-scheme: dark;
     --paper: #191816; --surface: #23211E; --ink: #F4EFE5; --muted: #BEB5A8;
     --rule: #716A61; --accent: #E18B86;
   }
@@ -79,7 +81,7 @@ footer p { margin: 0 0 8px }
   --motion-fast: 160ms; --motion-normal: 280ms; --motion-slow: 550ms;
   --pad-x: clamp(20px, 4vw, 72px);
   --z-bg: 0; --z-content: 10; --z-sticky: 20; --z-header: 50; --z-float: 100;
-  --z-menu: 500; --z-trans: 800; --z-cursor: 900;
+  --z-menu: 500; --z-cursor: 900;
   position: relative;
   max-width: var(--content-max);
   margin: 0 auto;
@@ -297,11 +299,8 @@ dialog.k-menu::backdrop { background: transparent }
 .k-menu-topics .tab:hover { color: var(--paper); border-color: var(--paper) }
 .k-menu-topics .tab[aria-current=true] { color: var(--accent); border-color: var(--accent) }
 
-/* 页面过渡面板（驱动属 Ticket 06；保留结构占位） */
-.k-transition { position: fixed; inset: 0; z-index: var(--z-trans); background: var(--accent); color: var(--paper); visibility: hidden; display: grid; place-content: center; text-align: center; gap: 10px; pointer-events: none }
-.k-trans-num { font: 700 clamp(120px, 18vw, 260px)/1 var(--serif) }
-.k-trans-label { font: 600 clamp(22px, 3vw, 34px)/1.3 var(--serif); letter-spacing: .12em }
-.k-trans-note { margin: 14px 0 0; font-size: 13px; opacity: .8 }
+/* 页面过渡面板样式已删除（T4，UI 票 #21）：客户端零驱动的死代码，P2 采用原生
+   View Transition 跨页过渡（其样式见上方 data-vt 块），此面板不再保留结构占位。 */
 
 /* 自定义光标（驱动属 Ticket 06；保留结构占位，静态层不可见） */
 /* UI 票 #14：反相混合作用在容器上。容器自身是固定定位的堆叠上下文（= 隔离组），写在子元素上的
@@ -361,6 +360,9 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
   .k-tabs { display: none }               /* 移动端主题入口在全屏菜单 */
   .k-menu-open { padding: 8px 10px; letter-spacing: .14em }
   .k-hero { min-height: max(74svh, 560px); padding: 110px 0 56px }
+  /* T4（UI 票 #21）：ghost 英文是 aria-hidden 装饰元素，≤767px 与幽灵日期同区叠压——
+     移动端整体隐藏，桌面保留 */
+  .k-hero-en { display: none }
   /* T8：轻量页头移动端压缩顶部净空（60px 固定 header + 呼吸），大字沿用日组头移动档 36px */
   .k-pagehead { padding: 96px 0 0 }
   .k-hero-meta { grid-template-columns: 1fr 1fr; gap: 20px 16px }   /* P1-9：2×2，压缩高度 */

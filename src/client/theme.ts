@@ -20,7 +20,9 @@ const MODES = [
 
 type ModeValue = (typeof MODES)[number]["value"];
 
-let index = 0;
+// 初值「跟随系统」（T4/UI 票 #21）：与 HTML data-theme="auto" 对齐，模块就绪时无存储
+// 不会把跟随系统态打回浅色；有持久化偏好时在 initTheme 内覆盖。循环覆盖三态不变。
+let index = MODES.length - 1;
 
 function isModeValue(value: string | null): value is ModeValue {
   return value !== null && MODES.some((mode) => mode.value === value);
