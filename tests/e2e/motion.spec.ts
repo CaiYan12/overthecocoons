@@ -1799,7 +1799,7 @@ test.describe("桌面限定动效门槛（pointer:fine）", () => {
 });
 
 test.describe("拆字 aria 与 h1 排版（T5，#22）", () => {
-  test("拆字容器补 aria-label、字符 span 全部 aria-hidden（Hero 与列表标题；重渲染后仍生效）", async ({
+  test("拆字命名点收窄至语义元素（h1/链接）、字符 span 全部 aria-hidden（Hero 与列表标题；重渲染后仍生效）", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -1826,7 +1826,10 @@ test.describe("拆字 aria 与 h1 排版（T5，#22）", () => {
       "跳出茧房",
     );
     expect(hero.lineTexts, "h1 文本不含全角空格（U+3000 已移除）").toEqual(["跳出", "茧房"]);
-    expect(hero.lineLabels, "每行拆字容器 aria-label=该行原文本").toEqual(["跳出", "茧房"]);
+    expect(
+      hero.lineLabels,
+      "行拆字容器（generic 角色）不设 aria-label（规范禁止项），命名点在 h1[data-herotitle]",
+    ).toEqual([null, null]);
     expect(hero.spansHidden, "Hero 拆出的 .kw/.ch 全部 aria-hidden").toBe(true);
 
     const headline = await page.evaluate(() => {

@@ -93,13 +93,21 @@ function pad2(value: number): string {
 
 /**
  * 把元素文本拆为 span.kw > span.ch 遮罩字符（与原型 splitChars 一致，重复拆分幂等）。
- * T5 a11y（#22）：拆分前给容器补 aria-label=原文本、拆出的 .kw/.ch 标 aria-hidden——
- * 读屏按容器完整词朗读，不逐字。属性赋值天然幂等（同值重设不堆叠）；
- * 列表拆字移除后其 aria 随拆字一起消失（T11 方向），不与本修复冲突。
+ * T5 a11y（#22，审查修复）：拆出的 .kw/.ch 标 aria-hidden——读屏不逐字、按命名点完整词朗读。
+ * 命名点只保留在语义元素上：列表标题=链接 a 本身（拆分前补 aria-label=原文本）；Hero 的 .line
+ * 是 generic 角色（span 容器上 aria-label 属规范禁止项，读屏会忽略），命名点在 h1[data-herotitle]，
+ * 由调用方在拆字清空前设置。
+ * 二次拆分守卫：text 为空或与现有 label 一致时跳过覆写——同元素再次拆分不得置空已有 label。
  */
 function splitChars(el: Element): HTMLElement[] {
   const text = el.textContent ?? "";
-  el.setAttribute("aria-label", text);
+  if (
+    text &&
+    text !== el.getAttribute("aria-label") &&
+    !el.matches("span:not([role]), div:not([role])")
+  ) {
+    el.setAttribute("aria-label", text);
+  }
   el.textContent = "";
   const frag = document.createDocumentFragment();
   const chars: HTMLElement[] = [];

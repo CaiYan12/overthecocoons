@@ -130,8 +130,8 @@ footer p { margin: 0 0 8px }
     repeating-linear-gradient(90deg, var(--rule) 0 1px, transparent 1px 40px) left bottom / 100% 4px no-repeat }
 /* T5（UI 票 #22）：行内间距原用全角空格 U+3000（读屏碎读），改由 CSS 呈现——
    单字距 1.16em = 原字间组合（U+3000 1em + 前后各 letter-spacing .08em）的等价值，
-   两字行的字形位置与原视觉一致；行尾字距不落在字形上，仅加宽行盒，
-   故 .line 加 nowrap 防最窄档（320px，字形外延 ≈250px ≤ 可用 280px）折行。
+   两字行的字形位置与原视觉一致；行尾字距不落在字形上，但会加宽行盒——
+   .line 为 block，故加 nowrap 防最窄档（320px，字形外延 ≈250px ≤ 可用 280px）行盒溢出折行。
    参数为实现者拟定，总审定稿。 */
 .k-hero-title { margin: 0; font: 700 clamp(64px, 8vw, 132px)/1.05 var(--serif); letter-spacing: 1.16em }
 .k-hero-title .line { display: block; white-space: nowrap }

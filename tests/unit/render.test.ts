@@ -70,10 +70,13 @@ test("首页为动态编辑场 v-kinetic 结构：Hero、紧凑 header、三栏�
   assert.ok(html.includes("<footer"), "页脚");
 });
 
-test("h1 全角空格移除（T5，#22）：dist 全部 HTML 不含 U+3000（读屏按完整词朗读）", () => {
-  for (const rel of htmlFiles) {
-    assert.ok(!readDist(rel).includes("\u3000"), `${rel} 不应包含全角空格 U+3000`);
-  }
+test("h1 全角空格移除（T5，#22）：Hero 标题模板区块不含 U+3000（读屏按完整词朗读）", () => {
+  // 只守 Hero 标题模板（T5 改排版的区块）；条目标题/摘要渲染原文、不改写内容是站点核心约束，
+  // 正文里正当的全角空格不构成缺陷，不得扫描全产物 HTML 打红构建（审查裁定，#22）。
+  const html = readDist("index.html");
+  const heroTitle = html.match(/<h1[^>]*data-herotitle>[\s\S]*?<\/h1>/);
+  assert.ok(heroTitle, "index.html 存在 Hero 标题区块（断言前置）");
+  assert.ok(!heroTitle[0].includes("\u3000"), "Hero 标题区块不应包含全角空格 U+3000");
 });
 
 test("Hero 幽灵日期取最新条目日期（日 + 英文月份 + 年）", () => {
