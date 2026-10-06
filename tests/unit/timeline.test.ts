@@ -11,6 +11,7 @@ import {
   PAGE_SIZE,
   TOPICS,
   TOPIC_SLUGS,
+  beijingDate,
   entryWeights,
   formatClock,
   formatDateTime,
@@ -134,12 +135,51 @@ test("entryWeights：日内三档权重与版面交替规则（di=0 头条，di 
   assert.deepEqual(entryWeights(4), { layout: "layout-b", weight: "w3" });
 });
 
-test("时间格式化：不做时区换算，直接截取 ISO 字符串字段", () => {
-  const iso = "2026-10-03T07:12:00+08:00";
-  assert.equal(formatClock(iso), "07:12");
-  assert.equal(formatDateTime(iso), "2026-10-03 07:12");
+test("时间格式化：UTC（Z）输入换算为北京时间输出（规格 #18）", () => {
+  assert.equal(formatClock("2026-10-03T04:54:00Z"), "12:54");
+  assert.equal(formatDateTime("2026-10-03T04:54:00Z"), "2026-10-03 12:54");
+});
+
+test("时间格式化：+08:00 输入即北京时间，数值恒等", () => {
+  assert.equal(formatClock("2026-10-03T07:12:00+08:00"), "07:12");
+  assert.equal(formatDateTime("2026-10-03T07:12:00+08:00"), "2026-10-03 07:12");
+});
+
+test("beijingDate：跨日边界按北京时间归属（UTC 傍晚属北京次日）", () => {
+  assert.equal(beijingDate("2026-10-03T15:59:59Z"), "2026-10-03");
+  assert.equal(beijingDate("2026-10-03T16:00:00Z"), "2026-10-04");
+  assert.equal(formatDateTime("2026-10-03T16:30:00Z"), "2026-10-04 00:30");
+  assert.equal(beijingDate("2026-10-03T23:30:00+08:00"), "2026-10-03");
+  assert.equal(beijingDate("2026-10-03T20:00:00-05:00"), "2026-10-04");
+});
+
+test("时间字符串缺少时区偏移时拒绝换算（会被运行环境本地时区解释，结果不可复现）", () => {
+  assert.throws(() => formatClock("2026-10-03T07:12:00"), /缺少时区偏移/);
+  assert.throws(() => formatDateTime("2026-10-03T07:12:00"), /缺少时区偏移/);
+  assert.throws(() => beijingDate("2026-10-03T07:12:00"), /缺少时区偏移/);
+});
+
+test("时间格式化：英文月份映射", () => {
   assert.equal(monthEn("10"), "OCTOBER");
   assert.equal(monthEn("01"), "JANUARY");
+});
+
+test("groupEntriesByDay：按北京时间日期分组（UTC 傍晚条目归北京次日，混合偏移口径一致）", () => {
+  const sorted = [
+    entry({ id: "1", firstSeenAt: "2026-10-04T01:00:00+08:00" }), // 北京 10-04
+    entry({ id: "2", firstSeenAt: "2026-10-03T16:30:00Z" }), // 北京 10-04 00:30
+    entry({ id: "3", firstSeenAt: "2026-10-03T18:00:00+08:00" }), // 北京 10-03
+  ];
+  const groups = groupEntriesByDay(sorted);
+  assert.deepEqual(
+    groups.map((g) => g.date),
+    ["2026-10-04", "2026-10-03"],
+    "UTC 傍晚条目与北京次日凌晨条目同组",
+  );
+  assert.deepEqual(
+    groups[0]!.entries.map((e) => e.id),
+    ["1", "2"],
+  );
 });
 
 test("URL 路径：主题页与详情页为站点根相对路径（基路径在渲染层拼接）", () => {

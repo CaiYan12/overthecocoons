@@ -160,9 +160,7 @@ footer p { margin: 0 0 8px }
 .k-hud .h { font-size: 10.5px; letter-spacing: .3em; color: var(--muted); margin: 0 0 6px }
 .k-hud .big { font: 600 22px/1.25 var(--serif); margin: 0 }
 .k-hud .dim { color: var(--muted); margin: 2px 0 0 }
-.k-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px; animation: k-pulse 2.2s ease-in-out infinite }
-@keyframes k-pulse { 50% { opacity: .35 } }
-@media (prefers-reduced-motion: reduce) { .k-dot { animation: none } }
+.k-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px }
 .k-count { font-variant-numeric: tabular-nums }
 .k-roll { display: inline-block; overflow: hidden; height: 1.15em; vertical-align: bottom }
 .k-roll [data-rollin] { display: inline-block }

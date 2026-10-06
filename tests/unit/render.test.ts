@@ -184,8 +184,27 @@ test("HUD：NOW READING 总数随主题口径变化，来源与快照时间呈�
   const hud = readDist("index.html");
   assert.ok(hud.includes("百度热点"), "SOURCE 名称");
   assert.ok(hud.includes("BAIDU HOT · 热点线索"), "SOURCE 副标");
-  assert.match(hud, /LIVE · 快照 \d{4}-\d{2}-\d{2} \d{2}:\d{2}/, "快照时间");
+  assert.match(
+    hud,
+    /快照 · 每日更新 · \d{4}-\d{2}-\d{2} \d{2}:\d{2}（北京时间）/,
+    "快照行：每日更新口径（不写死钟点）+ 北京时间标注一次（UI 票 #18/#15-10）",
+  );
+  assert.ok(!hud.includes("LIVE"), "LIVE 夸大实时性的文案已移除（UI 票 #15-10）");
   assert.ok(hud.includes('aria-live="polite"'), "aria-live 播报挂点");
+});
+
+test("时间呈现口径：可见文本为北京时间（同一换算函数），<time datetime> 保留 UTC 原值", () => {
+  const html = readDist("index.html");
+  const first = entryChunks(html)[0]!;
+  const attr = firstMatch(first, /<time datetime="([^"]+)"/);
+  assert.equal(attr, firstEntry.firstSeenAt, "datetime 属性保留数据原值（UTC/来源偏移）");
+  const text = firstMatch(first, /<time datetime="[^"]+">(\d{2}:\d{2})<\/time>/);
+  assert.equal(
+    text,
+    firstEntry.firstSeenAt.slice(11, 16),
+    "渲染文本经北京时间换算（fixtures +08:00 恒等口径）",
+  );
+  assert.equal(html.split("北京时间").length - 1, 1, "「北京时间」标注全页仅 HUD 快照行一处");
 });
 
 test("详情页：/items/<64hex>/ 直达，标题/摘要/来源/收录时间/主题/占位图与独立百度入口齐备", () => {
@@ -499,6 +518,7 @@ test("样式经基路径加载且含 v4 设计 token（暖纸白/墨黑/暗红�
   assert.ok(css.includes("--ink:#211e1b"), "墨色 token");
   assert.ok(css.includes("--accent:#8f262b"), "暗红 token");
   assert.ok(css.includes("--serif:georgia"), "衬线字体栈（系统字体，无外部字体）");
+  assert.ok(!css.includes("k-pulse"), "k-dot 脉动动画已移除（静止实心点，UI 票 #15-10）");
 });
 
 test("无 JS 导航兜底：左栏功能导航、页脚导航与页脚主题导航均渲染为真实链接", () => {

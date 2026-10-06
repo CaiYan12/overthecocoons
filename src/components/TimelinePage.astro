@@ -10,7 +10,7 @@ import KPager from "./KPager.astro";
 import KEmpty from "./KEmpty.astro";
 import { loadSnapshot } from "../lib/snapshot.ts";
 import type { PublicEntry } from "../domain/contract.ts";
-import { monthEn, paginate, sortEntriesDesc, topicPagePath } from "../lib/timeline.ts";
+import { beijingDate, monthEn, paginate, sortEntriesDesc, topicPagePath } from "../lib/timeline.ts";
 import { buildTimelineData, serializeClientData } from "../lib/client-data.ts";
 import { SITE_BASE, siteUrl } from "../lib/paths.ts";
 
@@ -39,7 +39,8 @@ if (currentPage !== page) {
 // 组内全局序号（跨页连续）与日内序号（权重三档），与原型 gi/di 语义一致
 const groups: DayView[] = [];
 slice.forEach((entry, index) => {
-  const date = entry.firstSeenAt.slice(0, 10);
+  // 日组键按北京时间归属（UI 票 #18）：与客户端 dayGroupsHtml、groupEntriesByDay 同一口径
+  const date = beijingDate(entry.firstSeenAt);
   const last = groups[groups.length - 1];
   if (last && last.date === date) {
     last.items.push({ entry, gi: start + index, di: last.items.length });
