@@ -669,10 +669,45 @@ export function syncHeroGhost(): void {
 
 /* ---- 全屏菜单动效（原型 openMenu/closeMenu；纯 opacity 不用 autoAlpha 保焦点） ---- */
 
+/* 顶层迁址：showModal 的对话框处于浏览器 top layer，压过一切常规 z-index（--z-cursor:900
+   也不例外），全屏菜单打开时光标整体被盖住不可见（用户审查发现）。打开时把光标两件套
+   （.k-cursor + .k-cursor-label）迁入菜单元素内——菜单盒为全屏无 transform，fixed 定位
+   坐标系与视口一致（坐标不漂）；菜单底为 --ink 深色，difference 混合照常反相可见。
+   close 事件迁回原位（含非动画关闭与 Esc 路径）；可重入幂等。 */
+let cursorTopLayerHome: Array<{ el: HTMLElement; parent: HTMLElement; next: ChildNode | null }> | null = null;
+const cursorCloseHooked = new WeakSet<HTMLElement>();
+
+function moveCursorIntoTopLayer(menu: HTMLElement): void {
+  if (cursorTopLayerHome) return;
+  const els = [
+    document.querySelector<HTMLElement>(".k-cursor"),
+    document.querySelector<HTMLElement>(".k-cursor-label"),
+  ];
+  cursorTopLayerHome = [];
+  els.forEach((el) => {
+    if (!el || !el.parentElement) return;
+    cursorTopLayerHome!.push({ el, parent: el.parentElement, next: el.nextSibling });
+    menu.appendChild(el);
+  });
+  if (!cursorCloseHooked.has(menu)) {
+    menu.addEventListener("close", moveCursorBackFromTopLayer);
+    cursorCloseHooked.add(menu);
+  }
+}
+
+function moveCursorBackFromTopLayer(): void {
+  if (!cursorTopLayerHome) return;
+  [...cursorTopLayerHome].reverse().forEach(({ el, parent, next }) => {
+    parent.insertBefore(el, next);
+  });
+  cursorTopLayerHome = null;
+}
+
 export function menuOpenMotion(menu: HTMLDialogElement, closeButton: HTMLElement): void {
   const g = gsap;
   if (!enabled || !g) return;
   killMenuTl();
+  moveCursorIntoTopLayer(menu);
   const items = menu.querySelectorAll(".k-mi, .k-menu-topics .tab");
   menuTl = g
     .timeline()
