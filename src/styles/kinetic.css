@@ -124,7 +124,7 @@ footer p { margin: 0 0 8px }
 /* 吸顶主题导航 + 共享 indicator */
 .k-tabs { position: relative; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0 }
 .k-tabs::-webkit-scrollbar { display: none }
-.tab { white-space: nowrap; font-size: 15px; color: var(--muted); position: relative; text-decoration: none }
+.tab { white-space: nowrap; font-size: 15px; color: var(--muted); position: relative; text-decoration: none; transition: color .22s ease-out, border-color .22s ease-out }
 .tab:hover { color: var(--ink) }
 .tab[aria-current=true] { color: var(--accent); font-weight: 600 }
 .tab[aria-current=true]::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; background: var(--accent) }
@@ -367,7 +367,7 @@ dialog.k-menu::backdrop { background: transparent }
 @media (max-width: 1199px) { .k-menu-data { display: none } .k-menu-grid { grid-template-columns: 1fr } }
 .k-menu-list { display: flex; flex-direction: column; gap: 6px }
 .k-menu-topics { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 28px; border-top: 1px solid color-mix(in srgb, var(--paper) 22%, transparent) }
-.k-menu-topics .tab { color: color-mix(in srgb, var(--paper) 65%, transparent); border: 1px solid color-mix(in srgb, var(--paper) 25%, transparent); padding: 8px 14px; min-height: 40px; transition: color .22s ease-out, border-color .22s ease-out }
+.k-menu-topics .tab { color: color-mix(in srgb, var(--paper) 65%, transparent); border: 1px solid color-mix(in srgb, var(--paper) 25%, transparent); padding: 8px 14px; min-height: 40px }
 .k-menu-topics .tab:hover { color: var(--paper); border-color: var(--paper) }
 .k-menu-topics .tab[aria-current=true] { color: var(--accent); border-color: var(--accent) }
 /* T9（UI 票 #26）：菜单主题列空主题同步降权——倒置配色下以 paper@62% 定界：
