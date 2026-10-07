@@ -129,6 +129,11 @@ footer p { margin: 0 0 8px }
 .tab[aria-current=true] { color: var(--accent); font-weight: 600 }
 .tab[aria-current=true]::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; background: var(--accent) }
 .k-tabs .tab { padding: 22px 12px 18px; font-size: 14px }
+/* T14 追改（用户裁定）：页首分类标签 hover 效果——accent 下划线滑入（.22s），与 .k-indicator
+   同基线（bottom 12px）；当前态伪元素已由下方 display:none 隐藏，避免与滑动 indicator 双条叠影；
+   hover 态透明度 .55 弱于当前态 indicator（区分悬停与所在）。 */
+.k-tabs .tab::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 12px; height: 2px; background: var(--accent); opacity: .55; transform: scaleX(0); transform-origin: left center; transition: transform .22s ease-out }
+.k-tabs .tab:hover::after { transform: scaleX(1) }
 .k-tabs .tab[aria-current=true] { color: var(--accent) }
 .k-tabs .tab[aria-current=true]::after { display: none }
 /* T9（UI 票 #26）：空主题 tab 降权——更弱字色 + 缩一号字，排序置于非空之后（tab 顺序由
