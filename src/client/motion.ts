@@ -18,6 +18,8 @@
  * 列表标题拆字升起已移除/转静态；列表揭示保留版画 clip 与节点激活态，摘要 clip 与
  * meta 字距动画已删（后者每帧触发布局），元信息仅余透明度淡入。跨页过渡走原生
  * View Transition（@view-transition，样式见 kinetic.css），不经本模块。
+ * T12（UI 票 #29）：Hero 拆字 intro 前等待自托管展示字体就绪（fonts.ready 与 300ms
+ * 兜底竞速，见 scheduleIntro）——拆字 intro 不在字体替换后量错；其余路径不等字体。
  * 测试挂钩（无行为含义）：html[data-oct-motion="on"|"off"]、html[data-oct-intro="done"]、
  * 两段式切换期间 html[data-oct-topic-anim]。
  */
@@ -34,6 +36,13 @@ const HEADER_SHOW_AT = 84;
 const CURSOR_FULL_SCALE = 2.3;
 /** 自定义光标轻量可点击态（次级控件）圆环放大倍数（UI 票 #14：只给"可点"信号，不放大到语义态）。 */
 const CURSOR_SOFT_SCALE = 1.35;
+/**
+ * T12（UI 票 #29）：Hero 拆字 intro 前的展示字体就绪等待上限（ms）。
+ * 展示字体子集已 preload，正常路径 fonts.ready 在 300ms 内 settle；超时则在
+ * 兜底栈上开播（font-display: swap，字体后到由浏览器替换字形，拆字动画只动
+ * transform 不测量字宽，不会被替换破坏）——不阻塞、不悬挂。
+ */
+const FONT_READY_WAIT_MS = 300;
 
 type TweenVars = Record<string, unknown>;
 type TweenTarget = Element | Element[] | NodeListOf<Element> | string | null | undefined;
@@ -81,6 +90,7 @@ interface ViewTransitionLike {
 type DocumentWithVT = Document & {
   startViewTransition?: (updateCallback: () => void) => ViewTransitionLike;
 };
+type DocumentWithFonts = Document & { fonts?: { ready: Promise<unknown> } };
 
 let gsap: Gsap | null = null;
 let st: ScrollTriggerPlugin | null = null;
@@ -93,6 +103,23 @@ let menuTl: { kill(): void } | null = null;
 
 function pad2(value: number): string {
   return String(value).padStart(2, "0");
+}
+
+/**
+ * 展示字体就绪信号（T12，UI 票 #29）：document.fonts.ready 与 300ms 兜底竞速。
+ * fonts API 缺失（极旧引擎）时立即通过——intro 原时序播放；字体加载失败时 ready
+ * 照常 settle（swap 语义：兜底栈渲染），不会悬挂。
+ */
+function fontsReadyOrTimeout(): Promise<void> {
+  const fonts = (document as DocumentWithFonts).fonts;
+  if (!fonts) return Promise.resolve();
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, FONT_READY_WAIT_MS);
+    fonts.ready.then(() => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
 }
 
 /**
@@ -164,40 +191,50 @@ export function initMotion(): void {
   } catch {
     // GSAP 运行时异常：整体回收（revert 清除全部隐藏初态），退化为无动效路径。
     // 立即解除预绘制遮蔽（T06 收尾项）：不依赖 head 启动脚本的 1500ms 兜底。
-    destroyMotion();
-    enabled = false;
-    gsap = null;
-    st = null;
-    html.dataset.octMotion = "off";
-    html.removeAttribute("data-oct-pending");
-    markIntroDone();
-    startFallbackProgress();
+    degradeToStatic();
   }
+}
+
+/** 运行时异常的整体退化路径：revert 全部初态、解除预绘制遮蔽、标记 intro 完成并走无动效进度。 */
+function degradeToStatic(): void {
+  destroyMotion();
+  enabled = false;
+  gsap = null;
+  st = null;
+  const html = document.documentElement;
+  html.dataset.octMotion = "off";
+  html.removeAttribute("data-oct-pending");
+  markIntroDone();
+  startFallbackProgress();
 }
 
 function initMotionOn(root: HTMLElement): void {
   const html = document.documentElement;
   gsap!.registerPlugin(st);
   heroEn = root.querySelector<HTMLElement>("[data-heroen]");
+  let introScheduled = false;
   // context 对象在回调首行登记：任一初始化抛错时 catch 仍能 revert 全部隐藏初态
   gsap!.context((self) => {
     kineticCtx = self;
-    initHeroAndHeader(root);
+    introScheduled = initHeroAndHeader(root);
     initCursor(root);
   }, root);
   initResize(root);
   onListRendered(false);
-  // 全部隐藏初态就位后解除预绘制遮蔽（head 启动脚本标记，见 kinetic.css）
-  html.removeAttribute("data-oct-pending");
+  // 预绘制遮蔽解除移交（T12 字体就绪等待，UI 票 #29）：intro 播放页由 scheduleIntro
+  // 在「字体就绪 → 拆字与全部隐藏初态就位」后解除（避免「先画静态层 → JS 再隐藏 →
+  // 再播 intro」闪动回归，head 启动脚本 1500ms 兜底与本函数异常路径 degradeToStatic
+  // 均兜住解除）；跳过 intro / 无 Hero 的页面在此立即解除（内容直显）。
+  if (!introScheduled) html.removeAttribute("data-oct-pending");
   requestAnimationFrame(() => st!.refresh());
 }
 
 /* ---- Hero Intro + Header Morph + 全局进度（原型 initHeroMotion + 全局 Trigger） ---- */
 
-function initHeroAndHeader(root: HTMLElement): void {
+function initHeroAndHeader(root: HTMLElement): boolean {
   const g = gsap;
   const stl = st;
-  if (!g || !stl) return;
+  if (!g || !stl) return false;
   const hero = root.querySelector<HTMLElement>("[data-hero]");
   const header = root.querySelector<HTMLElement>("[data-kheader]");
   const ring = document.querySelector<SVGCircleElement>("[data-ring]");
@@ -240,7 +277,7 @@ function initHeroAndHeader(root: HTMLElement): void {
 
   if (!hero) {
     markIntroDone();
-    return;
+    return false;
   }
 
   const rule = root.querySelector<HTMLElement>("[data-herorule]");
@@ -252,6 +289,8 @@ function initHeroAndHeader(root: HTMLElement): void {
   // 不写入 sessionStorage，e2e 断言其恒空），规则见 lib/intro-rule.ts（reload/back_forward
   // 或站内同源跳转 → 跳过；直接到达/外源进入 → 播放）。跳过时立即打 data-oct-intro=done
   // 且不建任何隐藏初态（内容直显）；Hero 页滚动显隐（84px 阈值）不受影响。
+  // T12（UI 票 #29）：播放路径排程到 scheduleIntro——拆字前先等展示字体就绪。
+  let introScheduled = false;
   if (
     !shouldPlayIntro({
       navigationType: readNavigationType(),
@@ -261,45 +300,8 @@ function initHeroAndHeader(root: HTMLElement): void {
   ) {
     markIntroDone();
   } else {
-    const heroChars: HTMLElement[] = [];
-    // T5 a11y（#22）：h1 是标题唯一的有效命名点——.line 是 generic 角色（span 上 aria-label
-    // 属规范禁止项，部分读屏会忽略，而其子树字符又被 aria-hidden 藏起，届时 h1 名将落空），
-    // 故在 h1 上补完整标题 label（须在拆字清空前读取各行文本）。
-    const heroTitle = root.querySelector<HTMLElement>("[data-herotitle]");
-    if (heroTitle) {
-      heroTitle.setAttribute(
-        "aria-label",
-        [...heroTitle.querySelectorAll<HTMLElement>(".line")]
-          .map((line) => (line.textContent ?? "").trim())
-          .join(""),
-      );
-    }
-    root.querySelectorAll<HTMLElement>(".k-hero-title .line").forEach((line) => {
-      heroChars.push(...splitChars(line));
-    });
-    const ghostA = heroEn
-      ? Number.parseFloat(getComputedStyle(root).getPropertyValue("--ghost-a")) || 0.05
-      : 0.05;
-
-    // Intro 隐藏初态（总时长 ≤1.4s：0.95+0.4=1.35s）
-    if (heroEn) g.set(heroEn, { autoAlpha: 0, y: 40, filter: "blur(12px)", letterSpacing: "0.18em" });
-    if (rule) g.set(rule, { scaleX: 0 });
-    g.set(heroChars, { yPercent: 110, rotate: 2 });
-    if (metaItems.length) g.set(metaItems, { y: 18, autoAlpha: 0 });
-    if (dateBig) g.set(dateBig, { autoAlpha: 0, y: 60 });
-    if (hint) g.set(hint, { autoAlpha: 0 });
-
-    g.timeline({ defaults: { ease: "power3.out" }, onComplete: markIntroDone })
-      .to(
-        heroEn,
-        { autoAlpha: ghostA, y: 0, filter: "blur(0px)", letterSpacing: "0.02em", duration: 0.7, ease: "power2.out" },
-        0,
-      )
-      .to(rule, { scaleX: 1, duration: 0.5, ease: "power3.inOut" }, 0.15)
-      .to(heroChars, { yPercent: 0, rotate: 0, duration: 0.6, stagger: 0.045 }, 0.3)
-      .to(dateBig, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.55)
-      .to(metaItems, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.06 }, 0.65)
-      .to(hint, { autoAlpha: 1, duration: 0.4 }, 0.95);
+    introScheduled = true;
+    scheduleIntro(root, { rule, metaItems, dateBig, hint });
   }
 
   // T11（UI 票 #28）：Hero 视差（hero-en/date 滚动位移 scrub）已移除——ghost 英文与幽灵日期
@@ -311,6 +313,80 @@ function initHeroAndHeader(root: HTMLElement): void {
       scrollTrigger: { trigger: hero, start: "top top", end: "60% top", scrub: true },
     });
   }
+  return introScheduled;
+}
+
+/** Hero intro 编排的隐藏初态依赖（在 initHeroAndHeader 已查询，传入避免重复 query）。 */
+interface IntroParts {
+  rule: HTMLElement | null;
+  metaItems: HTMLElement[];
+  dateBig: HTMLElement | null;
+  hint: HTMLElement | null;
+}
+
+/**
+ * T12（UI 票 #29）：Hero 拆字 intro 排程——先等展示字体就绪（document.fonts.ready
+ * 与 300ms 兜底竞速，见 fontsReadyOrTimeout），再拆字、置隐藏初态、解除预绘制遮蔽并开播。
+ * 拆字在字体替换后不得量错：等字体（≤300ms）或超时后在兜底栈开播（swap 接管），
+ * 拆字动画只动 transform 不测量字宽，字形替换不破坏编排。
+ * 等待期间 data-oct-pending 遮蔽维持（head 启动脚本 1500ms 兜底解除覆盖本函数
+ * 异常路径）；函数内异常走 degradeToStatic（revert 全部初态并解除遮蔽）。
+ */
+function scheduleIntro(root: HTMLElement, parts: IntroParts): void {
+  const { rule, metaItems, dateBig, hint } = parts;
+  fontsReadyOrTimeout().then(() => {
+    const g = gsap;
+    if (!g) return;
+    try {
+      const heroChars: HTMLElement[] = [];
+      // T5 a11y（#22）：h1 是标题唯一的有效命名点——.line 是 generic 角色（span 上 aria-label
+      // 属规范禁止项，部分读屏会忽略，而其子树字符又被 aria-hidden 藏起，届时 h1 名将落空），
+      // 故在 h1 上补完整标题 label（须在拆字清空前读取各行文本）。
+      const heroTitle = root.querySelector<HTMLElement>("[data-herotitle]");
+      if (heroTitle) {
+        heroTitle.setAttribute(
+          "aria-label",
+          [...heroTitle.querySelectorAll<HTMLElement>(".line")]
+            .map((line) => (line.textContent ?? "").trim())
+            .join(""),
+        );
+      }
+      root.querySelectorAll<HTMLElement>(".k-hero-title .line").forEach((line) => {
+        heroChars.push(...splitChars(line));
+      });
+      const ghostA = heroEn
+        ? Number.parseFloat(getComputedStyle(root).getPropertyValue("--ghost-a")) || 0.05
+        : 0.05;
+
+      // Intro 隐藏初态（总时长 ≤1.4s：0.95+0.4=1.35s）
+      if (heroEn) g.set(heroEn, { autoAlpha: 0, y: 40, filter: "blur(12px)", letterSpacing: "0.18em" });
+      if (rule) g.set(rule, { scaleX: 0 });
+      g.set(heroChars, { yPercent: 110, rotate: 2 });
+      if (metaItems.length) g.set(metaItems, { y: 18, autoAlpha: 0 });
+      if (dateBig) g.set(dateBig, { autoAlpha: 0, y: 60 });
+      if (hint) g.set(hint, { autoAlpha: 0 });
+
+      g.timeline({ defaults: { ease: "power3.out" }, onComplete: markIntroDone })
+        .to(
+          heroEn,
+          { autoAlpha: ghostA, y: 0, filter: "blur(0px)", letterSpacing: "0.02em", duration: 0.7, ease: "power2.out" },
+          0,
+        )
+        .to(rule, { scaleX: 1, duration: 0.5, ease: "power3.inOut" }, 0.15)
+        .to(heroChars, { yPercent: 0, rotate: 0, duration: 0.6, stagger: 0.045 }, 0.3)
+        .to(dateBig, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.55)
+        .to(metaItems, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.06 }, 0.65)
+        .to(hint, { autoAlpha: 1, duration: 0.4 }, 0.95);
+
+      // 全部隐藏初态就位后解除预绘制遮蔽（head 启动脚本标记，见 kinetic.css）
+      document.documentElement.removeAttribute("data-oct-pending");
+      // 300ms 兜底先行、字体 swap 后到的场景：字体 settle 后按真实字形布局刷新触发器
+      // （与 initResize 的防抖 refresh 同一模式；字体先就绪时多一次幂等 refresh，无害）
+      (document as DocumentWithFonts).fonts?.ready.then(() => st?.refresh());
+    } catch {
+      degradeToStatic();
+    }
+  });
 }
 
 /** Navigation Timing 导航类型（"navigate" | "reload" | "back_forward" | "prerender"）；API 不可用时 null（判定按 referrer 兜底）。 */

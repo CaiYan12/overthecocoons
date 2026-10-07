@@ -234,3 +234,48 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     await expect(page.getByRole("link", { name: /返回公共时间线/ })).toBeVisible();
   });
 });
+
+test.describe("展示字体（T12，#29）：自托管思源宋体 Heavy 子集", () => {
+  const FAMILY = "Source Han Serif SC Heavy Subset";
+
+  test("preload 标签存在且指向基路径下子集文件；字体实际加载成功（fonts.check 实测）", async ({ page }) => {
+    const fontResponses: Array<{ url: string; status: number }> = [];
+    page.on("response", (response) => {
+      if (response.url().includes("/fonts/")) {
+        fontResponses.push({ url: response.url(), status: response.status() });
+      }
+    });
+    await page.goto(BASE);
+    const loaded = await page.evaluate(
+      (family) =>
+        document.fonts.ready.then(() => document.fonts.check(`700 20px "${family}"`)),
+      FAMILY,
+    );
+    expect(loaded, "子集字体应真实加载并可渲染（swap 后）").toBe(true);
+    expect(fontResponses.length, "字体请求应实际发生").toBeGreaterThan(0);
+    for (const { url, status } of fontResponses) {
+      const path = new URL(url).pathname;
+      expect(path, "字体请求应在基路径下（零外链）").toMatch(/^\/overthecocoons\/fonts\//);
+      expect(status, "字体请求应 200").toBeLessThan(400);
+    }
+  });
+
+  test("大字槽位 computed font-family 含子集族名（Hero 标题/站名/日组头/KPageHead），兜底栈仍在", async ({ page }) => {
+    await page.goto(BASE);
+    const families = await page.evaluate(() => ({
+      heroTitle: getComputedStyle(document.querySelector("[data-herotitle]")!).fontFamily,
+      brand: getComputedStyle(document.querySelector(".k-brand")!).fontFamily,
+      dayBig: getComputedStyle(document.querySelector(".k-day-big")!).fontFamily,
+    }));
+    for (const [slot, family] of Object.entries(families)) {
+      expect(family, `${slot} 应应用 --font-display`).toContain(FAMILY);
+      expect(family, `${slot} 应保留 Georgia 兜底`).toContain("Georgia");
+    }
+    // 主题页大字（KPageHead）同样接入
+    await page.goto(`${BASE}topics/news/`);
+    const pageHead = await page.evaluate(
+      () => getComputedStyle(document.querySelector(".k-pagehead-big")!).fontFamily,
+    );
+    expect(pageHead, "KPageHead 大字应应用 --font-display").toContain(FAMILY);
+  });
+});

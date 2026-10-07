@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import "../styles/kinetic.css";
+import { DISPLAY_FONT_PATH } from "../lib/display-font.ts";
 
 interface Props {
   title: string;
@@ -12,6 +13,10 @@ const { title, description } = Astro.props;
 // 显式拼接基路径，避免绝对路径资源脱离 /overthecocoons 前缀
 const motionBase = import.meta.env.BASE_URL.replace(/\/$/, "");
 const faviconHref = `${motionBase}/favicon.svg`;
+// T12（UI 票 #29）：展示字体子集 preload——early fetch，拆字 intro 与大字首绘前就位。
+// 同源字体也必须带 crossorigin（font 请求恒为 CORS 模式，preload 缺该属性会二次下载）；
+// @font-face 侧 url() 相对解析为同一基路径 URL，两者命中同一请求。
+const fontHref = `${motionBase}${DISPLAY_FONT_PATH}`;
 ---
 
 <!doctype html>
@@ -23,6 +28,7 @@ const faviconHref = `${motionBase}/favicon.svg`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href={faviconHref} />
+    <link rel="preload" as="font" type="font/woff2" href={fontHref} crossorigin="anonymous" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <script is:inline>

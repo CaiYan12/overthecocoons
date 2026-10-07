@@ -606,10 +606,23 @@ test.describe("播报 chip 自动消退（T5，#22）", () => {
     await page.locator("[data-mode]").click(); // auto → 浅色：写入「显示模式：浅色」
     await expectStatusContains(page, "显示模式：浅色");
 
-    // 自动消退：写入起 ANNOUNCE_CLEAR_MS 后清空（等待时长由实现导出常量驱动，不硬编码睡眠）
+    // 自动消退：写入起 ANNOUNCE_CLEAR_MS 后清空（等待时长由实现导出常量驱动，不硬编码睡眠）。
+    // 清空手法为「摘语义 → 清文本 → 下一帧 rAF 恢复语义」（status.ts）：poll 条件须连同
+    // role/aria-live 已恢复一起等待——只等文本为空会命中「文本已空、rAF 未跑」的一帧竞态。
     await expect
-      .poll(async () => statusText(page), { timeout: ANNOUNCE_CLEAR_MS + 5_000 })
-      .toBe("");
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const status = document.querySelector<HTMLElement>("[data-status]")!;
+            return {
+              text: status.textContent ?? "",
+              role: status.getAttribute("role"),
+              live: status.getAttribute("aria-live"),
+            };
+          }),
+        { timeout: ANNOUNCE_CLEAR_MS + 5_000 },
+      )
+      .toEqual({ text: "", role: "status", live: "polite" });
     const liveState = await page.evaluate(() => {
       const status = document.querySelector<HTMLElement>("[data-status]")!;
       return {

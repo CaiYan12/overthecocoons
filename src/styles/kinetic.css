@@ -28,6 +28,22 @@
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --serif: Georgia, "Times New Roman", "Songti SC", "SimSun", serif;
   --sans: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  /* T12（UI 票 #29）：展示字体 = 自托管思源宋体 Heavy 子集（仅固定大字字集，81 字符，
+     字集事实源 src/lib/display-font.ts / public/fonts/display-charset.json）+ 既有 serif 兜底栈；
+     font-display: swap——加载失败/被禁时兜底栈完整可读（三降级）。 */
+  --font-display: "Source Han Serif SC Heavy Subset", var(--serif);
+}
+
+/* T12（UI 票 #29）：自托管展示字体，零外链。url() 相对 CSS 产物（/…/_astro/）解析，
+   ../fonts/ = 站点基路径下的 /fonts/（子路径部署无需拼前缀）；与 BaseLayout 的
+   preload 指向同一 URL（crossorigin=anonymous——font 请求恒为 CORS 模式，preload
+   必须带同值 crossorigin 才能命中缓存，避免二次下载）。 */
+@font-face {
+  font-family: "Source Han Serif SC Heavy Subset";
+  src: url("../fonts/SourceHanSerifSC-Heavy-Subset.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 :root[data-theme=dark] { color-scheme: dark;
   --paper: #191816; --surface: #23211E; --ink: #F4EFE5; --muted: #BEB5A8;
@@ -101,7 +117,7 @@ footer p { margin: 0 0 8px }
   background: color-mix(in srgb, var(--paper) 84%, transparent);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--rule) }
-.k-brand { font: 700 20px/1 var(--serif); color: var(--ink); text-decoration: none; white-space: nowrap }
+.k-brand { font: 700 20px/1 var(--font-display); color: var(--ink); text-decoration: none; white-space: nowrap }
 .k-brand:hover { color: var(--accent) }
 .k-head-actions { margin-left: auto; display: flex; align-items: center; gap: 10px }
 .k-menu-open { font-size: 12px; letter-spacing: .28em; border: 1px solid var(--rule); padding: 8px 14px; min-height: 36px; background: var(--surface); cursor: pointer }
@@ -125,7 +141,7 @@ footer p { margin: 0 0 8px }
 
 /* Hero */
 .k-hero { position: relative; z-index: var(--z-content); min-height: max(82vh, 680px); display: flex; flex-direction: column; justify-content: flex-end; padding: 140px 0 56px; overflow: hidden }
-.k-hero-en { position: absolute; top: 14%; left: -2vw; margin: 0; width: max-content; font: 700 clamp(90px, 13.5vw, 210px)/0.92 var(--serif); letter-spacing: .02em; white-space: nowrap; color: var(--ink); opacity: var(--ghost-a); pointer-events: none }
+.k-hero-en { position: absolute; top: 14%; left: -2vw; margin: 0; width: max-content; font: 700 clamp(90px, 13.5vw, 210px)/0.92 var(--font-display); letter-spacing: .02em; white-space: nowrap; color: var(--ink); opacity: var(--ghost-a); pointer-events: none }
 /* P1-7：尺规线 —— 红杠 + 40px 步进刻度 + 两端加粗端点，呼应"按收录时间排序" */
 .k-hero-rule { position: relative; height: 4px; background: var(--accent); width: min(560px, 60%); margin-bottom: 28px; transform-origin: left center }
 .k-hero-rule::after { content: ""; position: absolute; left: 0; top: 7px; width: 100%; height: 8px;
@@ -138,11 +154,11 @@ footer p { margin: 0 0 8px }
    两字行的字形位置与原视觉一致；行尾字距不落在字形上，但会加宽行盒——
    .line 为 block，故加 nowrap 防最窄档（320px，字形外延 ≈250px ≤ 可用 280px）行盒溢出折行。
    参数为实现者拟定，总审定稿。 */
-.k-hero-title { margin: 0; font: 700 clamp(64px, 8vw, 132px)/1.05 var(--serif); letter-spacing: 1.16em }
+.k-hero-title { margin: 0; font: 700 clamp(64px, 8vw, 132px)/1.05 var(--font-display); letter-spacing: 1.16em }
 .k-hero-title .line { display: block; white-space: nowrap }
 .k-hero-title .line.l2 { margin-left: clamp(48px, 9vw, 200px) }
 .k-hero-date { position: absolute; right: 0; bottom: 22%; text-align: right; pointer-events: none }
-.k-hero-date .d { display: block; font: 700 clamp(180px, 20vw, 320px)/0.85 var(--serif); color: var(--ink); opacity: .07 }
+.k-hero-date .d { display: block; font: 700 clamp(180px, 20vw, 320px)/0.85 var(--font-display); color: var(--ink); opacity: .07 }
 .k-hero-date .m { font-size: 13px; letter-spacing: .38em; color: var(--muted) }
 /* UI 票 #10：minmax 170→150——4×150+3×32=696 ≤ max-width 760，桌面恢复一行四项（原 3+1 折行） */
 .k-hero-meta { list-style: none; margin: 44px 0 0; padding: 16px 0 0; border-top: 1px solid var(--rule); max-width: 760px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px 32px; font-size: 11px; letter-spacing: .14em; color: var(--muted) }
@@ -159,7 +175,7 @@ footer p { margin: 0 0 8px }
    设计参数为票面级「实现者拟定，总审定稿」：顶部净空 128px（清 68px 固定 header + 呼吸），
    大字与 .k-day-big 同档 clamp(36px,4.5vw,64px)，说明行与 .k-day-sub 同档 11px/.26em/muted。 */
 .k-pagehead { position: relative; z-index: var(--z-content); padding: 128px 0 0 }
-.k-pagehead-big { margin: 0; font: 700 clamp(36px, 4.5vw, 64px)/1.1 var(--serif); letter-spacing: .04em }
+.k-pagehead-big { margin: 0; font: 700 clamp(36px, 4.5vw, 64px)/1.1 var(--font-display); letter-spacing: .04em }
 .k-pagehead-sub { margin: 10px 0 0; font-size: 11px; letter-spacing: .26em; color: var(--muted) }
 
 /* 三栏 */
@@ -206,7 +222,7 @@ footer p { margin: 0 0 8px }
 .k-day-head { padding: 0 0 32px calc(72px + 28px + 24px) }
 /* T7 版式诚实化（ADR 0003）：取消位置型头条档，大字时刻由日组头承担——
    日期大字提级；批次形态（同日分钟全相同）追加「批次 hh:mm · N 条」中字行——T7 票面级设计参数（实现者拟定，总审裁定） */
-.k-day-big { margin: 0; font: 700 clamp(36px, 4.5vw, 64px)/1.1 var(--serif); letter-spacing: .04em }
+.k-day-big { margin: 0; font: 700 clamp(36px, 4.5vw, 64px)/1.1 var(--font-display); letter-spacing: .04em }
 .k-day-batch { margin: 12px 0 0; font: 600 clamp(16px, 1.4vw, 20px)/1.3 var(--serif); letter-spacing: .04em; color: var(--ink); font-variant-numeric: tabular-nums }
 .k-day-sub { margin: 6px 0 0; font-size: 11px; letter-spacing: .26em; color: var(--muted) }
 /* T7 版式诚实化（ADR 0003）：条目两档——标准（有摘要）/紧凑行（无摘要，无版画无摘要段），
@@ -298,12 +314,12 @@ dialog.k-menu::backdrop { background: transparent }
 .k-menu-grid { flex: 1; display: grid; grid-template-columns: 1fr auto; column-gap: 6vw; align-items: center; align-content: space-evenly }
 .k-mi { display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; text-align: left; color: var(--paper); text-decoration: none }
 .k-mi:hover .lb { color: var(--accent) }
-.k-mi .no { font: 700 clamp(20px, 3vw, 34px)/1 var(--serif); color: var(--paper); opacity: .35; min-width: 2.4em; font-variant-numeric: tabular-nums }
-.k-mi .lb { font: 600 clamp(44px, 6vw, 76px)/1.15 var(--serif); color: var(--paper); transition: color var(--motion-fast) ease-out }
+.k-mi .no { font: 700 clamp(20px, 3vw, 34px)/1 var(--font-display); color: var(--paper); opacity: .35; min-width: 2.4em; font-variant-numeric: tabular-nums }
+.k-mi .lb { font: 600 clamp(44px, 6vw, 76px)/1.15 var(--font-display); color: var(--paper); transition: color var(--motion-fast) ease-out }
 .k-mi[aria-current=page] .lb { color: var(--accent) }
 /* P0-3：菜单右半 —— 编辑部数据列 */
 .k-menu-data { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; text-align: right }
-.k-menu-data .ghost { font: 700 96px/1 var(--serif); color: var(--paper); opacity: .08; letter-spacing: .04em }
+.k-menu-data .ghost { font: 700 96px/1 var(--font-display); color: var(--paper); opacity: .08; letter-spacing: .04em }
 .k-menu-data .row { font-size: 12px; letter-spacing: .12em; color: color-mix(in srgb, var(--paper) 60%, transparent); font-variant-numeric: tabular-nums }
 @media (max-width: 1199px) { .k-menu-data { display: none } .k-menu-grid { grid-template-columns: 1fr } }
 .k-menu-list { display: flex; flex-direction: column; gap: 6px }
@@ -462,7 +478,7 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
    - h2 字距补 .04em（同大字族；行高 1.25 保持）；
    - 目录行距 6px→7px（对齐左栏导航 .k-nav nav a 的 7px 0） */
 .k-doc { min-width: 0 }
-.k-doc h1 { font: 700 clamp(34px, 4vw, 56px)/1.1 var(--serif); letter-spacing: .04em; margin: 8px 0 8px }
+.k-doc h1 { font: 700 clamp(34px, 4vw, 56px)/1.1 var(--font-display); letter-spacing: .04em; margin: 8px 0 8px }
 .k-doc .k-doc-lede { color: var(--muted); margin: 0 0 32px; max-width: 62ch }
 .k-doc h2 { font: 700 clamp(24px, 2.4vw, 32px)/1.25 var(--serif); letter-spacing: .04em; margin: 48px 0 12px; scroll-margin-top: 96px }
 .k-doc h3 { font: 600 18px/1.4 var(--sans); margin: 24px 0 8px }
