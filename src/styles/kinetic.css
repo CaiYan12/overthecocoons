@@ -140,7 +140,7 @@ footer p { margin: 0 0 8px }
 
 /* Hero */
 .k-hero { position: relative; z-index: var(--z-content); min-height: max(82vh, 680px); display: flex; flex-direction: column; justify-content: flex-end; padding: 140px 0 56px; overflow: hidden }
-.k-hero-en { position: absolute; top: 14%; left: -2vw; margin: 0; width: max-content; font: 700 clamp(90px, 13.5vw, 210px)/0.92 var(--font-display); letter-spacing: .02em; white-space: nowrap; color: var(--ink); opacity: var(--ghost-a); pointer-events: none }
+.k-hero-en { position: absolute; top: 14%; left: -2vw; margin: 0; width: max-content; font: 700 clamp(90px, 13.5vw, 210px)/0.92 var(--font-display); letter-spacing: .02em; white-space: nowrap; color: var(--ink); opacity: var(--ghost-a); pointer-events: none; will-change: transform }
 /* P1-7：尺规线 —— 红杠 + 40px 步进刻度 + 两端加粗端点，呼应"按收录时间排序" */
 .k-hero-rule { position: relative; height: 4px; background: var(--accent); width: min(560px, 60%); margin-bottom: 28px; transform-origin: left center }
 .k-hero-rule::after { content: ""; position: absolute; left: 0; top: 7px; width: 100%; height: 8px;
@@ -163,7 +163,7 @@ footer p { margin: 0 0 8px }
 .silk-anchor { position: relative; display: inline-block; letter-spacing: 0; margin-right: 1.16em }
 .silk-static { position: absolute; left: 50%; top: 72%; width: 110px; height: 180px; transform: translateX(-55%); pointer-events: none; z-index: 7; overflow: visible }
 .silk-static path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round }
-.k-hero-date { position: absolute; right: 0; bottom: 22%; text-align: right; pointer-events: none }
+.k-hero-date { position: absolute; right: 0; bottom: 22%; text-align: right; pointer-events: none; will-change: transform }
 .k-hero-date .d { display: block; font: 700 clamp(180px, 20vw, 320px)/0.85 var(--font-display); color: var(--ink); opacity: .07 }
 .k-hero-date .m { font-size: 13px; letter-spacing: .38em; color: var(--muted) }
 /* UI 票 #10：minmax 170→150——4×150+3×32=696 ≤ max-width 760，桌面恢复一行四项（原 3+1 折行） */
@@ -171,9 +171,11 @@ footer p { margin: 0 0 8px }
 .k-hero-meta b { display: block; font: 600 15px/1.4 var(--sans); letter-spacing: .04em; color: var(--ink); margin-bottom: 2px }
 .k-hero-note { margin: 18px 0 0; font-size: 12.5px; color: var(--muted) }
 .k-scrollhint { position: absolute; left: 0; bottom: 20px; display: flex; align-items: center; gap: 14px; font-size: 11px; letter-spacing: .32em; color: var(--muted) }
-/* T11（UI 票 #28）：scroll hint 循环动画（@keyframes k-hint 划线扫掠）已移除——
-   划线转静态完整红线，与原 reduced-motion 降级呈现一致，无 JS / reduce / 正常路径同形。 */
-.k-scrollhint i { width: 72px; height: 1px; background: var(--accent) }
+/* T14（UI 票 #31）：划线扫掠循环恢复（a1ce4d5 原型直取）——T11 的静态红线转回动画 */
+.k-scrollhint i { position: relative; width: 72px; height: 1px; background: var(--rule); overflow: hidden }
+.k-scrollhint i::after { content: ""; position: absolute; inset: 0; background: var(--accent); transform: translateX(-101%); animation: k-hint 2.4s var(--ease-out) infinite }
+@keyframes k-hint { 45% { transform: translateX(0) } 90%, 100% { transform: translateX(101%) } }
+@media (prefers-reduced-motion: reduce) { .k-scrollhint i::after { animation: none; transform: none } }
 
 /* T8 轻量页头（票 #25「Hero 仅时间线第一页」）：时间线非首页路由的大字时刻——
    与日组头同族字阶（serif 700 + .04em + .k-day-sub 同款说明行），整体压缩为页头而非整屏 Hero；
@@ -205,7 +207,10 @@ footer p { margin: 0 0 8px }
 .k-hud .h { font-size: 11.5px; letter-spacing: .14em; color: var(--muted); margin: 0 0 6px }
 .k-hud .big { font: 600 22px/1.25 var(--serif); margin: 0 }
 .k-hud .dim { color: var(--muted); margin: 2px 0 0 }
-.k-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px }
+/* T14（UI 票 #31）：k-dot 脉动恢复（T1 移除的 k-pulse 回归；快照文案口径不变） */
+.k-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px; animation: k-pulse 2.2s ease-in-out infinite }
+@keyframes k-pulse { 50% { opacity: .35 } }
+@media (prefers-reduced-motion: reduce) { .k-dot { animation: none } }
 .k-count { font-variant-numeric: tabular-nums }
 .k-roll { display: inline-block; overflow: hidden; height: 1.15em; vertical-align: bottom }
 .k-roll [data-rollin] { display: inline-block }
@@ -229,11 +234,12 @@ footer p { margin: 0 0 8px }
 .k-day { position: relative; padding-top: 96px }   /* P1-8：日组呼吸 */
 .k-day .k-line { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 1px; background: var(--rule) }
 /* T13（UI 票 #30）丝线 B 版 rail：常驻 2px accent 红线（「已钉入」静态态，原型 B 版直移）。
-   与既有 .k-day .k-progress 进度线的关系裁定为「替代」：rail 常驻红线后红色进度线在同位叠合
-   不可见（同一视觉通道），阅读进度反馈由 HUD READING PROGRESS（readbar + pct）完整承担
-   （同一滚动进度的另一处呈现，T11 保留的信息性反馈不损失）；k-progress 结构/CSS/motion
-   驱动一并移除。B 版无任何动效依赖：原型的 rail 变色 transition 属 A 版编排，不移植。 */
+   T14（UI 票 #31，维护者实机审查裁定 A）：T13 的「进度线替代」裁定撤销（ADR 0006 取代
+   ADR 0005 的替代段）——rail 静态丝线保留，.k-progress 进度线叠合其上恢复 a1ce4d5 形态
+   与 scaleY scrub 驱动（DOM 顺序进度线在 rail 之后，同位覆盖）。 */
 .k-day .silk-rail { width: 2px; background: var(--accent) }
+/* T14：进度线恢复（a1ce4d5 形态）：scaleY(0) 起始，motion scrub 生长 */
+.k-day .k-progress { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 2px; background: var(--accent); transform: scaleY(0); transform-origin: top center; will-change: transform }
 /* T13：日组 rail 顶钉点（原型 B 版静态呈现：surface 底 + accent 描边的空心点，钉在 rail 顶端）。
    每个日组各一枚（rail 按日组分段，钉点标记每段起点）；纯装饰 aria-hidden，无状态无动效。 */
 .silk-pin-wrap { position: absolute; left: calc(72px + 14px + 1px); top: 6px; transform: translateX(-50%); z-index: 3 }
@@ -268,9 +274,9 @@ footer p { margin: 0 0 8px }
 /* 字符遮罩（分层揭示）：原型把 .kw/.ch 限定在 .k-headline，导致 Hero 标题字符是普通内联
    span——CSS transform 对内联元素无效，原型 Hero「标题字符升起」实为静默空操作（原型潜在缺陷）。
    此处扩展到 .k-hero-title（设计意图与本票参数一致：字符自遮罩下升起），缺陷已在报告记录。
-   T11（UI 票 #28）：列表标题拆字升起已移除，.kw/.ch 遮罩结构仅余 Hero 标题（intro 编排保留）。 */
-.k-hero-title .kw { display: inline-block; overflow: hidden; vertical-align: bottom }
-.k-hero-title .ch { display: inline-block; white-space: pre; will-change: transform }
+   T14（UI 票 #31）：列表标题拆字恢复，.kw/.ch 遮罩选择器回到 Hero + 列表标题并集（T11 撤销）。 */
+.k-headline .kw, .k-hero-title .kw { display: inline-block; overflow: hidden; vertical-align: bottom }
+.k-headline .ch, .k-hero-title .ch { display: inline-block; white-space: pre; will-change: transform }
 .k-summary { margin: 0 0 12px; max-width: 62ch }
 .k-meta { margin: 0; font-size: 13px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline }
 .k-meta .tpc { color: var(--accent) }
@@ -278,8 +284,9 @@ footer p { margin: 0 0 8px }
 .k-meta .sep { color: var(--rule); margin-right: 6px }
 /* T13：条目「查看百度搜索结果 ↗」为站外链接，ext 类由 links.isExternalUrl 判定后附加，
    颜色走全局 a.ext（--indigo）；原 .k-meta a.ext 局部红规则移除（站外信号统一靛色） */
-/* 数据版画占位图（两层：clip → art；T11 移除 tilt 层及其 perspective，clip 揭示保留） */
-.k-media { position: relative; align-self: start; will-change: clip-path }
+/* 数据版画占位图（三层：clip → tilt → art；T14 恢复 tilt 层与其 perspective——T11 移除撤销，
+   clip 揭示仍作用于 .k-media；tilt 包裹整个 art 层，丝纹 SVG 在 art 内随动） */
+.k-media { position: relative; perspective: 900px; align-self: start; will-change: clip-path }
 .layout-a .k-media, .layout-b .k-media { width: 100%; aspect-ratio: 4/3 }
 /* T7：详情页版面尺度迁移到 .k-detail（原时间线 layout-c 版式已取消，仅详情页保留该版画尺度） */
 .k-detail .k-media { width: 100%; max-width: 820px; aspect-ratio: 21/9; max-height: 420px; margin-top: 22px }
@@ -291,6 +298,8 @@ footer p { margin: 0 0 8px }
   --k-grid: color-mix(in srgb, var(--rule) 30%, transparent);
   background-image: linear-gradient(var(--k-grid) 1px, transparent 1px), linear-gradient(90deg, var(--k-grid) 1px, transparent 1px);
   background-size: 24px 24px }
+/* T14：tilt 中间层恢复（a1ce4d5 形态） */
+.k-media-tilt { width: 100%; height: 100%; transform-style: preserve-3d; will-change: transform }
 :root[data-theme=dark] .k-media-art { background-color: transparent; border-color: var(--accent); --k-grid: color-mix(in srgb, var(--accent) 24%, transparent) }
 @media (prefers-color-scheme: dark) { :root[data-theme=auto] .k-media-art { background-color: transparent; border-color: var(--accent); --k-grid: color-mix(in srgb, var(--accent) 24%, transparent) } }
 .k-media-art .tag { position: absolute; left: 12px; top: 12px; display: flex; align-items: center; gap: 8px }
@@ -446,7 +455,7 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
   .k-hud .big { font-size: 18px }
   .k-hud .sec-readbar { flex-basis: 100% }
   .k-day { padding-top: 44px }
-  .k-day .k-line { left: 9px }
+  .k-day .k-line, .k-day .k-progress { left: 9px }
   .silk-pin-wrap { left: 10px }
   .k-day-head { padding-left: 33px }
   .k-entry { grid-template-columns: 20px minmax(0, 1fr); grid-template-areas: "rail time" "rail body"; padding: 24px 0 }

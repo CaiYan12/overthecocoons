@@ -7,9 +7,9 @@
  *   不镜像逻辑；DOM 结构与 KEntry/KEmpty/KPager/TimelinePage 输出一致，CSS 不区分两种来源；
  * - 筛选优先于分页；主题切换重置页码；空主题渲染真实空态与「查看全部」；
  * - 主题切换（Ticket 06）：GSAP 可用时走两段式内容过渡（出 260ms blur+scale / 入 340ms，
- *   日期组头先行、条目 +120ms 延迟揭示），列表动效（节点激活/分层揭示）随每次渲染
- *   由 motion.onListRendered 重建（listCtx revert 回收，ScrollTrigger 无泄漏）；
- *   T13 丝线 B 版 rail 为静态结构（常驻红线+钉点），无动效重建项。
+ *   日期组头先行、条目 +120ms 延迟揭示），列表动效（进度线 scrub/节点激活/分层揭示）随每次
+ *   渲染由 motion.onListRendered 重建（listCtx revert 回收，ScrollTrigger 无泄漏）；
+ *   丝线 B 版 rail 为静态结构（常驻红线+钉点），进度线 scaleY 叠合其上（T14 恢复）。
  * - 阅读位置仅存于本次访问内存（模块变量，绝不写 localStorage/sessionStorage）：
  *   仅由用户手势（滚轮/触摸/滚动键）触发的滚动记录阅读条目；翻页/切主题返回时尽量按原条目
  *   恢复或回退有效页码并经 aria-live 播报（决策见 ./position.ts）；
@@ -76,13 +76,13 @@ function currentFiltered(): PublicEntry[] {
 
 function mediaHtml(entry: PublicEntry): string {
   // T9 版面减负：与 KEntryMedia.astro 同构——无竖排主题词与出血大序号，art 层纯装饰 aria-hidden
-  // T11（UI 票 #28）：tilt 中间层随动效移除而删除，与 KEntryMedia.astro 保持两层同构
+  // T14（UI 票 #31）：tilt 中间层恢复（T11 移除撤销），与 KEntryMedia.astro 保持三层同构
   // T13（UI 票 #30）：丝纹由稳定 ID 经 src/lib/silk.ts 构建期/客户端同一函数派生（同构注入）
   const clock = formatClock(entry.firstSeenAt);
   const texture = silkTexturePaths(entry.id)
     .map((p) => `<path class="${p.cls}" d="${p.d}" stroke-width="${p.width}" opacity="${p.opacity}"></path>`)
     .join("");
-  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span><svg class="silk-texture" viewBox="${SILK_VIEWBOX}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${texture}</svg><span class="sid">${silkSidLabel(entry.id)}</span></div></div>`;
+  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-tilt"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span><svg class="silk-texture" viewBox="${SILK_VIEWBOX}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${texture}</svg><span class="sid">${silkSidLabel(entry.id)}</span></div></div></div>`;
 }
 
 function metaHtml(entry: PublicEntry): string {
@@ -140,7 +140,7 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
       // 日组头规则在分组收敛后按全组条目计算（与 TimelinePage.astro 同口径）
       const head = dayHeadInfo(group.items.map(({ entry }) => entry));
       const fixtureSuffix = isFixture ? "（演示数据）" : "";
-      return `<section class="k-day" data-day="${group.date}"><div class="k-line silk-rail" aria-hidden="true"></div><span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin"></span></span>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
+      return `<section class="k-day" data-day="${group.date}"><div class="k-line silk-rail" aria-hidden="true"></div><div class="k-progress" aria-hidden="true"></div><span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin"></span></span>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
     })
     .join("");
 }
@@ -277,7 +277,7 @@ function renderView(nextTopic: string, requestedPage: number, options?: { deferr
   renderPager(page, totalPages, nextTopic);
   syncTopicUi(nextTopic, filtered.length);
   updatePageHead(nextTopic, page);
-  // 列表动效（节点激活/分层揭示）随本次渲染重建；T13 丝线 rail 为静态结构无需重建。
+  // 列表动效（进度线 scrub/节点激活/分层揭示）随本次渲染重建；丝线 rail 为静态结构无需重建。
   // 两段式切换时条目揭示延迟 +120ms
   onListRendered(options?.deferredListMotion === true);
   const previousTopic = topic;

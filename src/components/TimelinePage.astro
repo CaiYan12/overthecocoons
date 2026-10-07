@@ -99,9 +99,11 @@ const description =
         groups.map((group) => (
           <section class="k-day" data-day={group.date}>
             {/* T13（UI 票 #30）丝线 B 版：rail 常驻红线（k-line 加 silk-rail 类覆盖为 2px accent）+
-                日组顶钉点；原 k-progress 进度线移除（与常驻红线同位叠合不可见，裁定为替代——
-                阅读进度反馈由 HUD READING PROGRESS 承担，见 kinetic.css T13 注） */}
+                日组顶钉点。T14（UI 票 #31，维护者实机审查裁定 A）恢复逐日进度线：.k-progress
+                叠合于 rail 之上恢复 a1ce4d5 形态与 scaleY scrub 驱动（DOM 顺序在 rail 之后同位覆盖，
+                ADR 0006 取代 ADR 0005 的「替代」段） */}
             <div class="k-line silk-rail" aria-hidden="true" />
+            <div class="k-progress" aria-hidden="true" />
             <span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin" /></span>
             <header class="k-day-head">
               <h2 class="k-day-big">{monthEn(group.date.slice(5, 7))} {group.date.slice(8, 10)}</h2>
