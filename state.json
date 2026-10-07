@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "stateTakenAt": "2026-10-06T04:54:02.396Z",
-  "publicContentVersion": 3,
-  "publicContentDigest": "95fe8aca29dc4ef495df44dc1489a9d6dd28aab2ab5582b01ad69011b9c122e2",
+  "stateTakenAt": "2026-10-07T04:20:31.250Z",
+  "publicContentVersion": 4,
+  "publicContentDigest": "d9c74e5c0ce0fe3dfe63c117882ef68ad2c546f04ef4ca5ddab37df5dea41d52",
   "identities": [
     {
       "stableId": "51ef84820b12549c057fd31599464c2bc962db5d5955e7e78ac2a2da188bc496",
@@ -2403,14 +2403,814 @@
       "firstSeenAt": "2026-10-06T04:54:02.396Z",
       "wdFingerprint": "99.2%上座率震撼德约科维奇",
       "wdMissing": false
+    },
+    {
+      "stableId": "89f3d21b083cdd43bd8c18d061567074903e4984c29a1e19db34d50bfa8919bb",
+      "sourceId": "baidu-aishort",
+      "guid": "2215521",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "中东“同室操戈”何时休",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7ca1bd3e958f4d5d1aa6b67303b3c641e620641d1bf555a2fb4b44c194e55870",
+      "sourceId": "baidu-aishort",
+      "guid": "2215510",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "重庆一村支书及时上报预警一起滑坡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4506437c74417977c2b5974376c631f75c8dd06fb6be68d4c0f547b86c911241",
+      "sourceId": "baidu-aishort",
+      "guid": "2215503",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "女孩王屋山喊出横渠四句太震撼",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1503650e5cf23ca495ad6f5cbe73f3d6e577df84c35a397e32cd2014b35794e8",
+      "sourceId": "baidu-aishort",
+      "guid": "2215500",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "冠军队返回 长春市委书记到车站迎接",
+      "wdMissing": false
+    },
+    {
+      "stableId": "49482c09d1f2e7464f5844554b1d1d97fb2ae5bd07ca6f1db4f59c40b512db2f",
+      "sourceId": "baidu-aishort",
+      "guid": "2215497",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "诈骗团伙话术本曝光",
+      "wdMissing": false
+    },
+    {
+      "stableId": "addf35807c52c3d5a50ecb459519ebed175d6aa9ab6fae386aa10d3fba3fce4e",
+      "sourceId": "baidu-aishort",
+      "guid": "2215494",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "医院回应logo含货币符号",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4bf281fbebbdd5386e84a207ba2845bf7bfc0c8db6174ea657b044f4e47612b6",
+      "sourceId": "baidu-aishort",
+      "guid": "2215491",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "新疆小学生拾起地上国旗护在胸前",
+      "wdMissing": false
+    },
+    {
+      "stableId": "bc43c276a7acb90864e94e691cc88c3c607e31ddec04924edd03ad9dd7e1230e",
+      "sourceId": "baidu-aishort",
+      "guid": "2215486",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "日本附近现“三台共舞”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "23a1a4656fc7831acef92f58e8f9ea82b461dde895a98ef7b03b8f46db174428",
+      "sourceId": "baidu-aishort",
+      "guid": "2215485",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "余承东回应苹果入局折叠屏",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d147d700aa7572c939c33e3962e07b3e5ebb78803e96df75f8a50c41139f9ec4",
+      "sourceId": "baidu-aishort",
+      "guid": "2215484",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "一毕业就百万年薪 AI博士被大厂疯抢",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0cc52ffa0314b936b3de895f68bf95383326ec59c833bf74514e98ffdef4814f",
+      "sourceId": "baidu-aishort",
+      "guid": "2215483",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "千万别卡点下高速",
+      "wdMissing": false
+    },
+    {
+      "stableId": "891521d47528c5d035b5baa581abb3d0f85b5a5b9f6ab95f622fb49b590aedc4",
+      "sourceId": "baidu-aishort",
+      "guid": "2215482",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "国足“从未输过的球队”又少一支",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5a27e8d58b4cfcfc84ba7081635ffc74a1e3f3065f3762bb9ace4aa0d20383d5",
+      "sourceId": "baidu-aishort",
+      "guid": "2215481",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "好莱坞超级媒体帝国诞生",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c586eeb7958b507568831702396d747a9fe447536429df3b4928aab64f212540",
+      "sourceId": "baidu-aishort",
+      "guid": "2215480",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "完全在演我过节",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f7b37f521a5aad9f25a8332c3060543da16f27b1ca1dd1b345bd871a73c81f5b",
+      "sourceId": "baidu-aishort",
+      "guid": "2215479",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“高速上堵成腊肠”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a48c753970dd31e59c78697a5f896f32620334ef5663652fbdd5e7ee55c3887a",
+      "sourceId": "baidu-aishort",
+      "guid": "2215478",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "吴奇隆 不赚钱也是这个立场",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9de84ac51770fb9ead974b551b858a38619ccbc0c8818b53d21f020854c9d1a2",
+      "sourceId": "baidu-aishort",
+      "guid": "2215477",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "刘建宏：国足教练团队对球队已失控",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4623c2893362fe281bb3b8ef9642b776e01068faa6535785effcba8fb8d62a03",
+      "sourceId": "baidu-aishort",
+      "guid": "2215476",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "中东历史性一幕正在上演",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d890f439e5f2cf6067251c29a6964a9af3377259f0cf363a6ee8878d981e07be",
+      "sourceId": "baidu-aishort",
+      "guid": "2215475",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "有店铺一次性座椅套已卖出10万多件",
+      "wdMissing": false
+    },
+    {
+      "stableId": "400ecd8c1332a397bcfaecc65864020e846c61b6374c20b516be033d60ce6661",
+      "sourceId": "baidu-aishort",
+      "guid": "2215474",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "C罗重磅声明",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9cc6013400725470f788c04ac72d0081fe46f8a5761fb5d9c9387626b539f808",
+      "sourceId": "baidu-aishort",
+      "guid": "2215473",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "2599元一桌的婚宴14道主菜上错7道",
+      "wdMissing": false
+    },
+    {
+      "stableId": "07e234ca31d552da4891fa798074ebfe1378fe8ef608b41672f1f8d9296737e1",
+      "sourceId": "baidu-aishort",
+      "guid": "2215472",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "多国联军对胡塞武装发动大规模空袭",
+      "wdMissing": false
+    },
+    {
+      "stableId": "46dcb14b296a469c37452f4b89397b73ccf7b04e10ba10af9dafe13c03fd64b9",
+      "sourceId": "baidu-aishort",
+      "guid": "2215471",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "26岁白俄罗斯模特被诱骗至缅甸杀害",
+      "wdMissing": false
+    },
+    {
+      "stableId": "fb0a9be6818d8442ee843ae40b22eb67f64ad1f52d9ea9b8c8d0c16c6b5c26ca",
+      "sourceId": "baidu-aishort",
+      "guid": "2215470",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "现在才发现万人迷没戴任何首饰",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a7efb22ee3d1d6f8e196987f8550ecef958b2f61dd2d9274c9a84b28dd9aad5b",
+      "sourceId": "baidu-aishort",
+      "guid": "2215469",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“高铁座椅成HPV感染重灾区”不实",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ffac6b2b7e9b24bd2cfbd4155a2e302c421ed4ce8b2411e96f31d362738a3deb",
+      "sourceId": "baidu-aishort",
+      "guid": "2215468",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "孩子才放7天假 家长不该“天塌了”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "31f52dfc171821d7ffd1b76ec28d9ea94c6a9e4b285acd7b9f481994219e88c1",
+      "sourceId": "baidu-aishort",
+      "guid": "2215467",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "高速充电“八分饱”会成常态吗",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4798b48b816ff96d48c0b49f12671389c3413ac7b16b64cf1c09fb37cd713353",
+      "sourceId": "baidu-aishort",
+      "guid": "2215466",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "7-11便利店退出印度",
+      "wdMissing": false
+    },
+    {
+      "stableId": "daa81f9a8b4430f85500f2a939a497644beaf52dbc0e633fa39c9a52d4624f9e",
+      "sourceId": "baidu-aishort",
+      "guid": "2215465",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "陆虎一边唱歌一边救人",
+      "wdMissing": false
+    },
+    {
+      "stableId": "eed273cc3bf299d6ebf997eac1511a1776edfd65c507ce50009d8e30796e79bc",
+      "sourceId": "baidu-aishort",
+      "guid": "2215464",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“只要在导弹射程内我肯定能消灭你”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f5ca2f4d80b77177bd3213036b571af615cc1062666d409d8523b291ef47ca20",
+      "sourceId": "baidu-aishort",
+      "guid": "2215463",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "一种很新的婚礼火了 超10亿元大生意",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f2a31853e920f43128f34ef8845673cba0eb31444fb0e770b2edf75fd8691313",
+      "sourceId": "baidu-aishort",
+      "guid": "2215462",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“缅北赚钱缅北花 一分别想带回家”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ac607c176fbf47588b4072a29e70c70bec0be6cb3bbc13e661af5f7ebeefca2c",
+      "sourceId": "baidu-aishort",
+      "guid": "2215461",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "华为也扛不住了 余承东：不得不涨价",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f93d4a5e6e75e2e22f1fe454b5e1a0cbcb634dbdb0795252e106536879e1cf9c",
+      "sourceId": "baidu-aishort",
+      "guid": "2215104",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "大坂直美无缘中网八强",
+      "wdMissing": false
+    },
+    {
+      "stableId": "665346976a1b285d7eadb17b84dbcd5f13492ef12acc0675cd2c152420accbad",
+      "sourceId": "baidu-aishort",
+      "guid": "2215103",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "郑钦文中网第4轮时间确定",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3779ff6c76ec72c42b3a881a9a37aa42bc73a386720cda346d66d095e03acef7",
+      "sourceId": "baidu-aishort",
+      "guid": "2215102",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "辛纳宣布因膝伤提前结束2026赛季",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b9cfe6403b9a75a9f151623be65c5643e5d3e10ceaa1a79844287c75afecfc6c",
+      "sourceId": "baidu-aishort",
+      "guid": "2214751",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "德约科维奇中网七冠王",
+      "wdMissing": false
+    },
+    {
+      "stableId": "37ac52a331f5689806969ad7f9c7375a11d403752eecc55560493a475893dd83",
+      "sourceId": "baidu-aishort",
+      "guid": "2214750",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "国内航线燃油附加费将上涨",
+      "wdMissing": false
+    },
+    {
+      "stableId": "14496e00a11e821383250f60a6d4e91dd960c5ad202068eaad7aed26c133dfec",
+      "sourceId": "baidu-aishort",
+      "guid": "2214749",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "外交部：中方反对炒作“中国间谍”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1f0a8821e2fdca3a557bc599c9e0be17020edb3cfa160176814568e1c157a1e3",
+      "sourceId": "baidu-aishort",
+      "guid": "2214748",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "10月7日下午将迎来返程最高峰",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2c3a19f4e0998303c408ebe0b29727d0bdd60c5f87cf80cef5b7533822851236",
+      "sourceId": "baidu-aishort",
+      "guid": "2214747",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "王曼昱晋级中国大满贯16强",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a863e905eff987e003d9c4bcac12ea7026df842f525635db2ab45bf38d060552",
+      "sourceId": "baidu-aishort",
+      "guid": "2214746",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "香港继续获评为全球最自由经济体",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4bfee520f1d7daaeeaf73583ac2b465a206784a366ba72c646e81ff90940dd4e",
+      "sourceId": "baidu-aishort",
+      "guid": "2214745",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "外交部：美方应慎重处理台湾问题",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d0f59042084a8eb9f937097c9466a59f1e64269ed96a5975e3c431dfcee36fc4",
+      "sourceId": "baidu-aishort",
+      "guid": "2214744",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "国足三连败",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d97a9ff89f6ee9aad90954d38dddc4a3cee3c68890acb3e1a877e17bad22c20f",
+      "sourceId": "baidu-aishort",
+      "guid": "2214743",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "德约夺冠后大秀中文",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e0dc47081a5e0744b98e23cf06633135b40550bfa08b539ca0a8eeafa9d465d5",
+      "sourceId": "baidu-aishort",
+      "guid": "2214742",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "邵佳一此前称会给球迷“完美答案”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6822bb2647c7245cbc8893fad2fce8eeba9d0d9ed1ab7de1d1cb1d9548d0cb6d",
+      "sourceId": "baidu-aishort",
+      "guid": "2214741",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "超市回应员工抠脚后给顾客挑肉",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1ea4dba62ab7e86a9ca89a1cc20a5740b1ea931b5963a4bf3ca15995fa0e3df0",
+      "sourceId": "baidu-aishort",
+      "guid": "2214740",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "外交部回应台接收美战斗机",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b734187f18284d84339453edde6be4a8ccaa73f96ba1b5b36c172c0eb01b0c6e",
+      "sourceId": "baidu-aishort",
+      "guid": "2214739",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "长假“电子产品自由”让家长直呼后悔",
+      "wdMissing": false
+    },
+    {
+      "stableId": "11e65c8b72fb2b321761c6223499d5ea7261a4164b0afd60a38404116b634f47",
+      "sourceId": "baidu-aishort",
+      "guid": "2214738",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "国足就赢了马尔代夫",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4caa8027dedf8f8d0f35b65301ba8b61e7076eab87bce2062d8b5a196b4487f8",
+      "sourceId": "baidu-aishort",
+      "guid": "2214737",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "李在明：彻底收回亲日财产",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0cec50f863bb27873e9c26a12b6ee49d6e7a2e92596ff947db86282abf1a277d",
+      "sourceId": "baidu-aishort",
+      "guid": "2214736",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "南极深冰里捕获宇宙“幽灵”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e0547f9431e387074cf073e88d55d3c83408c53d31b39c6735e4d482ea7a36a2",
+      "sourceId": "baidu-aishort",
+      "guid": "2214735",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "游客一进县城就收到文旅局长手机号",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2c873b86c10d8669b63f480eeccda43d94aa03a40bc8653c8d107d8374653f51",
+      "sourceId": "baidu-aishort",
+      "guid": "2214734",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "失语老人用废旧物品手搓一座城堡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e78f19c40a00dfc718cc95b0ab2451d10f75fc8c647c8120de9589f49f72747d",
+      "sourceId": "baidu-aishort",
+      "guid": "2214733",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "国足世界排名跌至第95位",
+      "wdMissing": false
+    },
+    {
+      "stableId": "21f7192480c3a153723bebfec89aa988962a725907c3e39721f41acdb7cb0b46",
+      "sourceId": "baidu-aishort",
+      "guid": "2214732",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "韩乔生：邵佳一还远没到下课的地步",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d22ff1ffab7ed72fee357b1e87401e594aa9fe0eb26788a468ca9091d45d7b55",
+      "sourceId": "baidu-aishort",
+      "guid": "2214731",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "又输了！这支国足到底怎么了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c344a47b70a1730a46c8726a80c01ae358846e5a00b253c208f58dc627cf4bd0",
+      "sourceId": "baidu-aishort",
+      "guid": "2214730",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "10人国足0比1不敌塔吉克斯坦",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c633d6c00cea744a38a845520e2986f4c5d4c921dee7f8e587b8fd36d9ed180e",
+      "sourceId": "baidu-aishort",
+      "guid": "2214729",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "邵佳一回应国足三连败：试错是好事",
+      "wdMissing": false
+    },
+    {
+      "stableId": "dbc41b701345fc5e19bb78669b394b8382dddef7718ef7dd134bdff20fa44722",
+      "sourceId": "baidu-aishort",
+      "guid": "2214728",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "韩国考虑废除“金牌免兵役”制度",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9bc66e7d69f790ab6825d53e415f5a6ad7f3ac7eb9c0dc4315ad14fe8d976f0b",
+      "sourceId": "baidu-aishort",
+      "guid": "2214727",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "100元不够买三斤鲜牛肉",
+      "wdMissing": false
+    },
+    {
+      "stableId": "67678156407fb42808d7d69c07bb312b50083474198c69983ef7ed79b3ccd3d6",
+      "sourceId": "baidu-aishort",
+      "guid": "2214726",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "国庆返程高峰来了！尾灯红成一片",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b66fa3074268cd37f3a36bec0d1cc751e2da52149a7e5c2f23473693d3a87c0b",
+      "sourceId": "baidu-aishort",
+      "guid": "2214725",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "听总书记谈“奋斗”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3830c42fc55a7c99c8fe7411272c8d1dd830169195ab1630d79d1d9a8135fb08",
+      "sourceId": "baidu-aishort",
+      "guid": "2214371",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "国庆长假为啥感觉比上班还累",
+      "wdMissing": false
+    },
+    {
+      "stableId": "df8e95da3f54d0e156c4f08ec63e03e4af9aaf596bbd4ab4a7ab46715a9dbe36",
+      "sourceId": "baidu-aishort",
+      "guid": "2214370",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "今年十一县城没人吃喜酒了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e96385ce44ba194495821d528ce7498eca11ae76435e394d3ddfcf55529abdf1",
+      "sourceId": "baidu-aishort",
+      "guid": "2214369",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "1个多月内1万架乌无人机飞往莫斯科",
+      "wdMissing": false
+    },
+    {
+      "stableId": "8a88ce12a2d6f953d46dbef205458fe03bbd48876ca5fb5d732e05e5e1b63c3b",
+      "sourceId": "baidu-aishort",
+      "guid": "2214368",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "全国车牌“挤”进养马岛",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5cd48fb66db19fe8686c3f548632f8b3523ace27e8e048fe550ff6c710a32ba5",
+      "sourceId": "baidu-aishort",
+      "guid": "2214367",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "民警想尽办法保护尸体留存证据",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a409c4a3c63f921550b395774ff495cc00e4d253c74b9c6f0b09c260afc30feb",
+      "sourceId": "baidu-aishort",
+      "guid": "2214362",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "返程高峰 游客排队2小时充电10分钟",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3c41ab8a6544cddd6c6d8de345eccedb091a40cb92c964cca4cfaccfcb1db76d",
+      "sourceId": "baidu-aishort",
+      "guid": "2214359",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "下次回来就是2027年了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d19ba9985dfac480a156308407ddf326c64195ca6d94af1ef52103c58e7df876",
+      "sourceId": "baidu-aishort",
+      "guid": "2214353",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "大学生旅游攻略 坑麻国庆出行中年人",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ecccc4cf30ad8c6dfaf0c5d7f3e95109a3f2d5fd6fcabb5e6c35ad9f5217b60c",
+      "sourceId": "baidu-aishort",
+      "guid": "2214345",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "女子5天爬五岳花费不到4000元",
+      "wdMissing": false
+    },
+    {
+      "stableId": "455684bac920b44982f1c269ebc568f90ea25826639bbff67a4106f45598b3c9",
+      "sourceId": "baidu-aishort",
+      "guid": "2214344",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "缅北明家犯罪证据宣读了两个半小时",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a2e43cd4d2d358b2742e1cf1001cb072490ab8d8db3c8566168ec6d960f299af",
+      "sourceId": "baidu-aishort",
+      "guid": "2214343",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "缅北“血手印”的主人还活着",
+      "wdMissing": false
+    },
+    {
+      "stableId": "77628921f41a019f482cc4511818ea03d92dad50166821a419e7cc6e21ac127d",
+      "sourceId": "baidu-aishort",
+      "guid": "2214342",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "买金的人在排队 炒金的人在叹气",
+      "wdMissing": false
+    },
+    {
+      "stableId": "635ef3e600c870e7d1e5e80030c1d997bfbb4fd4bcb0b097427fb90ed195acf8",
+      "sourceId": "baidu-aishort",
+      "guid": "2214341",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "浙江舟山一头死鲸漂在码头附近",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a7f2e811351748eabe09344c2e431b4e9f1eb8371c7b51adc96f3ecfb17c7a75",
+      "sourceId": "baidu-aishort",
+      "guid": "2214340",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "韩国国防部回应男足免兵役争议",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4122b5d26b7f1fdae7c84e92fd35648c16f82eee72e33a5d5cd55ec08f75dab8",
+      "sourceId": "baidu-aishort",
+      "guid": "2214339",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "景区推出掰玉米粒活动 游客变劳动力",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6fa5c650e83176282bfbe180e8bb718e7123cb1a7ba1c2d481ab2ea81c17f880",
+      "sourceId": "baidu-aishort",
+      "guid": "2214338",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "鹳雀楼签名墙被陕西游客签到黢黑",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6447196c3dca0a34ad6321029ada758bbfd0d4d86c9aa1b810f538fb171bc230",
+      "sourceId": "baidu-aishort",
+      "guid": "2214337",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "央视调查后 “牛奶湖”发布通告",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b4fa8fcc5a69b6ff8c2c16db4a1b80b29a4c58029329401a4c13973adcdc9a07",
+      "sourceId": "baidu-aishort",
+      "guid": "2214336",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "康奈尔大学7人轮奸案被告发声",
+      "wdMissing": false
+    },
+    {
+      "stableId": "95718ca9214730244a05a1398137d54ec74e6470021b91b192f60566778186dc",
+      "sourceId": "baidu-aishort",
+      "guid": "2214335",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "央视曝光网红打卡地“牛奶湖”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4916b9674d3b06cec284caa0f4d352040c7e6a1c05a9bccc2641184317216682",
+      "sourceId": "baidu-aishort",
+      "guid": "2214334",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "宿舍床位爬梯设置不合理致多人摔伤",
+      "wdMissing": false
+    },
+    {
+      "stableId": "fbd2d11ca40be9bd66ebe165f780216fc2a0d34b2967668313055937a857ccdd",
+      "sourceId": "baidu-aishort",
+      "guid": "2214333",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "伦敦买的大本钟冰箱贴图片是郑州",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ba3070e79776ed5249ba2103e0d413f43344c5fe3ae15320d19c00204cc4cfcc",
+      "sourceId": "baidu-aishort",
+      "guid": "2214332",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "多名孩子用磁铁打捞泰山许愿池内硬币",
+      "wdMissing": false
+    },
+    {
+      "stableId": "01e24649e821e242389c25f43e66dacf0db18d12721c91c42defb4918d48290b",
+      "sourceId": "baidu-aishort",
+      "guid": "2214331",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "血手印背后的绝望求生",
+      "wdMissing": false
+    },
+    {
+      "stableId": "effef0b5e4c95518e4ef154a5d3c6a923cf7bc4cd3195552cc449baa7773bdcd",
+      "sourceId": "baidu-aishort",
+      "guid": "2214330",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "他凿开南极冰层“看”宇宙",
+      "wdMissing": false
+    },
+    {
+      "stableId": "76d2c282ecff466c854b12d4bfdbde7a5678215c4bc5c660fac517f1479b22cb",
+      "sourceId": "baidu-aishort",
+      "guid": "2214329",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "匿名人大校友豪捐5.03亿 段永平回应",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c39462f28265b586601a0acd8cc775213c5b1eac9183358767e7a1439b393631",
+      "sourceId": "baidu-aishort",
+      "guid": "2214328",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "陈思诚这次真进步了吗",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1c0eefc5372bf80e2547f44fb4f902db2c499415265444b5fb9eefcde8ae53b9",
+      "sourceId": "baidu-aishort",
+      "guid": "2214327",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "诺奖得主主导南极“冰立方”项目",
+      "wdMissing": false
+    },
+    {
+      "stableId": "730e923d9506fc054247efd48f6ae7f2e3c3308121d643ccd42959e88a901bf9",
+      "sourceId": "baidu-aishort",
+      "guid": "2214326",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "银行卡密码太简单 40万不翼而飞",
+      "wdMissing": false
+    },
+    {
+      "stableId": "321818d50151017cfd7dfbdf401a302d1260b57f6dfe0126f7172f7ced2ff1cd",
+      "sourceId": "baidu-aishort",
+      "guid": "2214325",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "孙心然 “下一站天后”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "357c131e4954e35370d2aa16e8d183a529ae04404289753924ca518d81a9c0f8",
+      "sourceId": "baidu-aishort",
+      "guid": "2214324",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“16条人命只剩5具尸体1份骨灰”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3b5ce85f7b412ef30a70851e255974d56bc9e7e98b615de0b173c24128b98e28",
+      "sourceId": "baidu-aishort",
+      "guid": "2214323",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“哈喽 你这个帽子在景区里不行的”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "dcbd9896bc7bb481d5761d0dc8c591f9d955cd3810354dc3b55cdc194c2ccc35",
+      "sourceId": "baidu-aishort",
+      "guid": "2214322",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“幽灵堵车”到底咋回事",
+      "wdMissing": false
+    },
+    {
+      "stableId": "78dd753549ea64585b3a0c40c6b35300f4e46546517d51f7ce4c6fc105a2cb34",
+      "sourceId": "baidu-aishort",
+      "guid": "2214321",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "中国电信回应“原员工郑某实名举报”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6474c135c516cf2080f74767c87a8ee9f879e99a529a9bc91fc14e1b03223370",
+      "sourceId": "baidu-aishort",
+      "guid": "2214320",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“我痛恨自己的无知、愚蠢和贪欲”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "defef23f36b2c291ebd314e12457aa851d4fcd7b6d5682560d8297b6b27baad7",
+      "sourceId": "baidu-aishort",
+      "guid": "2214319",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "曝邓紫棋结婚",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b18141b528c6efccd947d4ab0610c422f7c263f4f974225460ab8da78f580067",
+      "sourceId": "baidu-aishort",
+      "guid": "2214318",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "“稻城亚丁景区封闭”系谣言",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5bf10811829573a41b240c0915ff20dfb3f474ab9df862dcfd2adc04eb46a00e",
+      "sourceId": "baidu-aishort",
+      "guid": "2214317",
+      "firstSeenAt": "2026-10-07T04:20:31.250Z",
+      "wdFingerprint": "亚运会冠军李巧巧吐槽金牌已被磨坏",
+      "wdMissing": false
     }
   ],
   "quarantined": [],
   "sources": [
     {
       "sourceId": "baidu-aishort",
-      "lastAttemptedAt": "2026-10-06T04:54:02.172Z",
-      "lastSucceededAt": "2026-10-06T04:54:02.396Z",
+      "lastAttemptedAt": "2026-10-07T04:20:31.017Z",
+      "lastSucceededAt": "2026-10-07T04:20:31.250Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     }
