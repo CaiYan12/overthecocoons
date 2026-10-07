@@ -839,10 +839,13 @@ function initCursor(root: HTMLElement): void {
 
 function initMagnetic(root: HTMLElement): void {
   if (!window.matchMedia(FINE_POINTER_QUERY).matches) return;
+  // T14 追改（2026-10-07，用户裁定「暂时先注释」）：header.k-header 内部菜单项与按钮
+  // （.k-tabs .tab / [data-mode] / [data-kmenu-open]）的磁吸暂注释——恢复时取消注释三行即可。
+  // .k-top 在 header 之外，磁吸保留。
   const elements: Element[] = [
-    ...root.querySelectorAll(".k-tabs .tab"),
-    root.querySelector("[data-mode]"),
-    root.querySelector("[data-kmenu-open]"),
+    // ...root.querySelectorAll(".k-tabs .tab"),
+    // root.querySelector("[data-mode]"),
+    // root.querySelector("[data-kmenu-open]"),
     root.querySelector("[data-ktop]"),
   ].filter((el): el is Element => el !== null);
   for (const el of elements) {

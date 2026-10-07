@@ -1275,13 +1275,13 @@ test.describe("桌面限定动效（pointer:fine）", () => {
     });
     expect(ringScale, "ring 放大（difference 混合标签态）").toBeGreaterThan(1.5);
 
-    // 磁性（T14 恢复）：悬停主题 tab 产生 ≤8px 位移痕迹（先滚过阈值让 header 滑入，tab 才可命中）
-    await showHeader(page);
-    const tab = page.locator('[data-ktabs] .tab[data-topic="全部"]');
-    await tab.hover();
+    // 磁性（T14 恢复）：header 内部项磁吸暂注释（用户裁定）——改指向保留磁吸的 [data-ktop]
+    const top = page.locator("[data-ktop]");
+    await top.scrollIntoViewIfNeeded();
+    await top.hover();
     await page.waitForTimeout(400);
-    const tabTransform = await tab.evaluate((el) => el.style.transform);
-    expect(tabTransform, "tab 出现磁性位移痕迹").not.toBe("");
+    const topTransform = await top.evaluate((el) => el.style.transform);
+    expect(topTransform, "ktop 出现磁性位移痕迹").not.toBe("");
 
     // tilt（T14 恢复）：悬停占位图左上角（偏离中心，保证角度显著），等待 quickTo 补间到位后解析角度
     const media = page.locator(".k-entry.layout-a .k-media").first();
@@ -1868,12 +1868,16 @@ test.describe("桌面限定动效门槛（pointer:fine）", () => {
     );
     expect(cursorOpacity, "自定义光标保持隐藏").toBe(0);
 
-    // 磁性：悬停 tab 无 transform 痕迹（先滚过阈值让 header 滑入）
+    // 磁性：header tab（磁吸暂注释）与 ktop（保留）——coarse 下均无 transform 痕迹
     await showHeader(page);
     const tab = page.locator('[data-ktabs] .tab[data-topic="全部"]');
     await tab.hover();
     await page.waitForTimeout(300);
     expect(await tab.evaluate((el) => el.style.transform), "tab 无磁性位移痕迹").toBe("");
+    const topBtn = page.locator("[data-ktop]");
+    await topBtn.hover();
+    await page.waitForTimeout(300);
+    expect(await topBtn.evaluate((el) => el.style.transform), "ktop 无磁性位移痕迹").toBe("");
 
     // tilt：悬停占位图无 3D 旋转痕迹
     const media = page.locator(".k-entry.layout-a .k-media").first();
