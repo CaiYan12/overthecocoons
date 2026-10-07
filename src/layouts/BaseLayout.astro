@@ -15,8 +15,12 @@ const motionBase = import.meta.env.BASE_URL.replace(/\/$/, "");
 const faviconHref = `${motionBase}/favicon.svg`;
 // T12（UI 票 #29）：展示字体子集 preload——early fetch，拆字 intro 与大字首绘前就位。
 // 同源字体也必须带 crossorigin（font 请求恒为 CORS 模式，preload 缺该属性会二次下载）；
-// @font-face 侧 url() 相对解析为同一基路径 URL，两者命中同一请求。
+// @font-face 见下方内联 style（同一 URL，命中同一请求）。
 const fontHref = `${motionBase}${DISPLAY_FONT_PATH}`;
+// 审查修复（dev 全动效失效）：@font-face 内联并经 BASE_URL 拼接 URL——kinetic.css 里的
+// 相对 url("../fonts/") 在构建产物（_astro/*.css）下解析正确，但 dev 下按文档/模块 URL
+// 解析会 404（字体断链掉兜底）；内联保证 dev 与产物命中同一 URL，preload 同请求命中。
+const fontFaceCss = `@font-face{font-family:"Source Han Serif SC Heavy Subset";src:url("${fontHref}") format("woff2");font-weight:700;font-style:normal;font-display:swap}`;
 ---
 
 <!doctype html>
@@ -29,6 +33,7 @@ const fontHref = `${motionBase}${DISPLAY_FONT_PATH}`;
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href={faviconHref} />
     <link rel="preload" as="font" type="font/woff2" href={fontHref} crossorigin="anonymous" />
+    <style is:inline set:html={fontFaceCss} />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <script is:inline>

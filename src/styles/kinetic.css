@@ -33,21 +33,11 @@
   --serif: Georgia, "Times New Roman", "Songti SC", "SimSun", serif;
   --sans: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
   /* T12（UI 票 #29）：展示字体 = 自托管思源宋体 Heavy 子集（仅固定大字字集，81 字符，
-     字集事实源 src/lib/display-font.ts / public/fonts/display-charset.json）+ 既有 serif 兜底栈；
-     font-display: swap——加载失败/被禁时兜底栈完整可读（三降级）。 */
+   字集事实源 src/lib/display-font.ts / public/fonts/display-charset.json）+ 既有 serif 兜底栈；
+   font-display: swap——加载失败/被禁时兜底栈完整可读（三降级）。
+   @font-face 声明在 BaseLayout 内联 style（审查修复：相对 url() 在 dev 下断链，
+   内联经 BASE_URL 拼接保证 dev/产物同一 URL，与 preload 命中同一请求）。 */
   --font-display: "Source Han Serif SC Heavy Subset", var(--serif);
-}
-
-/* T12（UI 票 #29）：自托管展示字体，零外链。url() 相对 CSS 产物（/…/_astro/）解析，
-   ../fonts/ = 站点基路径下的 /fonts/（子路径部署无需拼前缀）；与 BaseLayout 的
-   preload 指向同一 URL（crossorigin=anonymous——font 请求恒为 CORS 模式，preload
-   必须带同值 crossorigin 才能命中缓存，避免二次下载）。 */
-@font-face {
-  font-family: "Source Han Serif SC Heavy Subset";
-  src: url("../fonts/SourceHanSerifSC-Heavy-Subset.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
 }
 :root[data-theme=dark] { color-scheme: dark;
   --paper: #191816; --surface: #23211E; --ink: #F4EFE5; --muted: #BEB5A8;

@@ -811,18 +811,22 @@ test("展示字体子集自托管（T12，#29）：woff2 + OFL + 可机读清单
       `${rel} preload href ${m![1]} 应指向基路径下 /fonts/`,
     );
   }
-  // preload 与 @font-face 指向同一文件（命中同一请求，不二次下载）
-  const css = cssFiles.map(readDist).join("\n");
-  const faceSrc = css.match(/@font-face\{[^}]*?url\(([^)]+)\)/);
-  assert.ok(faceSrc, "构建 CSS 应含 @font-face");
+  // preload 与 @font-face 指向同一文件（审查修复后 @font-face 内联于 HTML head，
+  // URL 经 BASE_URL 拼接——dev 与产物同一地址，命中同一请求不二次下载）
+  const homeHtml = readDist("index.html");
+  const faceSrc = homeHtml.match(/@font-face\{[^}]*?url\("?([^)"]+)"?\)/);
+  assert.ok(faceSrc, "构建 HTML 应含内联 @font-face");
   assert.ok(faceSrc![1]!.includes("fonts/SourceHanSerifSC-Heavy-Subset.woff2"), "@font-face src 应指向子集文件");
+  assert.ok(faceSrc![1]!.startsWith(`${BASE}/fonts/`), `@font-face src ${faceSrc![1]} 应指向基路径下 /fonts/`);
+  const preloadHref = readDist("index.html").match(/<link rel="preload" as="font" type="font\/woff2" href="([^"]+)"/)?.[1];
+  assert.equal(preloadHref, faceSrc![1], "preload 与 @font-face 应命中同一 URL");
 });
 
 test("展示字体接入（T12，#29）：--font-display token + font-display:swap + 票面大字槽位全部切换（兜底栈保持 serif）", () => {
   const css = cssFiles.map(readDist).join("\n");
   // 压缩后引号可能被移除，族名按裸名断言
   assert.ok(css.includes("Source Han Serif SC Heavy Subset"), "@font-face 族名应与字集清单一致");
-  assert.match(css, /font-display: ?swap/, "font-display: swap（加载失败/被禁时兜底栈完整可读）");
+  assert.match(readDist("index.html"), /font-display: ?swap/, "font-display: swap（内联 @font-face，加载失败/被禁时兜底栈完整可读）");
   assert.match(css, /--font-display:/, "--font-display token 应存在");
   assert.ok(css.includes('var(--font-display)'), "token 应组合子集族名与既有 serif 兜底栈");
   // 票面大字槽位（站名/Hero 标题/Hero ghost/Hero 日期大字/KPageHead 大字/日组头大字/

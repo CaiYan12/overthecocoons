@@ -15,6 +15,7 @@
  * - stateTakenAt / generatedAt / 快照 generatedAt：状态时间、清单生成时间、快照时间，各自独立字段
  */
 import { createHash } from "node:crypto";
+import { HEX64 } from "../lib/hex64.ts";
 
 export const SCHEMA_VERSION = 1;
 
@@ -28,7 +29,8 @@ export const SCHEMA_VERSION = 1;
  */
 export const ID_SEPARATOR = "\u0000";
 
-export const HEX64 = /^[0-9a-f]{64}$/;
+/** 稳定 ID 形态校验——定义移至 lib/hex64.ts（客户端安全子集），此处 re-export 保持公开 API。 */
+export { HEX64 };
 
 export interface LedgerIdentity {
   /** 稳定 ID：sha256(来源 ID + ID_SEPARATOR + 原始 GUID) 的完整 64 位小写十六进制（MVP-Q15）。 */

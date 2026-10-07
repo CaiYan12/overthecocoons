@@ -11,7 +11,7 @@
  * （timeline-view）共用同一实现，保证静态层与客户端渲染的丝纹逐字节同构。
  */
 
-import { HEX64 } from "../domain/contract.ts";
+import { HEX64 } from "./hex64.ts";
 
 /** 单条丝纹曲线的可渲染参数（属性名与 SVG path 属性一一对应）。 */
 export interface SilkPath {

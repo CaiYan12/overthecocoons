@@ -122,8 +122,12 @@ test("子集 woff2 与 OFL 许可入库在位；woff2 体积在子集合理上�
 
 test("子集 woff2 的族名与清单一致（@font-face 声明层实测）", () => {
   // 字体文件内部 name 表的一致性由再生成流程背书（--name-IDs='*' 保留官方 name 表，
-  // 提交前 fontTools 校验 cmap/许可）；此处断言 @font-face 声明族名与清单一致（CSS 层）。
-  const cssFiles = ["src/styles/kinetic.css"];
-  const css = cssFiles.map((rel) => readFileSync(join(ROOT, rel), "utf-8")).join("\n");
-  assert.ok(css.includes(`font-family: "${DISPLAY_FONT_FAMILY}"`), "kinetic.css @font-face 族名应与清单一致");
+  // 提交前 fontTools 校验 cmap/许可）；此处断言 @font-face 声明族名与清单一致。
+  // 审查修复后 @font-face 内联于 BaseLayout（URL 经 BASE_URL 拼接，dev/产物同一地址）。
+  const layout = readFileSync(join(ROOT, "src/layouts/BaseLayout.astro"), "utf-8");
+  assert.ok(
+    layout.includes(`font-family:"${DISPLAY_FONT_FAMILY}"`),
+    "BaseLayout 内联 @font-face 族名应与清单一致",
+  );
+  assert.ok(layout.includes("set:html={fontFaceCss}"), "@font-face 应经内联 style 注入（dev/产物同 URL）");
 });
