@@ -1,10 +1,13 @@
 /**
  * Ticket 06 动效层真浏览器测试：GSAP 加载与 Hero Intro、筛选不重播、Header Morph、
- * 时间线进度线/节点激活/分层揭示（方向交替与顺序）、两段式主题切换、View Transition 主题切换
- * （含 ready 超时 skipTransition 兜底与颜色过渡降级）、光标/磁性/tilt（pointer:fine）、
- * reduced-motion 与 GSAP CDN 失败的整体退化、ScrollTrigger 泄漏、截图矩阵。
+ * 时间线进度线/节点激活/版画揭示（T11 减动效后的瘦身揭示：媒体 clip + 元信息淡入）、
+ * 两段式主题切换、View Transition 主题切换（含 ready 超时 skipTransition 兜底与颜色过渡降级）、
+ * 自定义光标（pointer:fine）、reduced-motion 与 GSAP CDN 失败的整体退化、ScrollTrigger 泄漏、
+ * 截图矩阵。
  *
  * 行为基准：docs/design/prototype-timeline.html 的 v-kinetic 变体（动效参数逐项对齐）。
+ * T11 减动效（UI 票 #28）：Hero 视差、版画 tilt、光标磁性、scroll hint 循环、列表标题拆字
+ * 升起已移除；列表揭示保留版画 clip 与节点激活，摘要 clip 与 meta 字距动画已删。
  * 降级契约：内容直显、无隐藏初态、功能完整（与 Ticket 05 渐进增强一致）。
  */
 import { expect, test, type Page } from "@playwright/test";
@@ -565,8 +568,8 @@ test.describe("首次 intro 判定（T8：零存储 referrer / Navigation Timing
   });
 });
 
-test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", () => {
-  test("隐藏初态：摘要 clip、元信息透明、占位图按版面左/右方向交替 clip；紧凑行无媒体不参与", async ({ page }) => {
+test.describe("时间线动效（进度线 / 节点激活 / 版画揭示）", () => {
+  test("隐藏初态（T11 瘦身）：版画按版面左/右方向交替 clip、art 初态放大，标题与摘要静态直显、meta 仅透明度隐藏；紧凑行无媒体不参与", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
     await waitClientReady(page);
@@ -575,11 +578,13 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     // 不滚动：首屏以下条目应处于隐藏初态（ScrollTrigger once 未触发）
     const states = await page.evaluate(() => {
       const read = (entry: Element) => {
+        const link = entry.querySelector<HTMLElement>(".k-headline a");
         const sum = entry.querySelector<HTMLElement>(".k-summary");
         const meta = entry.querySelector<HTMLElement>(".k-meta");
         const media = entry.querySelector<HTMLElement>(".k-media");
         const art = entry.querySelector<HTMLElement>(".k-media-art");
         return {
+          headlineChars: link ? link.querySelectorAll(".kw, .ch").length : -1,
           summaryClip: sum ? sum.style.clipPath : "(missing)",
           metaOpacity: meta ? meta.style.opacity : "(missing)",
           mediaClip: media ? media.style.clipPath : "(missing)",
@@ -592,19 +597,22 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
         compact: read(document.querySelector(".k-entry.layout-compact")!),
       };
     });
-    expect(clipNumbers(states.a.summaryClip), "摘要自上 clip 遮蔽").toEqual([0, 0, 100, 0]);
-    expect(states.a.metaOpacity, "元信息隐藏").toBe("0");
+    // T11（UI 票 #28）：标题/摘要不再有隐藏初态（拆字与摘要 clip 揭示已移除）
+    expect(states.a.headlineChars, "标题链接未拆字（静态纯文本直显）").toBe(0);
+    expect(states.a.summaryClip, "摘要无 clip 遮蔽").toBe("");
+    // meta 保留透明度淡入（原 letterSpacing 字距动画已删）
+    expect(states.a.metaOpacity, "元信息仅透明度隐藏初态").toBe("0");
     expect(clipNumbers(states.a.mediaClip), "layout-a：图自左揭示（right 100%）").toEqual([
       0, 100, 0, 0,
     ]);
     expect(clipNumbers(states.b.mediaClip), "layout-b：图自右揭示（left 100%）").toEqual([
       0, 0, 0, 100,
     ]);
-    // T7 紧凑行（无摘要）：无版画无摘要段，不参与媒体/摘要动效，仅标题与元信息分层揭示
+    // T7 紧凑行（无摘要）：无版画无摘要段，不参与媒体动效，仅 meta 透明度淡入
     expect(states.compact.summaryClip, "紧凑行无摘要段").toBe("(missing)");
     expect(states.compact.mediaClip, "紧凑行无版画").toBe("(missing)");
     expect(states.compact.artScale, "紧凑行无 art 层").toBe("(missing)");
-    expect(states.compact.metaOpacity, "紧凑行元信息同样隐藏初态").toBe("0");
+    expect(states.compact.metaOpacity, "紧凑行元信息同样仅透明度隐藏初态").toBe("0");
     for (const state of [states.a, states.b]) {
       expect(clipNumbers(state.artScale).slice(0, 1)[0], "art 层初态 scale 1.08").toBeCloseTo(
         1.08,
@@ -613,7 +621,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     }
   });
 
-  test("分层揭示顺序：标题字符先动 → 摘要 clip 释放 → 元信息出现", async ({ page }) => {
+  test("列表揭示（T11 瘦身）：滚动后版画 clip 释放、art 回位、元信息淡入；标题与摘要静态直显", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
     await waitClientReady(page);
@@ -622,39 +630,37 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     // 选一个折叠状态且带摘要的条目，安装 rAF 采样器后滚动触发揭示
     await page.evaluate(() => {
       const w = window as unknown as {
-        __octReveal?: { ch: number; sum: number; meta: number };
+        __octReveal?: { media: number; meta: number };
         __octTicks?: number[];
+        __octStatic?: { headlineChars: number; summaryClip: string };
       };
       const entries = [...document.querySelectorAll<HTMLElement>(".k-entry")];
       const entry = entries.find(
         (el) => Number(el.dataset.gi) >= 1 && el.querySelector(".k-summary"),
       );
       if (!entry) throw new Error("找不到带摘要的折叠条目");
-      const kw = entry.querySelector<HTMLElement>(".kw");
-      const ch = entry.querySelector<HTMLElement>(".ch");
-      const sum = entry.querySelector<HTMLElement>(".k-summary");
+      const media = entry.querySelector<HTMLElement>(".k-media");
       const meta = entry.querySelector<HTMLElement>(".k-meta");
-      const mark = { ch: -1, sum: -1, meta: -1 };
+      const link = entry.querySelector<HTMLElement>(".k-headline a");
+      const sum = entry.querySelector<HTMLElement>(".k-summary");
+      // T11 静态直显前置断言：标题未拆字、摘要无 clip 遮蔽
+      w.__octStatic = {
+        headlineChars: link ? link.querySelectorAll(".kw, .ch").length : -1,
+        summaryClip: sum ? sum.style.clipPath : "(missing)",
+      };
+      const mark = { media: -1, meta: -1 };
       const ticks: number[] = [];
       w.__octTicks = ticks;
       const t0 = performance.now();
       const tick = () => {
         ticks.push(performance.now() - t0);
-        if (
-          mark.ch < 0 &&
-          ch &&
-          kw &&
-          ch.getBoundingClientRect().top < kw.getBoundingClientRect().bottom - 1
-        ) {
-          mark.ch = performance.now() - t0;
-        }
-        if (mark.sum < 0 && sum && !getComputedStyle(sum).clipPath.includes("100%")) {
-          mark.sum = performance.now() - t0;
+        if (mark.media < 0 && media && !media.style.clipPath.includes("100%")) {
+          mark.media = performance.now() - t0;
         }
         if (mark.meta < 0 && meta && Number.parseFloat(getComputedStyle(meta).opacity) > 0) {
           mark.meta = performance.now() - t0;
         }
-        if ((mark.ch >= 0 && mark.sum >= 0 && mark.meta >= 0) || performance.now() - t0 > 4000) {
+        if ((mark.media >= 0 && mark.meta >= 0) || performance.now() - t0 > 4000) {
           w.__octReveal = mark;
         } else {
           requestAnimationFrame(tick);
@@ -665,7 +671,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     });
 
     await page.mouse.move(200, 300);
-    // 按目标条目实际位置迭代滚进触发区（分层揭示 start: "top 85%"）：单次 wheel 的实际滚动量
+    // 按目标条目实际位置迭代滚进触发区（列表揭示 start: "top 85%"）：单次 wheel 的实际滚动量
     // 因引擎而异（Firefox 实测 900 只滚到 858，条目未进触发区），且须在探针 4s 窗口内触发
     for (let i = 0; i < 8; i++) {
       const state = await page.evaluate(() => {
@@ -686,24 +692,28 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
       { timeout: 8_000 },
     );
     const mark = await page.evaluate(
-      () => (window as unknown as { __octReveal: { ch: number; sum: number; meta: number } }).__octReveal,
+      () => (window as unknown as { __octReveal: { media: number; meta: number } }).__octReveal,
     );
-    expect(mark.ch, "标题字符开始升起").toBeGreaterThanOrEqual(0);
-    expect(mark.sum, "摘要 clip 开始释放").toBeGreaterThanOrEqual(0);
+    const staticState = await page.evaluate(
+      () =>
+        (window as unknown as { __octStatic: { headlineChars: number; summaryClip: string } })
+          .__octStatic,
+    );
+    expect(staticState.headlineChars, "标题链接静态直显（未拆字）").toBe(0);
+    expect(staticState.summaryClip, "摘要静态直显（无 clip 遮蔽）").toBe("");
+    expect(mark.media, "版画 clip 开始释放").toBeGreaterThanOrEqual(0);
     expect(mark.meta, "元信息开始显现").toBeGreaterThanOrEqual(0);
-    // 设计错峰为 ch→+80ms→sum→+60ms→meta（motion.ts 时间线 0/0.08/0.14）。mobile WebKit 在
+    // 设计错峰为 media→+40ms→meta（motion.ts 时间线 0.1/0.14）。mobile WebKit 在
     // dSF3×1440 下 rAF 实测仅 ~7.8fps（帧间隔 >80ms），同帧吞掉错峰导致采样等值：帧间隔
-    // 足够细时断言严格先后，粗帧时仅断言顺序不倒置（同时序下 sum 恒不早于 ch、meta 恒不早于 sum）
+    // 足够细时断言严格先后，粗帧时仅断言顺序不倒置（同时序下 meta 恒不早于 media）
     const ticks = (await page.evaluate(() => (window as unknown as { __octTicks?: number[] }).__octTicks ?? [])) as number[];
     const deltas = ticks.slice(1).map((t, i) => t - ticks[i]!).filter((d) => d > 0).sort((a, b) => a - b);
     const medianDelta = deltas.length > 0 ? deltas[Math.floor(deltas.length / 2)]! : 0;
     const resolvable = medianDelta > 0 && medianDelta <= 70;
     if (resolvable) {
-      expect(mark.sum, "摘要晚于标题字符").toBeGreaterThan(mark.ch);
-      expect(mark.meta, "元信息晚于摘要").toBeGreaterThan(mark.sum);
+      expect(mark.meta, "元信息不早于版画 clip 释放").toBeGreaterThan(mark.media);
     } else {
-      expect(mark.sum, "摘要不早于标题字符（粗帧引擎）").toBeGreaterThanOrEqual(mark.ch);
-      expect(mark.meta, "元信息不早于摘要（粗帧引擎）").toBeGreaterThanOrEqual(mark.sum);
+      expect(mark.meta, "元信息不早于版画 clip 释放（粗帧引擎）").toBeGreaterThanOrEqual(mark.media);
     }
 
     // 媒体揭示补间（900ms power4.out）持续到 meta 出现之后：等待 clip 与 art 补间落到终态再断言
@@ -1152,9 +1162,9 @@ test.describe("全屏菜单动效", () => {
 });
 
 test.describe("桌面限定动效（pointer:fine）", () => {
-  test("自定义光标跟随并显示语义标签；磁性位移；图片 tilt", async ({ page, isMobile }) => {
-    // 移动设备模拟为 pointer:coarse，站点按设计不启用自定义光标/磁性（非缺陷）
-    test.skip(isMobile === true, "自定义光标与磁性为 pointer:fine 桌面限定");
+  test("自定义光标跟随并显示语义标签（T11：磁性/tilt 已移除，不再断言）", async ({ page, isMobile }) => {
+    // 移动设备模拟为 pointer:coarse，站点按设计不启用自定义光标（非缺陷）
+    test.skip(isMobile === true, "自定义光标为 pointer:fine 桌面限定");
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
     await waitClientReady(page);
@@ -1192,39 +1202,6 @@ test.describe("桌面限定动效（pointer:fine）", () => {
       return ring ? new DOMMatrixReadOnly(getComputedStyle(ring).transform).a : 1;
     });
     expect(ringScale, "ring 放大（difference 混合标签态）").toBeGreaterThan(1.5);
-
-    // 磁性：悬停主题 tab 产生 ≤8px 位移痕迹（先滚过阈值让 header 滑入，tab 才可命中）
-    await showHeader(page);
-    const tab = page.locator('[data-ktabs] .tab[data-topic="全部"]');
-    await tab.hover();
-    await page.waitForTimeout(400);
-    const tabTransform = await tab.evaluate((el) => el.style.transform);
-    expect(tabTransform, "tab 出现磁性位移痕迹").not.toBe("");
-
-    // tilt：悬停占位图左上角（偏离中心，保证角度显著），等待 quickTo 补间到位后解析角度
-    const media = page.locator(".k-entry.layout-a .k-media").first();
-    await media.hover({ position: { x: 12, y: 12 } });
-    await page.waitForFunction(
-      () => {
-        const t = document
-          .querySelector<HTMLElement>(".k-entry.layout-a .k-media .k-media-tilt")
-          ?.style.transform ?? "";
-        const angles = [...t.matchAll(/rotate[XY]\((-?[\d.]+)deg\)/g)].map((m) =>
-          Math.abs(Number.parseFloat(m[1]!)),
-        );
-        return angles.length >= 2 && angles.some((a) => a > 1);
-      },
-      undefined,
-      { timeout: 3_000 },
-    );
-    const tiltTransform = await media.evaluate(
-      (el) => el.querySelector<HTMLElement>(".k-media-tilt")!.style.transform,
-    );
-    expect(tiltTransform, "tilt 层出现 rotateX/rotateY").toMatch(/rotateX\(|rotateY\(/);
-    const angles = [...tiltTransform.matchAll(/rotate[XY]\((-?[\d.]+)deg\)/g)].map((m) =>
-      Math.abs(Number.parseFloat(m[1]!)),
-    );
-    expect(Math.max(...angles), "倾斜角度超出中心（非零位移写入）").toBeGreaterThan(1);
   });
 });
 
@@ -1443,7 +1420,9 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
       await target.scrollIntoViewIfNeeded();
       await page.waitForTimeout(150);
       const box = await target.boundingBox();
-      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      // T11 后列表标题为纯文本内联链接：两行折行时 union 包围盒中心落在行距之间，
+      // elementFromPoint 命中父级 h3（标准内联命中行为）——瞄准首行文本区（0.3 高度处）
+      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height * 0.3);
       await expect(label, `${name} 应显示语义标签`).toHaveCSS("opacity", "1");
 
       const measured = await page.evaluate(() => {
@@ -1499,7 +1478,9 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
       await page.waitForTimeout(200);
       const box = await target.boundingBox();
       expect(box, `${selector} 应有可见包围盒`).not.toBeNull();
-      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      // T11 后列表标题为纯文本内联链接：折行时 union 包围盒中心落在行距之间，
+      // elementFromPoint 命中父级 h3——瞄准首行文本区（0.3 高度处，块级/单行元素同样命中）
+      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height * 0.3);
       await page.waitForTimeout(600);
       return {
         scale: await ringScale(),
@@ -1692,7 +1673,7 @@ test.describe("ScrollTrigger 泄漏防护", () => {
             .length,
       );
     // 缓慢滚过整页：烧掉全部 once:true 揭示触发器（触发后自毁是原型既定行为），
-    // 使计数只剩持久触发器（全局/视差/进度线/节点激活），与滚动历史解耦、可复现
+    // 使计数只剩持久触发器（全局/scroll hint 淡出/进度线/节点激活），与滚动历史解耦、可复现
     const scrollThrough = async () => {
       await page.evaluate(async () => {
         const step = Math.max(300, Math.floor(window.innerHeight * 0.6));
@@ -1738,12 +1719,12 @@ test.describe("ScrollTrigger 泄漏防护", () => {
       after,
       "同一路径第二个完整周期后计数应与第一周期一致（listCtx revert 回收，无逐渲染累积）",
     ).toBe(before);
-    expect(after, "持久触发器应存在（全局 + 视差 + 进度线/节点激活）").toBeGreaterThan(10);
+    expect(after, "持久触发器应存在（全局 + scroll hint 淡出 + 进度线/节点激活）").toBeGreaterThan(10);
   });
 });
 
 test.describe("桌面限定动效门槛（pointer:fine）", () => {
-  test("pointer 非 fine（模拟 coarse）：光标不出现、悬停无磁性位移痕迹", async ({ page }) => {
+  test("pointer 非 fine（模拟 coarse）：自定义光标不出现（T11：磁性/tilt 已移除，不再断言）", async ({ page }) => {
     // 仅拦截模块初始化读取的 pointer:fine 媒体查询，其余查询透传
     await page.addInitScript(() => {
       const original = window.matchMedia.bind(window);
@@ -1779,27 +1760,11 @@ test.describe("桌面限定动效门槛（pointer:fine）", () => {
         ),
     );
     expect(cursorOpacity, "自定义光标保持隐藏").toBe(0);
-
-    // 磁性：悬停 tab 无 transform 痕迹（先滚过阈值让 header 滑入）
-    await showHeader(page);
-    const tab = page.locator('[data-ktabs] .tab[data-topic="全部"]');
-    await tab.hover();
-    await page.waitForTimeout(300);
-    expect(await tab.evaluate((el) => el.style.transform), "tab 无磁性位移痕迹").toBe("");
-
-    // tilt：悬停占位图无 3D 旋转痕迹
-    const media = page.locator(".k-entry.layout-a .k-media").first();
-    await media.hover();
-    await page.waitForTimeout(300);
-    expect(
-      await media.evaluate((el) => el.querySelector<HTMLElement>(".k-media-tilt")!.style.transform),
-      "tilt 层无 rotateX/rotateY 痕迹",
-    ).toBe("");
   });
 });
 
-test.describe("拆字 aria 与 h1 排版（T5，#22）", () => {
-  test("拆字命名点收窄至语义元素（h1/链接）、字符 span 全部 aria-hidden（Hero 与列表标题；重渲染后仍生效）", async ({
+test.describe("拆字 aria 与 h1 排版（T5 #22；T11 起列表标题不拆字）", () => {
+  test("拆字仅余 Hero（T11 列表拆字升起移除）：h1 命名点与 aria-hidden 保持、列表标题为纯文本链接（重渲染后仍生效）", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -1832,37 +1797,33 @@ test.describe("拆字 aria 与 h1 排版（T5，#22）", () => {
     ).toEqual([null, null]);
     expect(hero.spansHidden, "Hero 拆出的 .kw/.ch 全部 aria-hidden").toBe(true);
 
+    // T11（UI 票 #28）：列表标题不再拆字——链接保持纯文本，可访问名即文本内容，
+    // 不再补 aria-label（原随拆字消失的 T5 修复由纯文本语义天然承接）
     const headline = await page.evaluate(() => {
       const a = document.querySelector<HTMLElement>(".k-entry .k-headline a")!;
       return {
         label: a.getAttribute("aria-label"),
-        text: a.textContent ?? "",
-        spansHidden: [...a.querySelectorAll(".kw, .ch")].every(
-          (el) => el.getAttribute("aria-hidden") === "true",
-        ),
+        text: (a.textContent ?? "").trim(),
+        splitSpans: a.querySelectorAll(".kw, .ch").length,
       };
     });
-    expect(headline.label, "断言前置：列表标题链接已拆字").not.toBe("");
-    expect(headline.label, "列表标题链接 aria-label=完整标题文本").toBe(headline.text);
-    expect(headline.spansHidden, "列表拆出的 .kw/.ch 全部 aria-hidden").toBe(true);
+    expect(headline.text, "断言前置：列表标题文本非空").not.toBe("");
+    expect(headline.splitSpans, "列表标题链接内无拆字 span（静态纯文本）").toBe(0);
+    expect(headline.label, "列表标题链接不设 aria-label（可访问名来自文本内容）").toBeNull();
 
-    // 客户端重渲染（切主题重建列表）后，新拆字同样带 aria（幂等路径）
+    // 客户端重渲染（切主题重建列表）后，列表标题同样保持纯文本
     await showHeader(page);
     await pickTopic(page, "新闻");
     await waitTopicAnimDone(page);
     const reHeadline = await page.evaluate(() => {
       const a = document.querySelector<HTMLElement>(".k-entry .k-headline a")!;
       return {
-        label: a.getAttribute("aria-label"),
-        text: a.textContent ?? "",
-        spansHidden: [...a.querySelectorAll(".kw, .ch")].every(
-          (el) => el.getAttribute("aria-hidden") === "true",
-        ),
+        text: (a.textContent ?? "").trim(),
+        splitSpans: a.querySelectorAll(".kw, .ch").length,
       };
     });
-    expect(reHeadline.label, "断言前置：重渲染后标题非空").not.toBe("");
-    expect(reHeadline.label, "重渲染后标题链接仍带 aria-label=完整标题").toBe(reHeadline.text);
-    expect(reHeadline.spansHidden, "重渲染后拆字仍全部 aria-hidden").toBe(true);
+    expect(reHeadline.text, "断言前置：重渲染后标题非空").not.toBe("");
+    expect(reHeadline.splitSpans, "重渲染后列表标题同样不拆字").toBe(0);
   });
 
   test("320px 最窄视口：h1 每行保持单行不折行（全角空格改 CSS 间距的排版守卫）", async ({

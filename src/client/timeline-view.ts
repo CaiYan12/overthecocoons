@@ -72,8 +72,9 @@ function currentFiltered(): PublicEntry[] {
 
 function mediaHtml(entry: PublicEntry): string {
   // T9 版面减负：与 KEntryMedia.astro 同构——无竖排主题词与出血大序号，art 层纯装饰 aria-hidden
+  // T11（UI 票 #28）：tilt 中间层随动效移除而删除，与 KEntryMedia.astro 保持两层同构
   const clock = formatClock(entry.firstSeenAt);
-  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-tilt"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span></div></div></div>`;
+  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span></div></div>`;
 }
 
 function metaHtml(entry: PublicEntry): string {

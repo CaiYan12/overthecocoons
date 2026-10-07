@@ -6,14 +6,18 @@
  * （内容直显、无隐藏初态、功能完整）。
  *
  * 结构对齐原型：
- * - kineticCtx：Hero Intro / Hero Parallax / Header Morph / 全局进度（进度条/圆环/百分比）/
- *   自定义光标 / 磁性 / tilt，页面生命周期内一次性建立；
- * - listCtx：时间线列表动效（进度线 scaleY scrub、节点激活 toggleClass、分层揭示），
+ * - kineticCtx：Hero Intro / Header Morph / 全局进度（进度条/圆环/百分比）/ 自定义光标，
+ *   页面生命周期内一次性建立；
+ * - listCtx：时间线列表动效（进度线 scaleY scrub、节点激活 toggleClass、版画 clip 揭示），
  *   每次客户端重渲染整体 revert 重建（ScrollTrigger 无泄漏）；
  * - cleanups：事件监听器登记，运行时异常时统一回收并退化为无动效路径。
  *
  * 动效参数（duration/ease/阈值/延迟）逐项取自原型 JS；性能约束：只动 transform/opacity/
- * clip-path（filter 仅 blur 两处、letterSpacing 仅标题字符与元信息两处，均为一次性揭示）。
+ * clip-path（filter 仅 blur 两处、letterSpacing 仅 Hero ghost 一处，均为一次性揭示）。
+ * T11 减动效（UI 票 #28，原型评审裁定）：Hero 视差、版画 tilt、光标磁性、scroll hint 循环、
+ * 列表标题拆字升起已移除/转静态；列表揭示保留版画 clip 与节点激活态，摘要 clip 与
+ * meta 字距动画已删（后者每帧触发布局），元信息仅余透明度淡入。跨页过渡走原生
+ * View Transition（@view-transition，样式见 kinetic.css），不经本模块。
  * 测试挂钩（无行为含义）：html[data-oct-motion="on"|"off"]、html[data-oct-intro="done"]、
  * 两段式切换期间 html[data-oct-topic-anim]。
  */
@@ -94,9 +98,9 @@ function pad2(value: number): string {
 /**
  * 把元素文本拆为 span.kw > span.ch 遮罩字符（与原型 splitChars 一致，重复拆分幂等）。
  * T5 a11y（#22，审查修复）：拆出的 .kw/.ch 标 aria-hidden——读屏不逐字、按命名点完整词朗读。
- * 命名点只保留在语义元素上：列表标题=链接 a 本身（拆分前补 aria-label=原文本）；Hero 的 .line
- * 是 generic 角色（span 容器上 aria-label 属规范禁止项，读屏会忽略），命名点在 h1[data-herotitle]，
- * 由调用方在拆字清空前设置。
+ * 命名点只保留在语义元素上：T11（#28）起列表标题不再拆字（链接保持纯文本，可访问名即内容）；
+ * Hero 的 .line 是 generic 角色（span 容器上 aria-label 属规范禁止项，读屏会忽略），
+ * 命名点在 h1[data-herotitle]，由调用方在拆字清空前设置。
  * 二次拆分守卫：text 为空或与现有 label 一致时跳过覆写——同元素再次拆分不得置空已有 label。
  */
 function splitChars(el: Element): HTMLElement[] {
@@ -180,8 +184,6 @@ function initMotionOn(root: HTMLElement): void {
     kineticCtx = self;
     initHeroAndHeader(root);
     initCursor(root);
-    initMagnetic(root);
-    initTilt(root);
   }, root);
   initResize(root);
   onListRendered(false);
@@ -249,7 +251,7 @@ function initHeroAndHeader(root: HTMLElement): void {
   // 首次 intro（票 #25）：开场编排仅对「首次到达」播放——判定零存储（privacy 页明文
   // 不写入 sessionStorage，e2e 断言其恒空），规则见 lib/intro-rule.ts（reload/back_forward
   // 或站内同源跳转 → 跳过；直接到达/外源进入 → 播放）。跳过时立即打 data-oct-intro=done
-  // 且不建任何隐藏初态（内容直显）；Hero 页滚动显隐（84px 阈值）与 Parallax 不受影响。
+  // 且不建任何隐藏初态（内容直显）；Hero 页滚动显隐（84px 阈值）不受影响。
   if (
     !shouldPlayIntro({
       navigationType: readNavigationType(),
@@ -300,21 +302,8 @@ function initHeroAndHeader(root: HTMLElement): void {
       .to(hint, { autoAlpha: 1, duration: 0.4 }, 0.95);
   }
 
-  // Hero Parallax（scrub，仅主要视觉层）
-  if (heroEn) {
-    g.to(heroEn, {
-      yPercent: 26,
-      ease: "none",
-      scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 0.4 },
-    });
-  }
-  if (dateBig) {
-    g.to(dateBig, {
-      yPercent: 60,
-      ease: "none",
-      scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 0.4 },
-    });
-  }
+  // T11（UI 票 #28）：Hero 视差（hero-en/date 滚动位移 scrub）已移除——ghost 英文与幽灵日期
+  // 滚动时保持原位；scroll hint 的滚动淡出保留（信息性：提示已离开首屏）。
   if (hint) {
     g.to(hint, {
       autoAlpha: 0,
@@ -360,30 +349,25 @@ export function onListRendered(deferred: boolean): void {
         });
       });
       root.querySelectorAll<HTMLElement>(".k-entry").forEach((entry) => {
-        const headlineLink = entry.querySelector<HTMLElement>(".k-headline a");
-        const sum = entry.querySelector<HTMLElement>(".k-summary");
         const meta = entry.querySelector<HTMLElement>(".k-meta");
         const media = entry.querySelector<HTMLElement>(".k-media");
         const art = entry.querySelector<HTMLElement>(".k-media-art");
-        // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入，其余上入兜底；
-        // T7 紧凑行无媒体，media 为空时下方 clip 分支整体跳过）
+        // T11（UI 票 #28）列表揭示瘦身：保留版画 clip 揭示——图片方向按版面交替
+        // （A 左入 / B 右入，其余上入兜底；T7 紧凑行无媒体，media 为空时 clip 分支整体跳过）；
+        // 标题拆字升起与摘要 clip 揭示已移除（静态直显，链接不再补 aria-label），
+        // meta 仅余透明度淡入（原 letterSpacing 字距动画每帧触发布局，已删）。
         const clipFrom = entry.classList.contains("layout-a")
           ? "inset(0 100% 0 0)"
           : entry.classList.contains("layout-b")
             ? "inset(0 0 0 100%)"
             : "inset(0 0 100% 0)";
-        const chs = headlineLink ? splitChars(headlineLink) : [];
-        if (chs.length) g.set(chs, { yPercent: 110, rotate: 2 });
-        if (sum) g.set(sum, { clipPath: "inset(0 0 100% 0)" });
-        if (meta) g.set(meta, { autoAlpha: 0, letterSpacing: ".2em" });
+        if (meta) g.set(meta, { autoAlpha: 0 });
         if (media) {
           g.set(media, { clipPath: clipFrom });
           if (art) g.set(art, { scale: 1.08 });
         }
         const tl = g.timeline({ paused: true, defaults: { ease: "power3.out" } });
-        if (chs.length) tl.to(chs, { yPercent: 0, rotate: 0, duration: 0.5, stagger: 0.02 }, 0);
-        if (sum) tl.to(sum, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power2.out" }, 0.08);
-        if (meta) tl.to(meta, { autoAlpha: 1, letterSpacing: ".04em", duration: 0.3, ease: "power2.out" }, 0.14);
+        if (meta) tl.to(meta, { autoAlpha: 1, duration: 0.3, ease: "power2.out" }, 0.14);
         if (media) {
           tl.to(media, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "power4.out" }, 0.1);
           if (art) tl.to(art, { scale: 1, duration: 0.9, ease: "power4.out" }, 0.1);
@@ -727,71 +711,6 @@ function initCursor(root: HTMLElement): void {
     window.removeEventListener("blur", onLeaveDoc);
     root.classList.remove("k-cursor-on");
     gsap!.killTweensOf([cursor, dot, ringEl, labelEl]);
-  });
-}
-
-/* ---- 磁性 UI（原型 initMagnetic，≤8px，elastic 回正；仅 pointer:fine） ---- */
-
-function initMagnetic(root: HTMLElement): void {
-  if (!window.matchMedia(FINE_POINTER_QUERY).matches) return;
-  const elements: Element[] = [
-    ...root.querySelectorAll(".k-tabs .tab"),
-    root.querySelector("[data-mode]"),
-    root.querySelector("[data-kmenu-open]"),
-    root.querySelector("[data-ktop]"),
-  ].filter((el): el is Element => el !== null);
-  for (const el of elements) {
-    const target = el as HTMLElement;
-    const mx = gsap!.quickTo(target, "x", { duration: 0.3, ease: "power3" });
-    const my = gsap!.quickTo(target, "y", { duration: 0.3, ease: "power3" });
-    const onMove = (event: MouseEvent) => {
-      const rect = target.getBoundingClientRect();
-      mx(Math.max(-8, Math.min(8, (event.clientX - rect.left - rect.width / 2) * 0.3)));
-      my(Math.max(-8, Math.min(8, (event.clientY - rect.top - rect.height / 2) * 0.3)));
-    };
-    const onLeave = () => gsap!.to(target, { x: 0, y: 0, duration: 0.55, ease: "elastic.out(1,.4)" });
-    target.addEventListener("mousemove", onMove, { passive: true });
-    target.addEventListener("mouseleave", onLeave);
-    cleanups.push(() => {
-      target.removeEventListener("mousemove", onMove);
-      target.removeEventListener("mouseleave", onLeave);
-      gsap!.killTweensOf(target);
-    });
-  }
-}
-
-/* ---- 图片 3D Tilt（原型 initTilt，rotateX ≤±4° / rotateY ≤±5°；仅 pointer:fine） ---- */
-
-function initTilt(root: HTMLElement): void {
-  if (!window.matchMedia(FINE_POINTER_QUERY).matches) return;
-  root.querySelectorAll<HTMLElement>(".k-media").forEach((media) => {
-    const inner = media.querySelector<HTMLElement>(".k-media-tilt");
-    const art = media.querySelector<HTMLElement>(".k-media-art");
-    if (!inner || !art) return;
-    const rX = gsap!.quickTo(inner, "rotationX", { duration: 0.4, ease: "power3" });
-    const rY = gsap!.quickTo(inner, "rotationY", { duration: 0.4, ease: "power3" });
-    const onMove = (event: MouseEvent) => {
-      const rect = media.getBoundingClientRect();
-      const px = (event.clientX - rect.left) / rect.width - 0.5;
-      const py = (event.clientY - rect.top) / rect.height - 0.5;
-      rX(py * -8);
-      rY(px * 10);
-    };
-    const onEnter = () => gsap!.to(art, { scale: 1.05, duration: 0.45, ease: "power3.out" });
-    const onLeave = () => {
-      rX(0);
-      rY(0);
-      gsap!.to(art, { scale: 1, duration: 0.5, ease: "power3.out" });
-    };
-    media.addEventListener("mousemove", onMove, { passive: true });
-    media.addEventListener("mouseenter", onEnter);
-    media.addEventListener("mouseleave", onLeave);
-    cleanups.push(() => {
-      media.removeEventListener("mousemove", onMove);
-      media.removeEventListener("mouseenter", onEnter);
-      media.removeEventListener("mouseleave", onLeave);
-      gsap!.killTweensOf([inner, art]);
-    });
   });
 }
 
