@@ -30,8 +30,6 @@ const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 const FINE_POINTER_QUERY = "(pointer:fine)";
 /** 原型圆环周长（r=26，2πr≈163.36 → 163.4）。 */
 const RING_LENGTH = 163.4;
-/** Header Morph 滚动阈值（原型 gsap yPercent show=y>84）。 */
-const HEADER_SHOW_AT = 84;
 /** 自定义光标完整语义态（内容入口）圆环放大倍数（原型 initCursor 值）。 */
 const CURSOR_FULL_SCALE = 2.3;
 /** 自定义光标轻量可点击态（次级控件）圆环放大倍数（UI 票 #14：只给"可点"信号，不放大到语义态）。 */
@@ -249,33 +247,18 @@ function initHeroAndHeader(root: HTMLElement): boolean {
   const stl = st;
   if (!g || !stl) return false;
   const hero = root.querySelector<HTMLElement>("[data-hero]");
-  const header = root.querySelector<HTMLElement>("[data-kheader]");
   const ring = document.querySelector<SVGCircleElement>("[data-ring]");
   const pctEl = document.querySelector<HTMLElement>("[data-readpct]");
   const readbar = document.querySelector<HTMLElement>("[data-readbar]");
   const readbarSet = readbar ? g.quickSetter(readbar, "scaleX") : null;
-  let headerShown = false;
   let lastPct = -1;
 
-  // Header Morph：首屏隐藏由 GSAP yPercent 控制（CSS 不同时控制 transform）。
-  // 仅存在 Hero 的页面做首屏隐藏与滚动显隐（UI 票 #20）：非 Hero 页 header 常显——
-  // 显隐分支若照跑，headerShown 初值 false 会在回落到 84px 以下时错误触发滑出。
-  // 显式 y:0 中和预绘制遮蔽期（data-oct-pending）遗留的 CSS translateY(-100%)——
-  // 否则 GSAP 首次 set 会把已计算的 -68px 解析进 y 分量，与 yPercent:-100 叠加成 -136px，
-  // 且 morph 补间只动 yPercent，header 将永远停在半隐藏位置。
-  if (hero && header) g.set(header, { y: 0, yPercent: -100 });
+  // Header 常态显示（维护者裁定）：全站 header 首屏可见、不随滚动隐藏——Header Morph 机制
+  // （首屏 yPercent -100 + 84px 阈值显隐）退役，pending 遮蔽期的 header 规则一并移除。
   stl.create({
     start: 0,
     end: "max",
     onUpdate: (self: { scroll(): number; progress: number }) => {
-      const y = self.scroll();
-      if (hero) {
-        const show = y > HEADER_SHOW_AT;
-        if (show !== headerShown) {
-          headerShown = show;
-          g.to(header, { yPercent: show ? 0 : -100, duration: 0.4, ease: "power3.out" });
-        }
-      }
       const p = self.progress;
       if (readbarSet) readbarSet(p);
       if (ring) ring.style.strokeDashoffset = String(RING_LENGTH * (1 - p));

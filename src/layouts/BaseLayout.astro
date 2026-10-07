@@ -39,7 +39,7 @@ const fontFaceCss = `@font-face{font-family:"Source Han Serif SC Heavy Subset";s
     <script is:inline>
       // 启动主题恢复 + 预绘制遮蔽（Ticket 06 FOUC 裁定，见 task-06-report.md）：
       // 1) 任何模块脚本执行前恢复持久化主题，消除深色偏好用户的刷新闪色；
-      // 2) 非 reduced-motion 下打 data-oct-pending（CSS 遮蔽 Hero/Header 初始态，
+      // 2) 非 reduced-motion 下打 data-oct-pending（CSS 遮蔽 Hero 初始态，
       //    避免「先画静态层 → JS 再隐藏 → 再播 intro」的闪动）；
       // 3) 本地模块失效时由 1500ms 兜底解除遮蔽，内容不会滞留隐藏。
       // 4) 尽早禁用浏览器刷新滚动恢复：本票起 body 末端有阻塞式动效库脚本（Ticket 08 起自托管），

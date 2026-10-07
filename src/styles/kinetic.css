@@ -420,11 +420,11 @@ html[data-vt]::view-transition-new(root) { animation: vt-clip 450ms var(--ease-o
 /* 主题切换降级（无 View Transition API 时）：仅三类颜色属性的颜色过渡（非 transition:all） */
 .k-themefade, .k-themefade * { transition: background-color .38s ease-out, color .38s ease-out, border-color .38s ease-out }
 
-/* 预绘制遮蔽（head 启动脚本打 html[data-oct-pending]）：模块脚本就位前遮蔽 Hero/Header
-   初始态，消除「先画静态层 → JS 再隐藏 → 再播 intro」的闪动；GSAP 隐藏初态就位后由
-   motion 模块解除标记。降级路径（reduced-motion 不打标记 / 模块失效 1500ms 兜底解除）
-   内容直显。遮蔽期与 GSAP 不同时控制同一属性（解除后才由 GSAP 内联样式接管）。 */
-html[data-oct-pending] .k-header { transform: translateY(-100%) }
+/* 预绘制遮蔽（head 启动脚本打 html[data-oct-pending]）：模块脚本就位前遮蔽 Hero 元素初始态，
+   消除「先画静态层 → JS 再隐藏 → 再播 intro」的闪动；GSAP 隐藏初态就位后由 motion 模块解除标记。
+   降级路径（reduced-motion 不打标记 / 模块失效 1500ms 兜底解除）内容直显。
+   遮蔽期与 GSAP 不同时控制同一属性（解除后才由 GSAP 内联样式接管）。
+   Header 常态显示（维护者裁定）：header 不再参与遮蔽，规则已移除。 */
 html[data-oct-pending] .k-hero-en,
 html[data-oct-pending] .k-hero-rule,
 html[data-oct-pending] .k-hero-date,

@@ -254,7 +254,7 @@ test.describe("GSAP 动效层（Hero Intro / Header Morph / 全局进度）", ()
     expect(probe.introDone, "intro 完成标记保持").toBe(true);
   });
 
-  test("Header Morph：首屏隐藏，滚动 84px 后滑入，回顶后滑出", async ({ page }) => {
+  test("Header 常显（维护者裁定）：首屏可见，滚动与回顶均不隐藏", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
     await waitClientReady(page);
@@ -268,26 +268,16 @@ test.describe("GSAP 动效层（Hero Intro / Header Morph / 全局进度）", ()
         return transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42;
       });
 
-    expect(await headerY(), "首屏 header 应隐藏（yPercent -100）").toBeLessThan(-60);
+    expect(await headerY(), "首屏 header 应可见（常态显示）").toBeGreaterThan(-5);
 
     await page.mouse.move(200, 300);
     await wheelBy(page, 300);
-    await page.waitForFunction(() => {
-      const header = document.querySelector("[data-kheader]");
-      if (!header) return false;
-      const transform = getComputedStyle(header).transform;
-      return transform !== "none" && new DOMMatrixReadOnly(transform).m42 > -5;
-    });
-    expect(await headerY(), "滚动后 header 滑入").toBeGreaterThan(-5);
+    await page.waitForTimeout(400);
+    expect(await headerY(), "滚动后 header 仍可见").toBeGreaterThan(-5);
 
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForFunction(() => {
-      const header = document.querySelector("[data-kheader]");
-      if (!header) return false;
-      const transform = getComputedStyle(header).transform;
-      return transform !== "none" && new DOMMatrixReadOnly(transform).m42 < -60;
-    });
-    expect(await headerY(), "回顶后 header 滑出").toBeLessThan(-60);
+    await page.waitForTimeout(400);
+    expect(await headerY(), "回顶后 header 仍可见").toBeGreaterThan(-5);
   });
 
   test("全局进度：readbar scaleX、HUD 百分比大数字与圆环 stroke-dashoffset 随滚动更新", async ({
@@ -337,7 +327,7 @@ test.describe("非 Hero 页 header 常显（UI 票 #20）", () => {
    * 修复口径：初始隐藏与滚动显隐分支仅作用于存在 Hero 的页面；非 Hero 页 header 常显，
    * 且 scrollY 0–84 区间（含滚过 84 后回落）不得消失。Hero 页行为不变（既有 84px 阈值）。
    * 路径基准为 P0 审计的 6 路径；其中「/」是 Hero 页，按票面验收第 2 条断言行为不变，
-   * 不适用「bottom>0」判据（首屏隐藏本就是 Hero 页设计行为，既有 Header Morph 用例在守）。
+   * 不适用「bottom>0」判据（历史口径；T14 追改后 header 全站常态显示，该区别已消失）。
    */
   const NON_HERO_PATHS = ["about/", "sources/", "principles/", "privacy/", "nope-404/"];
   const VIEWPORTS = [
@@ -403,12 +393,12 @@ test.describe("非 Hero 页 header 常显（UI 票 #20）", () => {
       await page.waitForTimeout(600);
       expect(
         (await headerFirstScreenState(page)).bottom,
-        "滚过 84 回落 40px 后 header 不应消失（headerShown 不得误触发滑出）",
+        "滚过 84 回落 40px 后 header 常显不消失（T14 追改后 header 无显隐机制）",
       ).toBeGreaterThan(0);
     });
   }
 
-  test("Hero 页行为不变：首屏隐藏、滚过 84 滑入（/ × 2 视口，含移动端口径）", async ({ page }) => {
+  test("Hero 页 header 常态显示（/ × 2 视口，含移动端口径）", async ({ page }) => {
     for (const vp of VIEWPORTS) {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(BASE);
@@ -423,23 +413,12 @@ test.describe("非 Hero 页 header 常显（UI 票 #20）", () => {
         });
       expect(
         await headerM42(),
-        // 位移恰好为负的 header 高度（桌面 68 / 移动 60）：完全隐藏时 m42 ≤ -60；
-        // 半隐藏态（如 -30）不会满足，判据仍有鉴别力
-        `${vp.label}：Hero 页首屏 header 应保持隐藏（既有设计行为）`,
-      ).toBeLessThanOrEqual(-60);
+        `${vp.label}：Hero 页首屏 header 应可见（常态显示，维护者裁定）`,
+      ).toBeGreaterThan(-5);
       await page.mouse.move(200, 300);
       await wheelBy(page, 300);
-      await page.waitForFunction(
-        () => {
-          const header = document.querySelector("[data-kheader]");
-          if (!header) return false;
-          const transform = getComputedStyle(header).transform;
-          return transform !== "none" && new DOMMatrixReadOnly(transform).m42 > -5;
-        },
-        undefined,
-        { timeout: 15_000 },
-      );
-      expect(await headerM42(), `${vp.label}：滚过 84px 后 header 滑入`).toBeGreaterThan(-5);
+      await page.waitForTimeout(400);
+      expect(await headerM42(), `${vp.label}：滚动后 header 仍可见`).toBeGreaterThan(-5);
     }
   });
 
