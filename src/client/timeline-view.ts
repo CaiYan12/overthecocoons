@@ -140,7 +140,7 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
       // 日组头规则在分组收敛后按全组条目计算（与 TimelinePage.astro 同口径）
       const head = dayHeadInfo(group.items.map(({ entry }) => entry));
       const fixtureSuffix = isFixture ? "（演示数据）" : "";
-      return `<section class="k-day" data-day="${group.date}"><div class="k-line silk-rail" aria-hidden="true"></div><div class="k-progress" aria-hidden="true"></div><span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin"></span></span>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
+      return `<section class="k-day" data-day="${group.date}"><div class="k-line" aria-hidden="true"></div><div class="k-progress" aria-hidden="true"></div><span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin"></span></span>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
     })
     .join("");
 }

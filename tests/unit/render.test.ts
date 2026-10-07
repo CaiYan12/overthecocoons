@@ -845,12 +845,12 @@ test("展示字体接入（T12，#29）：--font-display token + font-display:sw
   assert.match(css, /\.k-day-batch\{[^}]*var\(--serif\)/, "日组批次行保持既有 serif（不在大字槽位清单）");
 });
 
-test("丝线 B 版 rail 静态呈现（T13，#30）与逐日进度线（T14，#31）：常驻红线 + 日组钉点 + 进度线叠合恢复，Hero 丝线仅 Hero 页", () => {
+test("丝线 B 版 rail 静态呈现（T13，#30；T14 追改灰线）与逐日进度线（T14，#31）：灰线 rail + 日组钉点 + 红色进度线可见，Hero 丝线仅 Hero 页", () => {
   const html = readDist("index.html");
-  assert.ok(html.includes('class="k-line silk-rail"'), "rail 元素带 silk-rail 类（B 版常驻红线）");
+  assert.ok(html.includes('class="k-line"'), "rail 元素在位（T14 追改：旧灰线样式）");
   assert.ok(html.includes('class="silk-pin-wrap"'), "日组 rail 顶钉点");
   assert.equal(
-    (html.match(/class="k-line silk-rail"/g) ?? []).length,
+    (html.match(/class="k-line"/g) ?? []).length,
     (html.match(/<section class="k-day"/g) ?? []).length,
     "每个日组各一段 rail",
   );
@@ -863,18 +863,19 @@ test("丝线 B 版 rail 静态呈现（T13，#30）与逐日进度线（T14，#3
   assert.equal(
     (html.match(/class="k-progress"/g) ?? []).length,
     (html.match(/<section class="k-day"/g) ?? []).length,
-    "每个日组各一段进度线（T14 恢复，叠合 silk-rail）",
+    "每个日组各一段进度线（T14 恢复，叠合 rail）",
   );
-  // rail 静态红线样式：silk-rail 覆盖为 2px accent，无 transition/animation（B 版零动效依赖）；
-  // 进度线恢复 a1ce4d5 形态：scaleY(0) 起始 + will-change
-  // （压缩器可能对调声明顺序，两种顺序均接受）
+  // T14 追改：rail 回归旧灰线（1px var(--rule) + 暗色 45% accent 混 rule），无 silk-rail 覆盖残留；
+  // 进度线保持 2px accent 可见（a1ce4d5 形态：scaleY(0) 起始 + will-change）
   const css = cssFiles.map(readDist).join("\n");
+  assert.match(css, /\.k-day \.k-line\{[^}]*background:var\(--rule\)/, "rail 灰线（旧样式）");
   assert.match(
     css,
-    /\.k-day \.silk-rail\{[^}]*(width:2px[^}]*background:var\(--accent\)|background:var\(--accent\)[^}]*width:2px)/,
-    "rail 覆盖为 2px accent",
+    /\[data-theme=dark\] \.k-day \.k-line\{[^}]*color-mix\(in srgb, ?var\(--accent\) 45%, ?var\(--rule\)\)/,
+    "rail 暗色 45% accent 混 rule 变体恢复",
   );
-  assert.ok(!/\.silk-rail\{[^}]*transition/.test(css), "silk-rail 不携带 transition（原型 A 版编排态不移植）");
+  assert.ok(!css.includes(".silk-rail"), "silk-rail 覆盖规则零残留");
+  assert.ok(!html.includes("silk-rail"), "HTML 无 silk-rail 类残留");
   assert.match(
     css,
     /\.k-day \.k-progress\{[^}]*transform:scaleY\(0\)/,
@@ -885,12 +886,12 @@ test("丝线 B 版 rail 静态呈现（T13，#30）与逐日进度线（T14，#3
   for (const rel of ["page/2/index.html", "topics/news/index.html"]) {
     const noHero = readDist(rel);
     assert.ok(!noHero.includes("silk-static"), `${rel} 无 Hero 页不渲染 Hero 丝线`);
-    assert.ok(noHero.includes('class="k-line silk-rail"'), `${rel} rail 常驻红线照常`);
+    assert.ok(noHero.includes('class="k-line"'), `${rel} rail 照常（灰线）`);
     assert.ok(noHero.includes('class="k-progress"'), `${rel} 进度线照常（T14 恢复）`);
   }
-  // 客户端重渲染模板同构：JS bundle 内含 silk-rail/钉点/丝纹/进度线注入
+  // 客户端重渲染模板同构：JS bundle 内含 rail/钉点/丝纹/进度线注入
   const js = jsFiles.map(readDist).join("\n");
-  assert.ok(js.includes("silk-rail"), "客户端 dayGroups 模板带 silk-rail");
+  assert.ok(js.includes('class="k-line"'), "客户端 dayGroups 模板带 rail（T14 追改灰线，同构）");
   assert.ok(js.includes("silk-pin-wrap"), "客户端 dayGroups 模板带钉点");
   assert.ok(js.includes("silk-texture"), "客户端版画模板注入丝纹（与构建期同一 src/lib/silk.ts）");
   assert.ok(js.includes("k-progress"), "客户端 dayGroups 模板带进度线（T14 恢复，同构）");

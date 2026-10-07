@@ -104,10 +104,10 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
   });
 
   test("丝线 B 版三降级（T13/#30）：无 JS、reduced-motion、移动端下 rail 与丝纹同为静态完整", async ({ browser }) => {
-    const ACCENT = "rgb(143, 38, 43)"; // 浅色 --accent #8F262B（三上下文默认浅色）
+    const RULE = "rgb(156, 147, 135)"; // 浅色 --rule #9C9387（T14 追改：rail 回归旧灰线，accent 让位进度线）
     const railState = (page: Page) =>
       page.evaluate(() => {
-        const rail = document.querySelector<HTMLElement>(".k-day .silk-rail");
+        const rail = document.querySelector<HTMLElement>(".k-day .k-line");
         if (!rail) return null;
         const cs = getComputedStyle(rail);
         return {
@@ -122,14 +122,14 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
         };
       });
 
-    // 降级一：无 JS（结构即静态，rail 常驻红线 + Hero 丝线 + 丝纹齐备）
+    // 降级一：无 JS（结构即静态，rail 旧灰线 + Hero 丝线 + 丝纹齐备）
     const noJs = await browser.newContext({ javaScriptEnabled: false });
     const p1 = await noJs.newPage();
     await p1.goto(BASE);
     const s1 = await railState(p1);
     expect(s1, "无 JS：rail 存在").not.toBeNull();
-    expect(s1!.bg, "无 JS：rail 常驻红线").toBe(ACCENT);
-    expect(s1!.width, "无 JS：rail 2px").toBe("2px");
+    expect(s1!.bg, "无 JS：rail 旧灰线（accent 让位进度线）").toBe(RULE);
+    expect(s1!.width, "无 JS：rail 1px").toBe("1px");
     expect(s1!.transform, "无 JS：rail 无变换（静态）").toBe("none");
     expect(s1!.pin, "无 JS：日组钉点在位").toBe(true);
     expect(s1!.heroThread, "无 JS：Hero「茧」底静态丝线在位").toBe(true);
@@ -142,7 +142,7 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     const p2 = await reduced.newPage();
     await p2.goto(BASE);
     const s2 = await railState(p2);
-    expect(s2!.bg, "reduced-motion：rail 常驻红线").toBe(ACCENT);
+    expect(s2!.bg, "reduced-motion：rail 旧灰线").toBe(RULE);
     expect(s2!.transform, "reduced-motion：rail 无变换").toBe("none");
     expect(s2!.heroThread, "reduced-motion：Hero 静态丝线在位").toBe(true);
     expect(s2!.textures, "reduced-motion：丝纹齐备").toBe(s2!.medias);
@@ -153,7 +153,7 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     const p3 = await mobile.newPage();
     await p3.goto(BASE);
     const s3 = await railState(p3);
-    expect(s3!.bg, "移动端：rail 常驻红线").toBe(ACCENT);
+    expect(s3!.bg, "移动端：rail 旧灰线").toBe(RULE);
     expect(s3!.left, "移动端：rail 左移 9px").toBe("9px");
     expect(s3!.heroThread, "移动端：Hero 静态丝线在位").toBe(true);
     expect(s3!.textures, "移动端：丝纹齐备").toBe(s3!.medias);

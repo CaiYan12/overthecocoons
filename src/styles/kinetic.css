@@ -233,11 +233,11 @@ footer p { margin: 0 0 8px }
 /* 日期组 + 时间线 */
 .k-day { position: relative; padding-top: 96px }   /* P1-8：日组呼吸 */
 .k-day .k-line { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 1px; background: var(--rule) }
-/* T13（UI 票 #30）丝线 B 版 rail：常驻 2px accent 红线（「已钉入」静态态，原型 B 版直移）。
-   T14（UI 票 #31，维护者实机审查裁定 A）：T13 的「进度线替代」裁定撤销（ADR 0006 取代
-   ADR 0005 的替代段）——rail 静态丝线保留，.k-progress 进度线叠合其上恢复 a1ce4d5 形态
-   与 scaleY scrub 驱动（DOM 顺序进度线在 rail 之后，同位覆盖）。 */
-.k-day .silk-rail { width: 2px; background: var(--accent) }
+/* T14 追改（UI 票 #31，维护者 2026-10-07 二次裁定）：rail 回归旧灰线样式——T13 的 silk-rail
+   2px accent 覆盖删除，红色 accent 让位给进度线（恢复可见性）；暗色恢复 a1ce4d5 的 45% accent
+   混 rule 变体。丝线身份由 Hero 穿出丝线、日组钉点与版画丝纹承载。进度线（2px accent）叠合可见。 */
+:root[data-theme=dark] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) }
+@media (prefers-color-scheme: dark) { :root[data-theme=auto] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) } }
 /* T14：进度线恢复（a1ce4d5 形态）：scaleY(0) 起始，motion scrub 生长 */
 .k-day .k-progress { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 2px; background: var(--accent); transform: scaleY(0); transform-origin: top center; will-change: transform }
 /* T13：日组 rail 顶钉点（原型 B 版静态呈现：surface 底 + accent 描边的空心点，钉在 rail 顶端）。

@@ -98,11 +98,10 @@ const description =
       ) : (
         groups.map((group) => (
           <section class="k-day" data-day={group.date}>
-            {/* T13（UI 票 #30）丝线 B 版：rail 常驻红线（k-line 加 silk-rail 类覆盖为 2px accent）+
-                日组顶钉点。T14（UI 票 #31，维护者实机审查裁定 A）恢复逐日进度线：.k-progress
-                叠合于 rail 之上恢复 a1ce4d5 形态与 scaleY scrub 驱动（DOM 顺序在 rail 之后同位覆盖，
-                ADR 0006 取代 ADR 0005 的「替代」段） */}
-            <div class="k-line silk-rail" aria-hidden="true" />
+            {/* T14 追改（UI 票 #31）：rail 回归旧灰线（silk-rail 覆盖删除，accent 让位进度线）；
+                丝线身份由 Hero 穿出丝线、钉点与版画丝纹承载。逐日进度线 .k-progress 叠合 rail
+                之上（a1ce4d5 形态，scaleY scrub 驱动） */}
+            <div class="k-line" aria-hidden="true" />
             <div class="k-progress" aria-hidden="true" />
             <span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin" /></span>
             <header class="k-day-head">

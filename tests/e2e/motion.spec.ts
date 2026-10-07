@@ -807,13 +807,13 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
       )
       .toMatchObject({ synced: true });
     const state = await page.evaluate(() => {
-      const rails = [...document.querySelectorAll<HTMLElement>(".k-day .silk-rail")];
-      // T13（UI 票 #30）rail 保持静态常驻红线——2px accent、无 transform、无进行中的补间
+      const rails = [...document.querySelectorAll<HTMLElement>(".k-day .k-line")];
+      // T14 追改（UI 票 #31）：rail 回归旧灰线——1px var(--rule)、无 transform、无进行中的补间
       const railStatic = rails.every((el) => {
         const cs = getComputedStyle(el);
         return (
-          cs.backgroundColor === "rgb(143, 38, 43)" &&
-          cs.width === "2px" &&
+          cs.backgroundColor === "rgb(156, 147, 135)" &&
+          cs.width === "1px" &&
           cs.transform === "none"
         );
       });
@@ -870,7 +870,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
         ),
       );
       return {
-        rails: document.querySelectorAll(".k-day .silk-rail").length,
+        rails: document.querySelectorAll(".k-day .k-line").length,
         days: document.querySelectorAll(".k-day").length,
         pins: document.querySelectorAll(".k-day .silk-pin").length,
         textures: textures.length,

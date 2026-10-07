@@ -420,7 +420,7 @@ export function onListRendered(deferred: boolean): void {
     g.context((self) => {
       listCtx = self;
       // T14（UI 票 #31）：逐日进度线 scaleY scrub 恢复（a1ce4d5 参数直取）——
-      // 叠合于 T13 静态丝线 rail（silk-rail 常驻红线保留，进度线 DOM 在其上）
+      // 叠合于 rail 灰线（T14 追改：silk-rail 红线让位，进度线 accent 在灰线上可见）
       root.querySelectorAll<HTMLElement>(".k-day").forEach((day) => {
         const prog = day.querySelector<HTMLElement>(".k-progress");
         if (!prog) return;

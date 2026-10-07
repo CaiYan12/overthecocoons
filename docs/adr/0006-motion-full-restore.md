@@ -48,6 +48,10 @@ status: accepted
    已知呈现事实（留档）：rail 与进度线同为 2px accent 红，同位叠合后进度生长在视觉上与常驻
    rail 重合——裁定 A 明确接受该形态（结构与驱动恢复优先），rail 处进度反馈的可见性由
    HUD READING PROGRESS（readbar + pct）继续承担。
+   **T14 追改（2026-10-07 二次裁定，用户实机复审后）**：上述同色叠合不可见问题由维护者裁定解决——
+   rail 回归旧灰线样式（`silk-rail` 2px accent 覆盖与类删除，1px `var(--rule)` + 暗色 45% accent
+   混 rule 变体恢复），红色 accent 让位给进度线恢复可见；丝线身份由 Hero 穿出丝线、日组钉点与
+   版画丝纹承载。本文第 9 条的进度线形态与驱动不变，仅叠合底色变更（ADR 0005 第 1 条同步注记被取代）。
 10. **will-change 验收线调整**：总审「≤5」断言改为「不高于 a1ce4d5 基线水平（≤7）」——
     恢复后合成层回增（.k-hero-en / .k-hero-date / .k-media-tilt / .k-progress）是预期行为。
 
