@@ -210,6 +210,11 @@ function degradeToStatic(): void {
   enabled = false;
   gsap = null;
   st = null;
+  // 丝线 dash 残留清理：intro 隐藏初态若已写入（dash=长度）而补间未播，退化后丝线会不可见
+  document.querySelectorAll<SVGPathElement>(".silk-static path").forEach((p) => {
+    p.style.strokeDasharray = "";
+    p.style.strokeDashoffset = "";
+  });
   const html = document.documentElement;
   html.dataset.octMotion = "off";
   html.removeAttribute("data-oct-pending");
@@ -349,11 +354,19 @@ function scheduleIntro(root: HTMLElement, parts: IntroParts): void {
       root.querySelectorAll<HTMLElement>(".k-hero-title .line").forEach((line) => {
         heroChars.push(...splitChars(line));
       });
+      // 丝线 draw-in（维护者裁定：茧下丝线要有动画）：intro 时自「茧」底画出——
+      // 隐藏初态 dash=长度，时间线内 offset→0；no-JS/reduced-motion 路径不经过此处，
+      // 丝线保持静态完整（CSS 摆动同样被 data-oct-motion 门控）。
+      const silkPaths = [...root.querySelectorAll<SVGPathElement>(".silk-static path")];
+      silkPaths.forEach((p) => {
+        const len = p.getTotalLength();
+        g.set(p, { strokeDasharray: len, strokeDashoffset: len });
+      });
       const ghostA = heroEn
         ? Number.parseFloat(getComputedStyle(root).getPropertyValue("--ghost-a")) || 0.05
         : 0.05;
 
-      // Intro 隐藏初态（总时长 ≤1.4s：0.95+0.4=1.35s）
+      // Intro 隐藏初态（总时长 ≈1.42s：hint 0.95+0.4；丝线 draw-in 0.5+0.12+0.8 收尾）
       if (heroEn) g.set(heroEn, { autoAlpha: 0, y: 40, filter: "blur(12px)", letterSpacing: "0.18em" });
       if (rule) g.set(rule, { scaleX: 0 });
       g.set(heroChars, { yPercent: 110, rotate: 2 });
@@ -369,6 +382,7 @@ function scheduleIntro(root: HTMLElement, parts: IntroParts): void {
         )
         .to(rule, { scaleX: 1, duration: 0.5, ease: "power3.inOut" }, 0.15)
         .to(heroChars, { yPercent: 0, rotate: 0, duration: 0.6, stagger: 0.045 }, 0.3)
+        .to(silkPaths, { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut", stagger: 0.12 }, 0.5)
         .to(dateBig, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.55)
         .to(metaItems, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.06 }, 0.65)
         .to(hint, { autoAlpha: 1, duration: 0.4 }, 0.95);

@@ -1074,10 +1074,17 @@ test.describe("显示模式切换（View Transition 径向 + 兜底）", () => {
     const radii = withClip
       .map((s) => circleRadiusPercent(s.clipPath, refPx))
       .filter((r): r is number => r !== null);
+    // 动画收尾帧的伪元素树拆除瞬间 clipPath 可能读为 none（帧数采样在低帧率下跨过 450ms
+    // 动画寿命）——非 circle 帧仅允许收尾边界 1 帧；缺陷态（ready 即摘属性）整段无 circle、
+    // radii 趋零，本判据仍有牙
+    expect(
+      withClip.length - radii.length,
+      `clipPath 应全程为 circle(...) 形态（非 circle 帧仅允许收尾边界 1 帧，实测 ${withClip.length - radii.length} 帧）`,
+    ).toBeLessThanOrEqual(1);
     expect(
       radii.length,
-      `clipPath 应全程为 circle(...) 形态（${withClip.length - radii.length} 帧非 circle）`,
-    ).toBe(withClip.length);
+      `circle 帧应覆盖动画主段（采样 ${obs.samples.length} 帧，vt-clip 帧 ${withClip.length}，circle 帧 ${radii.length}）`,
+    ).toBeGreaterThanOrEqual(5);
     expect(radii[0]!, `起始帧半径应接近 0（实测 ${radii[0]!.toFixed(1)}%）`).toBeLessThanOrEqual(25);
     let grows = false;
     for (let i = 1; i < radii.length; i++) {
