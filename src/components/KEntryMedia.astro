@@ -8,7 +8,7 @@
 // T13（UI 票 #30）丝纹：构建期由条目稳定 ID（seedId）经 src/lib/silk.ts 派生确定性 SVG 曲线，
 // 注入版画让每条版画携带独有信息（T9 的替代物）；客户端重渲染由 timeline-view 用同一函数
 // 注入同构标记。纯装饰 aria-hidden 语义不变（T9 语义重订），零运行时开销。
-import { silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
+import { SILK_VIEWBOX, silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
 
 interface Props {
   /** 色块时间（HH:mm）。 */
@@ -27,7 +27,7 @@ const sid = silkSidLabel(seedId);
       <i></i>
       <span class="tm">{clock}</span>
     </span>
-    <svg class="silk-texture" viewBox="0 0 264 198" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <svg class="silk-texture" viewBox={SILK_VIEWBOX} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
       {paths.map((p) => (
         <path class={p.cls} d={p.d} stroke-width={p.width} opacity={p.opacity} />
       ))}

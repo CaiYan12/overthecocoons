@@ -11,6 +11,8 @@
  * （timeline-view）共用同一实现，保证静态层与客户端渲染的丝纹逐字节同构。
  */
 
+import { HEX64 } from "../domain/contract.ts";
+
 /** 单条丝纹曲线的可渲染参数（属性名与 SVG path 属性一一对应）。 */
 export interface SilkPath {
   /** path class：`"s"`（accent 红）或 `"s s2"`（灰衬）。 */
@@ -23,8 +25,8 @@ export interface SilkPath {
   opacity: string;
 }
 
-/** 稳定 ID 形态校验（与契约一致：64 位小写十六进制）。 */
-const STABLE_ID_RE = /^[0-9a-f]{64}$/;
+/** viewBox 属性字面量（时间线/详情两个注入点共用，与 VIEW_W/VIEW_H 逐字一致）。 */
+export const SILK_VIEWBOX = "0 0 264 198";
 
 /** viewBox 尺寸（与注入处 `<svg viewBox>` 逐字一致）。 */
 const VIEW_W = 264;
@@ -91,7 +93,7 @@ const BANDS: readonly SilkBand[] = [
  * @throws Error 当 id 不是 64hex 时（契约外输入显式失败）。
  */
 export function silkTexturePaths(id: string): SilkPath[] {
-  if (!STABLE_ID_RE.test(id)) {
+  if (!HEX64.test(id)) {
     throw new Error(`丝纹种子必须是 64 位十六进制稳定 ID：${JSON.stringify(id.slice(0, 12))}…`);
   }
   // 双种子混杂：正序 FNV + 逆序 FNV 拼接，让任意位差异充分扩散到整个序列
@@ -137,7 +139,7 @@ function clampY(value: number): number {
 
 /** 版画左下角 ID 前缀标注（原型 `.sid`）：取稳定 ID 前 6 位 + 省略号。 */
 export function silkSidLabel(id: string): string {
-  if (!STABLE_ID_RE.test(id)) {
+  if (!HEX64.test(id)) {
     throw new Error(`丝纹标注必须是 64 位十六进制稳定 ID：${JSON.stringify(id.slice(0, 12))}…`);
   }
   return `#${id.slice(0, 6)}…`;
