@@ -37,7 +37,7 @@ export const TOPIC_SLUGS: Record<string, string> = {
   哲学: "philosophy",
 };
 
-/** 主题 → 数据版画竖排英文词（与原型 EN_LABEL 一致）。 */
+/** 主题 → 英文标签：菜单数据区 ghost 大字（.k-menu-data .ghost，客户端切主题同步更新）与 KPageHead 副行英文词共用。 */
 export const EN_LABEL: Record<string, string> = {
   全部: "INDEX",
   新闻: "NEWS",

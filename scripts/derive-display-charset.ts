@@ -14,8 +14,10 @@
  *     --text-file=scripts/display-charset.txt --flavor=woff2 ^
  *     --output-file=public/fonts/SourceHanSerifSC-Heavy-Subset.woff2 ^
  *     --layout-features='*' --name-IDs='*' --recalc-bounds
- *   （官方原件自 adobe-fonts/source-han-serif GitHub releases 下载；
- *     子集后须用 fontTools 校验 cmap 覆盖 display-charset.json 全部字符后再提交）
+ *   python scripts/verify-display-font-cmap.py
+ *   （官方原件自 adobe-fonts/source-han-serif GitHub releases 下载；第 3 步为
+ *     scripts/verify-display-font-cmap.py——用 fontTools 校验 woff2 cmap 覆盖
+ *     display-charset.json 全部字符，通过后方可提交）
  *
  * 本脚本只被手动运行：构建、CI 与页面运行期均不依赖它，也不依赖任何字体工具。
  */
@@ -50,9 +52,6 @@ const ANCHORS: Anchor[] = [
   { slot: "长文页 h1（Longform heading prop）", file: "src/pages", re: /heading="([^"]+)"/g },
   { slot: "来源页 h1（.k-doc h1）", file: "src/pages/sources.astro", re: /<h1>([^<]+)<\/h1>/g },
 ];
-
-/** timeline.ts 中的固定大字文案常量块锚点（TOPICS / EN_LABEL 值 / 「公共时间线」）。 */
-const TIMELINE = join(ROOT, "src/lib/timeline.ts");
 
 function read(rel: string): string {
   return readFileSync(join(ROOT, rel), "utf-8");
@@ -120,6 +119,7 @@ function validatePunctuation(): void {
     ["（", ["src/components/KMenu.astro"]],
     ["）", ["src/components/KMenu.astro"]],
     [":", ["src/components/TimelinePage.astro"]],
+    ["-", ["src/components/KHero.astro"]],
   ];
   const problems: string[] = [];
   for (const [ch, files] of required) {
@@ -144,7 +144,9 @@ function main(): void {
     charCount: charset.length,
     charset,
     derivedFrom: displayTextSources().map((s) => s.slot),
-    regenerate: `1) node scripts/derive-display-charset.ts  2) ${regenSubset}  3) fontTools 校验 woff2 cmap 覆盖本清单全部字符`,
+    regenerate:
+      "1) node scripts/derive-display-charset.ts  2) " + regenSubset +
+      "  3) python scripts/verify-display-font-cmap.py",
   };
 
   mkdirSync(join(ROOT, "public/fonts"), { recursive: true });

@@ -38,7 +38,7 @@ const TICKET_FACT_TEXTS: string[] = [
   ...Object.values(EN_LABEL), // 菜单 ghost 大字
   "0123456789", // 日期数字
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ", // 基础 Latin
-  "·：（）:", // 实际用到标点（— 仅在 <title>/注释，不进展示槽位）
+  "·：（）:-", // 实际用到标点（— 仅在 <title>/注释，不进展示槽位；- 为 KHero 幽灵日期空快照占位「--」）
   " ", // 日组头大字「OCTOBER 07」空格
 ];
 

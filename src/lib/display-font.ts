@@ -11,8 +11,8 @@
  * - 日组头大字（.k-day-big）与 Hero Latin 日期：英文月份名 + 日期数字
  * - 菜单 ghost 大字（.k-menu-data .ghost）：EN_LABEL 全部英文标签
  * - 数字 0-9 与大写 A-Z 全组（月份名/EN_LABEL/序号/页码的覆盖基座）
- * - 标点取站点固定可见文案中实际出现者（·：：（）与半角冒号；— 仅出现在 <title> 与
- *   注释，不在展示字体槽位，不进字集）
+ * - 标点取站点固定可见文案中实际出现者（·：：（）、半角冒号与半角连字符——连字符来自
+ *   KHero 幽灵日期空快照占位「--」；— 仅出现在 <title> 与注释，不在展示字体槽位，不进字集）
  *
  * 本模块是字集唯一事实源：scripts/derive-display-charset.ts 锚定组件源码提取实际文案
  * 做交叉校验并落盘 scripts/display-charset.txt 与 public/fonts/display-charset.json；
@@ -54,9 +54,10 @@ const DIGITS = "0123456789".split("");
 /**
  * 标点：站点固定可见文案中实际出现者（KHero note「首源：… · …」、k-day-sub 分隔符
  * 「 · 」与「（演示数据）」、mode-btn「显示：浅色」、pageHeadInfo sub「 · 」、
- * 日组批次行「hh:mm」的半角冒号）。候选须由源码实际存在背书（测试断言）。
+ * 日组批次行「hh:mm」的半角冒号、KHero 幽灵日期空快照占位「--」的半角连字符）。
+ * 候选须由源码实际存在背书（测试断言）。
  */
-const PUNCTUATION = ["·", "：", "（", "）", ":"] as const;
+const PUNCTUATION = ["·", "：", "（", "）", ":", "-"] as const;
 
 /** 一条字集来源：槽位标识（含票面依据）+ 该槽位固定文案。 */
 export interface DisplayTextSource {

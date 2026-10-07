@@ -1,9 +1,10 @@
 {
   "family": "Source Han Serif SC Heavy Subset",
   "file": "SourceHanSerifSC-Heavy-Subset.woff2",
-  "charCount": 81,
+  "charCount": 82,
   "charset": [
     " ",
+    "-",
     "0",
     "1",
     "2",
@@ -96,5 +97,5 @@
     "数字与大写 Latin 基座",
     "固定文案实际标点"
   ],
-  "regenerate": "1) node scripts/derive-display-charset.ts  2) python -m fontTools.subset <SourceHanSerifSC-Heavy.otf 官方原件> --text-file=scripts/display-charset.txt --flavor=woff2 --output-file=public/fonts/SourceHanSerifSC-Heavy-Subset.woff2 --layout-features='*' --name-IDs='*' --recalc-bounds  3) fontTools 校验 woff2 cmap 覆盖本清单全部字符"
+  "regenerate": "1) node scripts/derive-display-charset.ts  2) python -m fontTools.subset <SourceHanSerifSC-Heavy.otf 官方原件> --text-file=scripts/display-charset.txt --flavor=woff2 --output-file=public/fonts/SourceHanSerifSC-Heavy-Subset.woff2 --layout-features='*' --name-IDs='*' --recalc-bounds  3) python scripts/verify-display-font-cmap.py"
 }
