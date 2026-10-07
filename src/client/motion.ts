@@ -455,7 +455,8 @@ export function onListRendered(deferred: boolean): void {
         if (sum) tl.to(sum, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power2.out" }, 0.08);
         if (meta) tl.to(meta, { autoAlpha: 1, letterSpacing: ".04em", duration: 0.3, ease: "power2.out" }, 0.14);
         if (media) {
-          tl.to(media, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "power4.out" }, 0.1);
+          // 四边终值均用 %：左图的 left 100% 不能补间到无单位 0，否则中间值无效、终态才显现。
+          tl.to(media, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.9, ease: "power4.out" }, 0.1);
           if (art) tl.to(art, { scale: 1, duration: 0.9, ease: "power4.out" }, 0.1);
         }
         const gi = Number(entry.dataset.gi ?? 0);

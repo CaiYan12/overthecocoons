@@ -552,6 +552,57 @@ test.describe("intro 每页重播（T14：T8 首次到达判定撤销，ADR 0006
 });
 
 test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", () => {
+  for (const [layout, edge] of [["layout-a", 1], ["layout-b", 3]] as const) {
+    test(`${layout} 版画裁切连续揭示：丝纹随遮罩逐帧进入，不能只在终态出现`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(BASE);
+      await waitClientReady(page);
+      await waitMotionOn(page);
+
+      const distance = await page.evaluate((layout) => {
+        const entry = [...document.querySelectorAll<HTMLElement>(`.k-entry.${layout}`)]
+          .find((el) => el.getBoundingClientRect().top > innerHeight);
+        const media = entry?.querySelector<HTMLElement>(".k-media");
+        if (!entry || !media?.querySelector("svg.silk-texture")) {
+          throw new Error("找不到尚未揭示的丝纹版画");
+        }
+        const probe = { clips: [] as string[], done: false };
+        (window as unknown as { __octClipProbe: typeof probe }).__octClipProbe = probe;
+        const started = performance.now();
+        const tick = () => {
+          const clip = getComputedStyle(media).clipPath;
+          probe.clips.push(clip);
+          const nums = (clip.match(/-?\d*\.?\d+/g) ?? []).map(Number);
+          // 浏览器会把四边全零序列化成 inset(0%)，不能只接受四个数的终态。
+          if ((nums.length > 0 && nums.every((n) => n === 0)) || performance.now() - started > 6000) {
+            probe.done = true;
+          } else {
+            requestAnimationFrame(tick);
+          }
+        };
+        tick();
+        return entry.getBoundingClientRect().top - innerHeight * 0.55;
+      }, layout);
+
+      await page.mouse.move(200, 300);
+      await wheelBy(page, distance);
+      await page.waitForFunction(
+        () => (window as unknown as { __octClipProbe: { done: boolean } }).__octClipProbe.done,
+        undefined,
+        { timeout: 8000 },
+      );
+      const clips = await page.evaluate(
+        () => (window as unknown as { __octClipProbe: { clips: string[] } }).__octClipProbe.clips,
+      );
+      const insets = clips.map((clip) => clipNumbers(clip)[edge]!);
+      expect(insets[0], "滚动前完全遮蔽").toBe(100);
+      expect(insets.at(-1), "滚动入场后完全揭开").toBe(0);
+      const intermediate = insets.filter((n) => n > 0.01 && n < 99);
+      expect(new Set(intermediate).size, "必须有不同的部分揭示帧，避免初态→终态跳变").toBeGreaterThan(1);
+      expect(insets.every((n, i) => i === 0 || n <= insets[i - 1]!), "遮罩连续收拢，不倒退").toBe(true);
+    });
+  }
+
   test("隐藏初态（T14 全量回补）：标题拆字压遮罩、摘要 clip 遮蔽、meta 透明+字距、版画按版面交替 clip、art 初态放大；紧凑行仅标题拆字+meta", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(BASE);
@@ -728,7 +779,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
         const entry = (window as unknown as { __octRevealTarget?: HTMLElement }).__octRevealTarget;
         const clip = entry?.querySelector<HTMLElement>(".k-media")?.style.clipPath ?? "";
         const nums = (clip.match(/-?\d*\.?\d+/g) ?? []).map(Number);
-        if (!(nums.length === 4 && nums.every((n) => n === 0))) return false;
+        if (!(nums.length > 0 && nums.every((n) => n === 0))) return false;
         const art = entry?.querySelector<HTMLElement>(".k-media-art");
         if (!art) return true;
         const m = new DOMMatrixReadOnly(getComputedStyle(art).transform);
