@@ -27,6 +27,7 @@ import {
   entryLayout,
   formatClock,
   formatDateTime,
+  latestDayStats,
   monthEn,
   pageHeadInfo,
   paginate,
@@ -34,7 +35,7 @@ import {
   topicPagePath,
 } from "../lib/timeline.ts";
 import { isExternalUrl } from "../lib/links.ts";
-import { silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
+import { SILK_VIEWBOX, silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
 import { animateTopicSwitch, moveIndicator, onListRendered } from "./motion.ts";
 import { resolveRestore } from "./position.ts";
 import { announce } from "./status.ts";
@@ -81,7 +82,7 @@ function mediaHtml(entry: PublicEntry): string {
   const texture = silkTexturePaths(entry.id)
     .map((p) => `<path class="${p.cls}" d="${p.d}" stroke-width="${p.width}" opacity="${p.opacity}"></path>`)
     .join("");
-  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span><svg class="silk-texture" viewBox="0 0 264 198" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${texture}</svg><span class="sid">${silkSidLabel(entry.id)}</span></div></div>`;
+  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span><svg class="silk-texture" viewBox="${SILK_VIEWBOX}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${texture}</svg><span class="sid">${silkSidLabel(entry.id)}</span></div></div>`;
 }
 
 function metaHtml(entry: PublicEntry): string {
@@ -201,10 +202,8 @@ function syncTopicUi(nextTopic: string, total: number): void {
   if (menuTopic) menuTopic.textContent = EN_LABEL[nextTopic] ?? "INDEX";
   const menuCount = document.querySelector<HTMLElement>("[data-menu-count]");
   if (menuCount) {
-    // 与 latestDayStats（KSite 服务端初值）同口径：按北京时间日界计「今日」
-    const today = sorted[0] ? beijingDate(sorted[0].firstSeenAt) : "";
-    const count = sorted.filter((entry) => beijingDate(entry.firstSeenAt) === today).length;
-    menuCount.textContent = `今日 ${count} 条 · 当前主题 ${nextTopic}`;
+    // 今日条数与 KSite 服务端初值共用 latestDayStats（北京时间日界同一函数），消除双写漂移
+    menuCount.textContent = `今日 ${latestDayStats(sorted).count} 条 · 当前主题 ${nextTopic}`;
   }
 }
 

@@ -596,6 +596,15 @@ test("跨页过渡（T11，#28）：@view-transition 导航规则与 header/grai
   assert.ok(!css.includes("k-hint"), "scroll hint 循环 @keyframes k-hint 应零残留");
 });
 
+test("will-change 验收锁定（T11 减动效验收线，总审）：构建 CSS 中 will-change 声明数 ≤5 不回涨", () => {
+  const css = cssFiles.map(readDist).join("\n");
+  const count = css.match(/will-change\s*:/g)?.length ?? 0;
+  assert.ok(
+    count <= 5,
+    `构建 CSS 中 will-change 声明应 ≤5（T11「显著下降」验收线；当前 3 处：.k-indicator、.k-hero-title .ch、.k-media），实测 ${count} 处`,
+  );
+});
+
 test("默认主题初值 auto（T4，UI 票 #21）：所有页面 html 标签为 data-theme=auto，auto 深色映射随 prefers-color-scheme 入构建 CSS", () => {
   for (const rel of htmlFiles) {
     const html = readDist(rel);
