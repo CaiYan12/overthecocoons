@@ -513,6 +513,20 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
 }
 
 /* 长文页左栏目录（≥1200px 常驻；平板隐藏；手机显示在正文上方） */
+.k-docnav { --docnav-pad: 6px; position: sticky; top: calc(100px - var(--docnav-pad));
+  display: flex; flex-direction: column; gap: 24px;
+  max-height: calc(100dvh - 100px + var(--docnav-pad) - 24px);
+  padding: var(--docnav-pad); margin-inline: calc(-1 * var(--docnav-pad)); overflow-y: auto;
+  scroll-padding-block: var(--docnav-pad) }
+.k-docnav .k-nav, .k-docnav .k-toccol { position: static }
+.k-docnav .k-nav { flex-shrink: 0 }
+/* 留一行可操作空间；6px 内边距容纳 focus-visible 描边，负外边距保持两组竖线对齐。 */
+.k-docnav .k-toccol { flex: 0 1 auto; min-height: 44px; overflow-y: auto;
+  padding: var(--docnav-pad); margin-inline: calc(-1 * var(--docnav-pad)); scroll-padding-block: var(--docnav-pad) }
+.k-docnav a { scroll-margin-block: var(--docnav-pad) }
+.k-docnav[data-scroll-all] .k-toccol { flex-shrink: 0; overflow: visible }
+/* 长文页脚在同一三栏容器末尾跨栏；侧栏的 sticky 边界因此覆盖最后章节与页脚。 */
+.k-cols > footer { grid-column: 1 / -1 }
 .k-toccol { position: sticky; top: 100px; padding-top: 8px }
 .k-toc ol { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 1px solid var(--rule); display: flex; flex-direction: column; gap: 2px }
 .k-toc a { display: block; font-size: 14.5px; padding: 7px 0; color: var(--ink); text-decoration: none }
@@ -561,8 +575,11 @@ button.ext { background: none; border: 0; padding: 0; font: inherit; color: inhe
 
 /* 长文页目录响应式：平板隐藏，手机回到正文上方（grid order） */
 @media (max-width: 1199px) {
+  .k-docnav { display: none }
   .k-toccol { display: none }
 }
 @media (max-width: 767px) {
+  .k-docnav { display: block; position: static; order: -1; max-height: none; overflow: visible; padding: 84px 0 0; margin: 0 }
+  .k-docnav .k-toccol { min-height: 0; overflow: visible; padding: 8px 0 0; margin: 0 0 8px }
   .k-toccol { display: block; position: static; order: -1; margin-bottom: 8px }
 }

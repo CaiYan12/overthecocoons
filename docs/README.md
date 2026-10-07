@@ -16,6 +16,7 @@
 - [产品基线原样归档](product-alignment.md)
 - [UI对齐](ui-alignment.md)
 - [UI设计与动效](ui-design.md)
+- [长文页导航优化方案与本地验收](ui-navigation-alignment.md)
 - [设计样本](design/brief-preview.html)
 
 ## 状态报告

@@ -8,6 +8,7 @@
  *   motion 另有 html[data-oct-motion="on"|"off"] 与 html[data-oct-intro="done"] 测试挂钩。
  */
 import { initCopyLink } from "./copy.ts";
+import { initDocNavigation } from "./doc-navigation.ts";
 import { initMenu } from "./menu.ts";
 import { initMotion } from "./motion.ts";
 import { initTheme } from "./theme.ts";
@@ -19,7 +20,7 @@ function boot(): void {
   if ("scrollRestoration" in history) {
     history.scrollRestoration = "manual";
   }
-  for (const init of [initMotion, initTheme, initMenu, initTopButton, initCopyLink, initTimeline]) {
+  for (const init of [initMotion, initDocNavigation, initTheme, initMenu, initTopButton, initCopyLink, initTimeline]) {
     try {
       init();
     } catch {

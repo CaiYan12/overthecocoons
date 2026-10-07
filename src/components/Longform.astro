@@ -1,7 +1,8 @@
 ---
-// 长文页（关于/原则/隐私）：左栏本页目录（简版、锚点可跳、无 JS 可读）、正文、右栏内容态 HUD。
-// 当前章节高亮属 Ticket 06；目录结构与锚点 id 在静态层完整可用。
+// 长文页（关于/原则/隐私）：左栏全站导航 + 本页目录、正文、右栏内容态 HUD。
+// 导航分组与短屏策略见 docs/ui-navigation-alignment.md；目录为原生章节锚点。
 import KSite from "./KSite.astro";
+import KNav from "./KNav.astro";
 import KHud from "./KHud.astro";
 import { loadSnapshot } from "../lib/snapshot.ts";
 
@@ -28,18 +29,22 @@ const snapshot = loadSnapshot();
   isFixture={false}
   activeTopic="全部"
   activeNav={activeNav}
+  footerInColumns
 >
   <Fragment slot="col-start">
-    <aside class="k-toccol" aria-label="本页目录">
-      <p class="k-navhead">本页目录 · TOC</p>
-      <nav class="k-toc" data-toc>
-        <ol>
-          {toc.map((item) => (
-            <li><a href={`#${item.id}`} data-cursor-soft>{item.label}</a></li>
-          ))}
-        </ol>
-      </nav>
-    </aside>
+    <div class="k-docnav" data-docnav>
+      <KNav active={activeNav} />
+      <aside class="k-toccol" aria-label="本页目录">
+        <p class="k-navhead">本页目录 · TOC</p>
+        <nav class="k-toc" data-toc>
+          <ol>
+            {toc.map((item) => (
+              <li><a href={`#${item.id}`} data-cursor-soft tabindex="0">{item.label}</a></li>
+            ))}
+          </ol>
+        </nav>
+      </aside>
+    </div>
   </Fragment>
 
   <article class="k-doc">

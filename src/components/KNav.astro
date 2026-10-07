@@ -27,6 +27,7 @@ const links = [
         <a
           data-nav={index}
           data-cursor-soft
+          tabindex="0"
           href={link.href}
           aria-current={active === link.key ? "page" : undefined}
         >
@@ -36,6 +37,6 @@ const links = [
     }
   </nav>
   <p class="k-navfoot">
-    <a href="https://caiyan12.github.io/" rel="noopener" data-cursor-soft>↩ 返回主站</a>
+    <a href="https://caiyan12.github.io/" rel="noopener" data-cursor-soft tabindex="0">↩ 返回主站</a>
   </p>
 </aside>

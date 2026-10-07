@@ -23,8 +23,10 @@ interface Props {
    * 详情/说明页不传（用户先看到内容，SOURCE/STATUS/PROJECT 移到正文之后）。
    */
   hudMobileFirst?: boolean;
+  /** 长文页把页脚纳入侧栏的 sticky 边界，避免跳到末章后导航被推出窗口。 */
+  footerInColumns?: boolean;
 }
-const { title, description, isFixture, activeTopic = "全部", activeNav, hudMobileFirst } = Astro.props;
+const { title, description, isFixture, activeTopic = "全部", activeNav, hudMobileFirst, footerInColumns = false } = Astro.props;
 
 // 构建期读取快照，仅为 header/菜单/页脚提供时间基准、当日条数与主题 tab 降权视图；页面主体数据由各页自行渲染。
 const snapshot = loadSnapshot();
@@ -45,8 +47,9 @@ const tabs = topicTabs(snapshot.entries);
         <slot />
       </main>
       <slot name="col-end" />
+      {footerInColumns && <SiteFooter isFixture={isFixture} active={activeNav} />}
     </div>
-    <SiteFooter isFixture={isFixture} active={activeNav} />
+    {!footerInColumns && <SiteFooter isFixture={isFixture} active={activeNav} />}
     <!-- 全局状态播报区（Ticket 05）：主题/位置/复制等反馈；fixed 定位，不随 DOM 位置变化 -->
     <p class="live-status" role="status" aria-live="polite" data-status></p>
     <button class="k-top" type="button" data-ktop data-cursor-soft aria-label="返回顶部">
