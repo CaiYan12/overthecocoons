@@ -65,7 +65,13 @@ test("组件源码锚定再提取：站名/Hero/菜单大字逐字符 ⊆ 字集
   assert.equal(brand, "跳出茧房", "KHeader 站名锚点应命中");
   const heroEn = hero.match(/data-heroen>([^<]+)</)?.[1];
   assert.equal(heroEn, "OVER THE COCOONS", "KHero ghost 英文锚点应命中");
-  const lines = [...hero.matchAll(/<span class="line(?: l2)?">([^<]+)<\/span>/g)].map((m) => m[1]!);
+  // T13（UI 票 #30）：l2 行「茧」被丝线挂点（.silk-anchor）包裹、挂点内含 aria-hidden SVG——
+  // 行文本＝挂点内「茧」+ SVG 之后的「房」，拼回后仍须与票面行文案逐字一致
+  const linePlain = hero.match(/<span class="line">([^<]+)<\/span>/)?.[1] ?? "";
+  const anchorChar = hero.match(/class="silk-anchor">([^<]+)</)?.[1] ?? "";
+  const line2Tail = hero.match(/<\/svg><\/span>([^<]+)<\/span>\s*<\/h1>/)?.[1] ?? "";
+  const lines = [linePlain, anchorChar + line2Tail];
+  assert.equal(anchorChar, "茧", "丝线挂点应包住「茧」字");
   assert.deepEqual(lines, [...HERO_TITLE_LINES], "KHero 标题两行锚点应命中");
   const labels = [...menu.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]!);
   assert.ok(labels.length >= 5, "KMenu 菜单项锚点应命中");

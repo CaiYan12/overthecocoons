@@ -1,17 +1,24 @@
 ---
-// 数据版画占位图（无图条目的本站占位）：网格底纹 + 色块时间。
+// 数据版画占位图（无图条目的本站占位）：网格底纹 + 色块时间 + 丝纹（T13）。
 // 结构与原型 .k-media/.k-media-art 两层一致（T11/UI 票 #28 移除 tilt 动效后，
 // 原 .k-media-tilt 中间层已删；版画 clip 揭示仍作用于 .k-media）。
 // T9 版面减负（UI 票 #26）：移除出血大序号与竖排英文主题词——线上真实数据主题恒为单一值，
 // 逐条重复同词零信息量；序号是快照内可数位置而非编辑编排（ADR 0003），不再以大字呈现，
 // 阅读位计数仍由 HUD NOW READING n/N 承担。色块时间与网格底纹保留。
-// 语义重订：版画为纯装饰占位，整块 aria-hidden（不再 role="img"+aria-label 逐条播报）——
-// 唯一文本（色块时间）在条目行时间/日组头批次行/详情 meta 中均有可读等价文本，不臆造图片语义。
+// T13（UI 票 #30）丝纹：构建期由条目稳定 ID（seedId）经 src/lib/silk.ts 派生确定性 SVG 曲线，
+// 注入版画让每条版画携带独有信息（T9 的替代物）；客户端重渲染由 timeline-view 用同一函数
+// 注入同构标记。纯装饰 aria-hidden 语义不变（T9 语义重订），零运行时开销。
+import { silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
+
 interface Props {
   /** 色块时间（HH:mm）。 */
   clock: string;
+  /** 丝纹种子＝条目稳定 ID（64hex）。 */
+  seedId: string;
 }
-const { clock } = Astro.props;
+const { clock, seedId } = Astro.props;
+const paths = silkTexturePaths(seedId);
+const sid = silkSidLabel(seedId);
 ---
 
 <div class="k-media" data-cursor="OPEN">
@@ -20,5 +27,11 @@ const { clock } = Astro.props;
       <i></i>
       <span class="tm">{clock}</span>
     </span>
+    <svg class="silk-texture" viewBox="0 0 264 198" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      {paths.map((p) => (
+        <path class={p.cls} d={p.d} stroke-width={p.width} opacity={p.opacity} />
+      ))}
+    </svg>
+    <span class="sid">{sid}</span>
   </div>
 </div>

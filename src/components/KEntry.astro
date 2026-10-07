@@ -59,14 +59,14 @@ const detailHref = siteUrl(itemPath(entry.id));
                   {entry.summary && <p class="k-summary">{entry.summary}</p>}
                   <KEntryMeta topic={entry.topic} collected={collected} url={entry.url} />
                 </div>
-                <KEntryMedia clock={clock} />
+                <KEntryMedia clock={clock} seedId={entry.id} />
               </Fragment>
             )
           }
           {
             layout === "layout-b" && (
               <Fragment>
-                <KEntryMedia clock={clock} />
+                <KEntryMedia clock={clock} seedId={entry.id} />
                 <div class="k-text">
                   <h3 class="k-headline">
                     <a href={detailHref} data-detail data-cursor="VIEW">{entry.title}</a>

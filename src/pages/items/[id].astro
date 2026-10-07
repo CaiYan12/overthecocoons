@@ -8,6 +8,7 @@ import KEntryMedia from "../../components/KEntryMedia.astro";
 import { loadSnapshot } from "../../lib/snapshot.ts";
 import type { PublicEntry } from "../../domain/contract.ts";
 import { formatClock, formatDateTime, topicPagePath } from "../../lib/timeline.ts";
+import { isExternalUrl } from "../../lib/links.ts";
 import { siteUrl } from "../../lib/paths.ts";
 
 export function getStaticPaths() {
@@ -30,6 +31,8 @@ const summaryText = entry.summary || "来源未提供摘要，本站不编造。
 const description = entry.summary
   ? entry.summary.slice(0, 120)
   : "本条目详情：来源、收录时间与主题信息。";
+// T13（UI 票 #30）：站外链接确定性判定（同 KEntryMeta 口径）
+const isExt = entry.url !== "" && isExternalUrl(entry.url, Astro.site?.origin ?? "");
 ---
 
 <KSite
@@ -56,8 +59,8 @@ const description = entry.summary
       <a href={siteUrl(topicPagePath(entry.topic, 1))} data-cursor-soft>← 返回时间线</a>
     </p>
     <h1 class="k-headline">{entry.title}</h1>
-    {/* T7：详情页单一条目无快照内位置语境，不渲染序号；T9：竖排主题词移除，版画为纯装饰占位 */}
-    <KEntryMedia clock={clock} />
+    {/* T7：详情页单一条目无快照内位置语境，不渲染序号；T9：竖排主题词移除；T13：版画注入稳定 ID 丝纹 */}
+    <KEntryMedia clock={clock} seedId={entry.id} />
     <p class={`k-summary${entry.summary ? "" : " k-summary-empty"}`}>{summaryText}</p>
     <p class="k-meta">
       {/* UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂 */}
@@ -71,7 +74,7 @@ const description = entry.summary
     {
       entry.url && (
         <p class="k-detail-ext">
-          <a class="ext" href={entry.url} target="_blank" rel="noopener" data-cursor="LINK">
+          <a class={isExt ? "ext" : undefined} href={entry.url} target="_blank" rel="noopener" data-cursor="LINK">
             查看百度搜索结果 ↗
           </a>
           {/* 复制链接（Ticket 05）：静态层 hidden，脚本解除 hidden 后可用；无 JS 不出现死按钮 */}

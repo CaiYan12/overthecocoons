@@ -8,7 +8,8 @@
  * 结构对齐原型：
  * - kineticCtx：Hero Intro / Header Morph / 全局进度（进度条/圆环/百分比）/ 自定义光标，
  *   页面生命周期内一次性建立；
- * - listCtx：时间线列表动效（进度线 scaleY scrub、节点激活 toggleClass、版画 clip 揭示），
+ * - listCtx：时间线列表动效（节点激活 toggleClass、版画 clip 揭示；T13 起原进度线 scaleY scrub
+ *   随丝线 B 版 rail 常驻红线移除——rail 为静态结构），
  *   每次客户端重渲染整体 revert 重建（ScrollTrigger 无泄漏）；
  * - cleanups：事件监听器登记，运行时异常时统一回收并退化为无动效路径。
  *
@@ -123,12 +124,14 @@ function fontsReadyOrTimeout(): Promise<void> {
 }
 
 /**
- * 把元素文本拆为 span.kw > span.ch 遮罩字符（与原型 splitChars 一致，重复拆分幂等）。
+ * 把元素文本拆为 span.kw > span.ch 遮罩字符（与原型 splitChars 等价，重复拆分幂等）。
  * T5 a11y（#22，审查修复）：拆出的 .kw/.ch 标 aria-hidden——读屏不逐字、按命名点完整词朗读。
  * 命名点只保留在语义元素上：T11（#28）起列表标题不再拆字（链接保持纯文本，可访问名即内容）；
  * Hero 的 .line 是 generic 角色（span 容器上 aria-label 属规范禁止项，读屏会忽略），
  * 命名点在 h1[data-herotitle]，由调用方在拆字清空前设置。
- * 二次拆分守卫：text 为空或与现有 label 一致时跳过覆写——同元素再次拆分不得置空已有 label。
+ * T13（UI 票 #30）：拆分按子节点递归——元素子节点（丝线静态挂点 .silk-anchor 及其内
+ * aria-hidden SVG）保持结构原位，只拆其中的文本节点；纯文本行行为与原实现一致。
+ * 二次拆分守卫：已存在 .ch（或文本为空）时跳过——同元素再次拆分不得重复包裹或置空 label。
  */
 function splitChars(el: Element): HTMLElement[] {
   const text = el.textContent ?? "";
@@ -139,22 +142,31 @@ function splitChars(el: Element): HTMLElement[] {
   ) {
     el.setAttribute("aria-label", text);
   }
-  el.textContent = "";
-  const frag = document.createDocumentFragment();
+  if (el.querySelector(".ch")) return [];
   const chars: HTMLElement[] = [];
-  for (const ch of text) {
-    const kw = document.createElement("span");
-    kw.className = "kw";
-    kw.setAttribute("aria-hidden", "true");
-    const c = document.createElement("span");
-    c.className = "ch";
-    c.setAttribute("aria-hidden", "true");
-    c.textContent = ch;
-    kw.appendChild(c);
-    frag.appendChild(kw);
-    chars.push(c);
-  }
-  el.appendChild(frag);
+  const splitNode = (node: Node): void => {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      // 元素子节点（T13 .silk-anchor 及其内静态丝线 SVG）保持结构，递归拆其文本
+      for (const child of [...node.childNodes]) splitNode(child);
+      return;
+    }
+    if (node.nodeType !== Node.TEXT_NODE) return;
+    const frag = document.createDocumentFragment();
+    for (const ch of node.textContent ?? "") {
+      const kw = document.createElement("span");
+      kw.className = "kw";
+      kw.setAttribute("aria-hidden", "true");
+      const c = document.createElement("span");
+      c.className = "ch";
+      c.setAttribute("aria-hidden", "true");
+      c.textContent = ch;
+      kw.appendChild(c);
+      frag.appendChild(kw);
+      chars.push(c);
+    }
+    node.parentNode?.replaceChild(frag, node);
+  };
+  for (const child of [...el.childNodes]) splitNode(child);
   return chars;
 }
 
@@ -412,18 +424,11 @@ export function onListRendered(deferred: boolean): void {
   // 两段式主题切换：日期组头先行（delay .05），条目揭示 +120ms 跟进（原型 deferListMotion）
   const delay = deferred ? 0.12 : 0;
   try {
-    // context 对象在回调首行登记：回调中途抛错时 catch 仍能 revert 已写入的隐藏初态
+    // context 对象在回调首行登记：任一初始化抛错时 catch 仍能 revert 全部隐藏初态
     g.context((self) => {
       listCtx = self;
-      root.querySelectorAll<HTMLElement>(".k-day").forEach((day) => {
-        const prog = day.querySelector<HTMLElement>(".k-progress");
-        if (!prog) return;
-        g.to(prog, {
-          scaleY: 1,
-          ease: "none",
-          scrollTrigger: { trigger: day, start: "top 72%", end: "bottom 55%", scrub: 0.6 },
-        });
-      });
+      // T13（UI 票 #30）：原 .k-progress 进度线 scaleY scrub 已随丝线 B 版 rail（常驻红线，
+      // 与进度线同位叠合不可见，裁定为替代）移除；阅读进度反馈由 HUD READING PROGRESS 承担。
       root.querySelectorAll<HTMLElement>(".k-entry").forEach((entry) => {
         const meta = entry.querySelector<HTMLElement>(".k-meta");
         const media = entry.querySelector<HTMLElement>(".k-media");

@@ -23,7 +23,12 @@ const year = latestBeijingDate ? latestBeijingDate.slice(0, 4) : "";
     {/* T5（UI 票 #22）：行内间距不用全角空格 U+3000（读屏碎读「跳 出茧 房」），
          视觉间距由 CSS letter-spacing 呈现（见 kinetic.css .k-hero-title） */}
     <span class="line">跳出</span>
-    <span class="line l2">茧房</span>
+    {/* T13（UI 票 #30）丝线 B 版：「茧」字为静态丝线挂点（silk-anchor），SVG 自字底穿出、
+         无解开动画（aria-hidden 纯装饰；客户端拆字 intro 由 motion.splitChars 保留本挂点结构） */}
+    <span class="line l2"><span class="silk-anchor">茧<svg class="silk-static" aria-hidden="true" viewBox="0 0 110 180" focusable="false">
+        <path d="M58,2 C62,34 30,54 38,92 C46,128 24,146 20,178" />
+        <path d="M58,2 C56,26 74,40 66,64" opacity=".4" />
+      </svg></span>房</span>
   </h1>
   <div class="k-hero-date" aria-hidden="true" data-herodate>
     <span class="d" data-herodate-d>{day}</span>

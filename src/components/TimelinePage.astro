@@ -98,8 +98,11 @@ const description =
       ) : (
         groups.map((group) => (
           <section class="k-day" data-day={group.date}>
-            <div class="k-line" aria-hidden="true" />
-            <div class="k-progress" aria-hidden="true" />
+            {/* T13（UI 票 #30）丝线 B 版：rail 常驻红线（k-line 加 silk-rail 类覆盖为 2px accent）+
+                日组顶钉点；原 k-progress 进度线移除（与常驻红线同位叠合不可见，裁定为替代——
+                阅读进度反馈由 HUD READING PROGRESS 承担，见 kinetic.css T13 注） */}
+            <div class="k-line silk-rail" aria-hidden="true" />
+            <span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin" /></span>
             <header class="k-day-head">
               <h2 class="k-day-big">{monthEn(group.date.slice(5, 7))} {group.date.slice(8, 10)}</h2>
               {group.head.batch && (

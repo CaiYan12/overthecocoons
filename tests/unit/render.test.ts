@@ -61,7 +61,11 @@ test("首页为动态编辑场 v-kinetic 结构：Hero、紧凑 header、三栏�
   assert.ok(html.includes('class="k-header"'), "紧凑 header");
   assert.ok(html.includes("OVER THE COCOONS"), "Hero ghost 英文");
   assert.match(html, /<span class="line">跳出<\/span>/, "Hero 双行大字标题（无全角空格）");
-  assert.match(html, /<span class="line l2">茧房<\/span>/, "Hero 第二行大字");
+  assert.match(
+    html,
+    /<span class="line l2"><span class="silk-anchor">茧<svg class="silk-static" aria-hidden="true" viewBox="0 0 110 180"/,
+    "Hero 第二行大字，「茧」字带丝线静态挂点（T13）",
+  );
   assert.ok(html.includes('class="k-hero-rule"'), "尺规线");
   assert.ok(html.includes('class="k-hero-date"'), "Hero 幽灵日期");
   assert.ok(html.includes('class="k-hero-meta"'), "Hero 元信息列表");
@@ -821,4 +825,121 @@ test("展示字体接入（T12，#29）：--font-display token + font-display:sw
   // 非大字槽位不被波及：正文 h2 与批次行仍走既有 serif（条目标题等动态数据不进子集字集）
   assert.match(css, /\.k-doc h2\{[^}]*var\(--serif\)/, "长文 h2 保持既有 serif（不在大字槽位清单）");
   assert.match(css, /\.k-day-batch\{[^}]*var\(--serif\)/, "日组批次行保持既有 serif（不在大字槽位清单）");
+});
+
+test("丝线 B 版 rail 静态呈现（T13，#30）：常驻红线 + 日组钉点入产物，进度线零残留，Hero 丝线仅 Hero 页", () => {
+  const html = readDist("index.html");
+  assert.ok(html.includes('class="k-line silk-rail"'), "rail 元素带 silk-rail 类（B 版常驻红线）");
+  assert.ok(html.includes('class="silk-pin-wrap"'), "日组 rail 顶钉点");
+  assert.equal(
+    (html.match(/class="k-line silk-rail"/g) ?? []).length,
+    (html.match(/<section class="k-day"/g) ?? []).length,
+    "每个日组各一段 rail",
+  );
+  assert.equal(
+    (html.match(/class="silk-pin-wrap"/g) ?? []).length,
+    (html.match(/<section class="k-day"/g) ?? []).length,
+    "每个日组各一枚钉点",
+  );
+  // 替代裁定（ADR 0005）：k-progress 结构/CSS/JS 全产物零残留
+  const all = [...htmlFiles, ...cssFiles, ...jsFiles].map(readDist).join("\n");
+  assert.ok(!all.includes("k-progress"), "进度线 k-progress 零残留（B 版 rail 替代，阅读进度由 HUD 承担）");
+  // rail 静态红线样式：silk-rail 覆盖为 2px accent，无 transition/animation（B 版零动效依赖）
+  // （压缩器可能对调声明顺序，两种顺序均接受）
+  const css = cssFiles.map(readDist).join("\n");
+  assert.match(
+    css,
+    /\.k-day \.silk-rail\{[^}]*(width:2px[^}]*background:var\(--accent\)|background:var\(--accent\)[^}]*width:2px)/,
+    "rail 覆盖为 2px accent",
+  );
+  assert.ok(!/\.silk-rail\{[^}]*transition/.test(css), "silk-rail 不携带 transition（原型 A 版编排态不移植）");
+  // Hero 静态丝线仅首页（Hero 仅时间线第一页，票 #25）；主题/分页页 rail 从首个日组顶起
+  assert.ok(html.includes('class="silk-anchor"'), "「茧」字丝线挂点");
+  for (const rel of ["page/2/index.html", "topics/news/index.html"]) {
+    const noHero = readDist(rel);
+    assert.ok(!noHero.includes("silk-static"), `${rel} 无 Hero 页不渲染 Hero 丝线`);
+    assert.ok(noHero.includes('class="k-line silk-rail"'), `${rel} rail 常驻红线照常`);
+  }
+  // 客户端重渲染模板同构：JS bundle 内含 silk-rail/钉点/丝纹注入
+  const js = jsFiles.map(readDist).join("\n");
+  assert.ok(js.includes("silk-rail"), "客户端 dayGroups 模板带 silk-rail");
+  assert.ok(js.includes("silk-pin-wrap"), "客户端 dayGroups 模板带钉点");
+  assert.ok(js.includes("silk-texture"), "客户端版画模板注入丝纹（与构建期同一 src/lib/silk.ts）");
+});
+
+test("靛色站外信号（T13，#30）：token 两主题入 CSS，外链全染 ext、站内链接零染色（全产物逐锚点判定）", () => {
+  const css = cssFiles.map(readDist).join("\n").toLowerCase();
+  assert.ok(css.includes("--indigo:#2f5168"), "浅色靛 token");
+  assert.ok(css.includes("--indigo:#8db3c9"), "深色靛 token");
+  assert.match(css, /a\.ext\{color:var\(--indigo\)/, "外链规则用靛 token（全局 a.ext）");
+  assert.match(css, /\.k-hud \.k-link\.ext\{color:var\(--indigo\)/, "HUD 站外链接靛色覆盖（票面优先于原型，ADR 0005）");
+  // 全产物逐锚点：class 含 ext ⇔ href 为跨源绝对 http(s)（确定性规则 links.isExternalUrl 的产物级对照）
+  const SITE_ORIGIN = "https://caiyan12.github.io";
+  let externalCount = 0;
+  for (const rel of htmlFiles) {
+    for (const m of readDist(rel).matchAll(/<a\b([^>]*)>/g)) {
+      const tag = m[1] ?? "";
+      const href = tag.match(/href="([^"]*)"/)?.[1] ?? "";
+      const cls = tag.match(/class="([^"]*)"/)?.[1] ?? "";
+      const hasExt = /(?:^|\s)ext(?:\s|$)/.test(cls);
+      let isExternal = false;
+      if (/^https?:\/\//.test(href)) {
+        isExternal = new URL(href).origin !== SITE_ORIGIN;
+      }
+      if (isExternal) {
+        externalCount++;
+        assert.ok(hasExt, `${rel} 站外链接缺 ext 类：${href}`);
+        assert.ok(tag.includes('target="_blank"'), `${rel} 站外链接应保持 target=_blank：${href}`);
+      } else {
+        assert.ok(!hasExt, `${rel} 非站外链接被染 ext（站内不得染靛）：${href || "（无 href）"}`);
+      }
+    }
+  }
+  assert.ok(externalCount >= 8, `产物中应存在足量站外链接锚点（条目外链×20 + HUD/长文页），实测 ${externalCount}`);
+  // 复制链接按钮不染靛（复制的是本站 URL，站内动作）——断言构建 CSS 中的 button.ext 规则
+  assert.match(css, /button\.ext\{[^}]*color:inherit/, "复制链接按钮保持墨色（不伪造站外信号）");
+});
+
+test("丝纹确定性注入产物（T13，#30）：标准行版画带丝纹与 ID 前缀，同条目跨页/详情页同纹理、条目间互异", () => {
+  const textureOf = (html: string): string =>
+    [...html.matchAll(/<svg class="silk-texture"[^>]*>([\s\S]*?)<\/svg>/g)]
+      .map((m) => [...m[1]!.matchAll(/ d="([^"]+)"/g)].map((d) => d[1]).join("|"))
+      .join("||");
+  const idOf = (chunk: string): string | null =>
+    chunk.match(new RegExp(`href="${BASE}/items/([0-9a-f]{64})/"`))?.[1] ?? null;
+
+  const indexHtml = readDist("index.html");
+  const timelineTextures = new Map<string, string>();
+  for (const chunk of entryChunks(indexHtml)) {
+    const id = idOf(chunk);
+    const tex = textureOf(chunk);
+    if (id && tex) timelineTextures.set(id, tex);
+  }
+  assert.equal(textureOf(indexHtml).split("||").length, 18, "首页 18 个标准行版画各有丝纹（20 条 − 2 紧凑行）");
+  assert.equal(timelineTextures.size, 18, "18 条标准行条目均有 ID↔丝纹映射");
+  assert.equal(new Set(timelineTextures.values()).size, 18, "不同条目丝纹两两互异（构建期确定性派生）");
+  // 紧凑行无版画即无丝纹
+  const compactChunk = entryChunks(indexHtml).find((c) => c.startsWith(" layout-compact"))!;
+  assert.ok(!compactChunk.includes("silk-texture"), "紧凑行无丝纹（无版画）");
+
+  // 同条目跨页同纹理：新闻主题页中与本页交集的条目
+  const newsHtml = readDist("topics/news/index.html");
+  for (const chunk of entryChunks(newsHtml)) {
+    const id = idOf(chunk);
+    const tex = textureOf(chunk);
+    if (id && tex && timelineTextures.has(id)) {
+      assert.equal(tex, timelineTextures.get(id), `条目 ${id.slice(0, 6)}… 在主题页与首页丝纹一致`);
+    }
+  }
+  // 详情页与时间线同纹理，sid 前缀＝稳定 ID 前 6 位
+  const detailHtml = readDist(`items/${firstEntry.id}/index.html`);
+  assert.equal(textureOf(detailHtml), timelineTextures.get(firstEntry.id), "详情页丝纹与时间线同条目一致");
+  assert.ok(detailHtml.includes(`#${firstEntry.id.slice(0, 6)}…`), "sid 前缀为稳定 ID 前 6 位");
+  // aria-hidden 语义不变（T9 口径延续）
+  const firstChunk = entryChunks(indexHtml).find((c) => c.includes("silk-texture"))!;
+  assert.match(
+    firstChunk,
+    /<svg class="silk-texture" viewBox="0 0 264 198" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">/,
+    "丝纹 SVG 为纯装饰 aria-hidden",
+  );
 });

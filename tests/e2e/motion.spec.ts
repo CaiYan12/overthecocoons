@@ -747,7 +747,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 版画揭示）", ()
     expect(clipNumbers(final.artScale)[0], "art 回到 scale 1").toBeCloseTo(1, 2);
   });
 
-  test("进度线生长与节点仅当前激活：滚动后 scaleY>0、激活节点存在且 HUD 序号跟随", async ({
+  test("丝线 B 版 rail 静态与节点仅当前激活：rail 恒为静态红线、激活节点存在且 HUD 序号跟随", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -780,26 +780,75 @@ test.describe("时间线动效（进度线 / 节点激活 / 版画揭示）", ()
       )
       .toMatchObject({ synced: true });
     const state = await page.evaluate(() => {
-      const progress = [...document.querySelectorAll<HTMLElement>(".k-progress")].find((el) => {
-        const transform = getComputedStyle(el).transform;
-        return transform !== "none" && new DOMMatrixReadOnly(transform).m22 > 0.01;
+      const rails = [...document.querySelectorAll<HTMLElement>(".k-day .silk-rail")];
+      // T13（UI 票 #30）：B 版 rail 为静态常驻红线——2px accent、无 transform、无进行中的补间；
+      // 原 .k-progress scaleY scrub 已随替代裁定移除（ADR 0005），滚动不改 rail 形态
+      const railStatic = rails.every((el) => {
+        const cs = getComputedStyle(el);
+        return (
+          cs.backgroundColor === "rgb(143, 38, 43)" &&
+          cs.width === "2px" &&
+          cs.transform === "none"
+        );
       });
-      const active = [...document.querySelectorAll<HTMLElement>(".k-entry.is-active")].map(
-        (el) => Number(el.dataset.gi),
-      );
-      const roll = document.querySelector("[data-rollin]")?.textContent ?? "";
       return {
-        progressGrown: progress !== undefined,
-        active,
-        roll,
+        railStatic,
+        railCount: rails.length,
+        dayCount: document.querySelectorAll(".k-day").length,
+        pinCount: document.querySelectorAll(".k-day .silk-pin").length,
+        progressCount: document.querySelectorAll(".k-progress").length,
+        active: [...document.querySelectorAll<HTMLElement>(".k-entry.is-active")].map(
+          (el) => Number(el.dataset.gi),
+        ),
+        roll: document.querySelector("[data-rollin]")?.textContent ?? "",
       };
     });
-    expect(state.progressGrown, "进度线 scaleY scrub 生长").toBe(true);
+    expect(state.railCount, "每个日组一段 rail").toBe(state.dayCount);
+    expect(state.pinCount, "每个日组 rail 顶一枚钉点").toBe(state.dayCount);
+    expect(state.progressCount, "进度线结构零残留（B 版替代）").toBe(0);
+    expect(state.railStatic, "丝线 B 版 rail 静态常驻红线（2px accent、无变换）").toBe(true);
     expect(state.active.length, "存在当前激活节点").toBeGreaterThanOrEqual(1);
     expect(
       state.active.map((gi) => String(gi + 1).padStart(2, "0")),
       "HUD NOW READING 序号应为激活条目之一",
     ).toContain(state.roll);
+  });
+
+  test("丝线与丝纹客户端重渲染同构（T13，#30）：切主题后 rail/钉点/丝纹由客户端模板注入且互异", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await showHeader(page); // Hero 页首屏 header 隐藏，切主题前先滚出 header（MENU/Tab 可点）
+    await pickTopic(page, "新闻");
+    await expect(page.locator(".k-entry .tpc").first()).toHaveText("新闻");
+    const state = await page.evaluate(() => {
+      const textures = [...document.querySelectorAll(".k-media-art .silk-texture")];
+      const dSets = new Set(
+        textures.map((svg) =>
+          [...svg.querySelectorAll("path")]
+            .map((p) => p.getAttribute("d"))
+            .join("|"),
+        ),
+      );
+      return {
+        rails: document.querySelectorAll(".k-day .silk-rail").length,
+        days: document.querySelectorAll(".k-day").length,
+        pins: document.querySelectorAll(".k-day .silk-pin").length,
+        textures: textures.length,
+        medias: document.querySelectorAll(".k-media").length,
+        distinctTextures: dSets.size,
+        pathCounts: [...new Set(textures.map((svg) => svg.querySelectorAll("path").length))],
+      };
+    });
+    expect(state.rails, "客户端渲染的每个日组有 rail").toBe(state.days);
+    expect(state.days, "断言前置：客户端渲染出日组").toBeGreaterThan(0);
+    expect(state.pins, "客户端渲染的每个日组有钉点").toBe(state.days);
+    expect(state.medias, "断言前置：客户端渲染出版画").toBeGreaterThan(0);
+    expect(state.textures, "每个版画注入丝纹").toBe(state.medias);
+    expect(state.pathCounts, "每条丝纹固定 4 条曲线").toEqual([4]);
+    expect(state.distinctTextures, "客户端丝纹按条目互异").toBe(state.medias);
   });
 });
 
