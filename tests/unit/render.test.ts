@@ -776,3 +776,49 @@ test("无 JS 导航兜底：左栏功能导航、页脚导航与页脚主题导�
   assert.ok(html.includes("<article"), "条目使用 article 语义元素");
   assert.ok(html.includes("<dialog"), "全屏菜单保留 dialog 结构（T06 挂点）");
 });
+
+test("展示字体子集自托管（T12，#29）：woff2 + OFL + 可机读清单入 dist，全部页面 preload（crossorigin）且指向基路径下同一文件", () => {
+  const fontRel = collectFiles(DIST, ".woff2");
+  assert.ok(
+    fontRel.includes("fonts/SourceHanSerifSC-Heavy-Subset.woff2"),
+    `dist/fonts/ 应含展示字体子集，实际：${fontRel.join(", ") || "（无）"}`,
+  );
+  assert.ok(existsSync(join(DIST, "fonts/OFL.txt")), "OFL 许可文本应随产物部署");
+  assert.ok(existsSync(join(DIST, "fonts/display-charset.json")), "字集可机读清单应随产物部署");
+  // 子集体积上限（票面：数百 KB 内；超限 = 字集混入冗余）
+  const size = statSync(join(DIST, "fonts/SourceHanSerifSC-Heavy-Subset.woff2")).size;
+  assert.ok(size <= 500_000, `woff2 体积 ${size} B 超出 500KB 上限`);
+  // 每个页面都有 preload（BaseLayout 全局共享），显式 crossorigin 与 as/type（字体请求恒 CORS 模式）
+  const preload = /<link rel="preload" as="font" type="font\/woff2" href="([^"]+)" crossorigin="anonymous"/;
+  for (const rel of htmlFiles) {
+    const m = readDist(rel).match(preload);
+    assert.ok(m, `${rel} 应含展示字体 preload 标签`);
+    assert.ok(
+      m![1]!.startsWith(`${BASE}/fonts/`),
+      `${rel} preload href ${m![1]} 应指向基路径下 /fonts/`,
+    );
+  }
+  // preload 与 @font-face 指向同一文件（命中同一请求，不二次下载）
+  const css = cssFiles.map(readDist).join("\n");
+  const faceSrc = css.match(/@font-face\{[^}]*?url\(([^)]+)\)/);
+  assert.ok(faceSrc, "构建 CSS 应含 @font-face");
+  assert.ok(faceSrc![1]!.includes("fonts/SourceHanSerifSC-Heavy-Subset.woff2"), "@font-face src 应指向子集文件");
+});
+
+test("展示字体接入（T12，#29）：--font-display token + font-display:swap + 票面大字槽位全部切换（兜底栈保持 serif）", () => {
+  const css = cssFiles.map(readDist).join("\n");
+  // 压缩后引号可能被移除，族名按裸名断言
+  assert.ok(css.includes("Source Han Serif SC Heavy Subset"), "@font-face 族名应与字集清单一致");
+  assert.match(css, /font-display: ?swap/, "font-display: swap（加载失败/被禁时兜底栈完整可读）");
+  assert.match(css, /--font-display:/, "--font-display token 应存在");
+  assert.ok(css.includes('var(--font-display)'), "token 应组合子集族名与既有 serif 兜底栈");
+  // 票面大字槽位（站名/Hero 标题/Hero ghost/Hero 日期大字/KPageHead 大字/日组头大字/
+  // 菜单大字项与序号/菜单 ghost/长文 h1）全部使用 --font-display
+  for (const selector of [".k-brand", ".k-hero-en", ".k-hero-title", ".k-hero-date .d", ".k-pagehead-big", ".k-day-big", ".k-mi .no", ".k-mi .lb", ".k-menu-data .ghost", ".k-doc h1"]) {
+    const re = new RegExp(`${selector.replace(/\./g, "\\.")}\\s*\\{[^}]*var\\(--font-display\\)`);
+    assert.match(css, re, `${selector} 应使用 --font-display`);
+  }
+  // 非大字槽位不被波及：正文 h2 与批次行仍走既有 serif（条目标题等动态数据不进子集字集）
+  assert.match(css, /\.k-doc h2\{[^}]*var\(--serif\)/, "长文 h2 保持既有 serif（不在大字槽位清单）");
+  assert.match(css, /\.k-day-batch\{[^}]*var\(--serif\)/, "日组批次行保持既有 serif（不在大字槽位清单）");
+});
