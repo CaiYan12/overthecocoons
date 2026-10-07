@@ -232,18 +232,20 @@ footer p { margin: 0 0 8px }
 
 /* 日期组 + 时间线 */
 .k-day { position: relative; padding-top: 96px }   /* P1-8：日组呼吸 */
-.k-day .k-line { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 2px; background: var(--rule) }
+.k-day .k-line { position: absolute; left: calc(72px + 13px); top: 0; bottom: 0; width: 2px; background: var(--rule) }
 /* T14 追改（UI 票 #31，维护者 2026-10-07 二次裁定）：rail 回归旧灰线样式——T13 的 silk-rail
    2px accent 覆盖删除，红色 accent 让位给进度线（恢复可见性）；暗色恢复 a1ce4d5 的 45% accent
    混 rule 变体。丝线身份由 Hero 穿出丝线、日组钉点与版画丝纹承载。进度线（2px accent）叠合可见。
-   三次裁定：灰线加粗至 2px 与进度线同宽（消除同柱粗细不一致）。 */
+   三次裁定：灰线加粗至 2px 与进度线同宽（消除同柱粗细不一致）。
+   轴心对齐（用户审查发现节点 1px 漂移）：rail 轴心=节点列中心 86px（72+28 列的中点）——
+   线/进度线 left 13px（宽 2px → 中心 86）、钉点 left 14px 平移 -50%（中心 86），三者同轴。 */
 :root[data-theme=dark] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) }
 @media (prefers-color-scheme: dark) { :root[data-theme=auto] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) } }
 /* T14：进度线恢复（a1ce4d5 形态）：scaleY(0) 起始，motion scrub 生长 */
-.k-day .k-progress { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 2px; background: var(--accent); transform: scaleY(0); transform-origin: top center; will-change: transform }
+.k-day .k-progress { position: absolute; left: calc(72px + 13px); top: 0; bottom: 0; width: 2px; background: var(--accent); transform: scaleY(0); transform-origin: top center; will-change: transform }
 /* T13：日组 rail 顶钉点（原型 B 版静态呈现：surface 底 + accent 描边的空心点，钉在 rail 顶端）。
    每个日组各一枚（rail 按日组分段，钉点标记每段起点）；纯装饰 aria-hidden，无状态无动效。 */
-.silk-pin-wrap { position: absolute; left: calc(72px + 14px + 1px); top: 6px; transform: translateX(-50%); z-index: 3 }
+.silk-pin-wrap { position: absolute; left: calc(72px + 14px); top: 6px; transform: translateX(-50%); z-index: 3 }
 .silk-pin { display: block; width: 9px; height: 9px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent) }
 .k-day-head { padding: 0 0 32px calc(72px + 28px + 24px) }
 /* T7 版式诚实化（ADR 0003）：取消位置型头条档，大字时刻由日组头承担——
