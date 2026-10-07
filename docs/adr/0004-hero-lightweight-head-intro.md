@@ -1,8 +1,13 @@
 ---
-status: proposed
+status: superseded (动效维度被 ADR 0006 取代；Hero 仅首页与轻量页头部分继续有效)
 ---
 
 # Hero 仅首页、轻量页头与首次 intro 判定
+
+> **T14（2026-10-07）注记**：本文「首次 intro 判定规则（零存储）」一节已被 **ADR 0006**
+> （动效全量回补，维护者实机审查裁定 A）取代——`shouldPlayIntro` 判定删除
+> （`src/lib/intro-rule.ts` 已删），恢复「有 Hero 即播 intro」。本文其余内容
+> （Hero 渲染规则、轻量页头设计参数）继续有效。
 
 2026-10-06，T8（票 #25）实施记录。语义前提（Hero 仅时间线第一页、开场 intro 仅会话首次、
 判定零存储）为用户在 #16 grilling 中裁定并落档于 ADR 0003 关联裁定与票面；本文留档

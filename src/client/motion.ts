@@ -6,26 +6,25 @@
  * （内容直显、无隐藏初态、功能完整）。
  *
  * 结构对齐原型：
- * - kineticCtx：Hero Intro / Header Morph / 全局进度（进度条/圆环/百分比）/ 自定义光标，
- *   页面生命周期内一次性建立；
- * - listCtx：时间线列表动效（节点激活 toggleClass、版画 clip 揭示；T13 起原进度线 scaleY scrub
- *   随丝线 B 版 rail 常驻红线移除——rail 为静态结构），
+ * - kineticCtx：Hero Intro / Hero Parallax / Header Morph / 全局进度（进度条/圆环/百分比）/
+ *   自定义光标 / 磁性 / tilt，页面生命周期内一次性建立；
+ * - listCtx：时间线列表动效（进度线 scaleY scrub、节点激活 toggleClass、分层揭示），
  *   每次客户端重渲染整体 revert 重建（ScrollTrigger 无泄漏）；
  * - cleanups：事件监听器登记，运行时异常时统一回收并退化为无动效路径。
  *
  * 动效参数（duration/ease/阈值/延迟）逐项取自原型 JS；性能约束：只动 transform/opacity/
- * clip-path（filter 仅 blur 两处、letterSpacing 仅 Hero ghost 一处，均为一次性揭示）。
- * T11 减动效（UI 票 #28，原型评审裁定）：Hero 视差、版画 tilt、光标磁性、scroll hint 循环、
- * 列表标题拆字升起已移除/转静态；列表揭示保留版画 clip 与节点激活态，摘要 clip 与
- * meta 字距动画已删（后者每帧触发布局），元信息仅余透明度淡入。跨页过渡走原生
- * View Transition（@view-transition，样式见 kinetic.css），不经本模块。
+ * clip-path（filter 仅 blur 两处、letterSpacing 仅标题字符与元信息两处，均为一次性揭示）。
+ * T14（UI 票 #31，维护者实机审查裁定 A）：T11/T13/T1/T8 的 Q5 减动效全面撤销，
+ * 动效恢复到本轮优化前（a1ce4d5）形态——Hero 视差、版画 tilt、光标磁性、scroll hint 循环、
+ * 列表标题拆字升起、摘要 clip + meta 字距揭示、逐日进度线 scaleY scrub 全部回归；
+ * intro 撤销首次到达判定（T8 shouldPlayIntro 删除，ADR 0004 动效维度被 ADR 0006 取代），
+ * 有 Hero 即播。丝线 B 版静态 rail（T13）保留，进度线叠合其上恢复 a1ce4d5 驱动。
+ * 跨页过渡仍走原生 View Transition（@view-transition，样式见 kinetic.css），不经本模块。
  * T12（UI 票 #29）：Hero 拆字 intro 前等待自托管展示字体就绪（fonts.ready 与 300ms
  * 兜底竞速，见 scheduleIntro）——拆字 intro 不在字体替换后量错；其余路径不等字体。
  * 测试挂钩（无行为含义）：html[data-oct-motion="on"|"off"]、html[data-oct-intro="done"]、
  * 两段式切换期间 html[data-oct-topic-anim]。
  */
-
-import { shouldPlayIntro } from "../lib/intro-rule.ts";
 
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 const FINE_POINTER_QUERY = "(pointer:fine)";
@@ -230,6 +229,8 @@ function initMotionOn(root: HTMLElement): void {
     kineticCtx = self;
     introScheduled = initHeroAndHeader(root);
     initCursor(root);
+    initMagnetic(root);
+    initTilt(root);
   }, root);
   initResize(root);
   onListRendered(false);
@@ -297,27 +298,26 @@ function initHeroAndHeader(root: HTMLElement): boolean {
   const dateBig = root.querySelector<HTMLElement>("[data-herodate]");
   const hint = root.querySelector<HTMLElement>("[data-hint]");
 
-  // 首次 intro（票 #25）：开场编排仅对「首次到达」播放——判定零存储（privacy 页明文
-  // 不写入 sessionStorage，e2e 断言其恒空），规则见 lib/intro-rule.ts（reload/back_forward
-  // 或站内同源跳转 → 跳过；直接到达/外源进入 → 播放）。跳过时立即打 data-oct-intro=done
-  // 且不建任何隐藏初态（内容直显）；Hero 页滚动显隐（84px 阈值）不受影响。
-  // T12（UI 票 #29）：播放路径排程到 scheduleIntro——拆字前先等展示字体就绪。
-  let introScheduled = false;
-  if (
-    !shouldPlayIntro({
-      navigationType: readNavigationType(),
-      referrer: document.referrer,
-      origin: location.origin,
-    })
-  ) {
-    markIntroDone();
-  } else {
-    introScheduled = true;
-    scheduleIntro(root, { rule, metaItems, dateBig, hint });
-  }
+  // T14（UI 票 #31）：T8 的首次到达判定（shouldPlayIntro，ADR 0004）撤销——维护者实机审查
+  // 裁定 intro 每页重播（ADR 0006），有 Hero 即排程播放（data-oct-intro=done 标记语义不变：
+  // 补间完成时打标）。T12 字体就绪等待（#29）保留。
+  scheduleIntro(root, { rule, metaItems, dateBig, hint });
 
-  // T11（UI 票 #28）：Hero 视差（hero-en/date 滚动位移 scrub）已移除——ghost 英文与幽灵日期
-  // 滚动时保持原位；scroll hint 的滚动淡出保留（信息性：提示已离开首屏）。
+  // Hero Parallax（scrub，仅主要视觉层；a1ce4d5 参数直取）
+  if (heroEn) {
+    g.to(heroEn, {
+      yPercent: 26,
+      ease: "none",
+      scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 0.4 },
+    });
+  }
+  if (dateBig) {
+    g.to(dateBig, {
+      yPercent: 60,
+      ease: "none",
+      scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 0.4 },
+    });
+  }
   if (hint) {
     g.to(hint, {
       autoAlpha: 0,
@@ -325,7 +325,7 @@ function initHeroAndHeader(root: HTMLElement): boolean {
       scrollTrigger: { trigger: hero, start: "top top", end: "60% top", scrub: true },
     });
   }
-  return introScheduled;
+  return true;
 }
 
 /** Hero intro 编排的隐藏初态依赖（在 initHeroAndHeader 已查询，传入避免重复 query）。 */
@@ -401,14 +401,6 @@ function scheduleIntro(root: HTMLElement, parts: IntroParts): void {
   });
 }
 
-/** Navigation Timing 导航类型（"navigate" | "reload" | "back_forward" | "prerender"）；API 不可用时 null（判定按 referrer 兜底）。 */
-function readNavigationType(): string | null {
-  const entry = performance.getEntriesByType("navigation")[0] as
-    | PerformanceNavigationTiming
-    | undefined;
-  return entry?.type ?? null;
-}
-
 /* ---- 时间线列表动效（原型 initListMotion；listCtx 随重渲染整体回收） ---- */
 
 export function onListRendered(deferred: boolean): void {
@@ -427,28 +419,44 @@ export function onListRendered(deferred: boolean): void {
     // context 对象在回调首行登记：任一初始化抛错时 catch 仍能 revert 全部隐藏初态
     g.context((self) => {
       listCtx = self;
-      // T13（UI 票 #30）：原 .k-progress 进度线 scaleY scrub 已随丝线 B 版 rail（常驻红线，
-      // 与进度线同位叠合不可见，裁定为替代）移除；阅读进度反馈由 HUD READING PROGRESS 承担。
+      // T14（UI 票 #31）：逐日进度线 scaleY scrub 恢复（a1ce4d5 参数直取）——
+      // 叠合于 T13 静态丝线 rail（silk-rail 常驻红线保留，进度线 DOM 在其上）
+      root.querySelectorAll<HTMLElement>(".k-day").forEach((day) => {
+        const prog = day.querySelector<HTMLElement>(".k-progress");
+        if (!prog) return;
+        g.to(prog, {
+          scaleY: 1,
+          ease: "none",
+          scrollTrigger: { trigger: day, start: "top 72%", end: "bottom 55%", scrub: 0.6 },
+        });
+      });
       root.querySelectorAll<HTMLElement>(".k-entry").forEach((entry) => {
+        const headlineLink = entry.querySelector<HTMLElement>(".k-headline a");
+        const sum = entry.querySelector<HTMLElement>(".k-summary");
         const meta = entry.querySelector<HTMLElement>(".k-meta");
         const media = entry.querySelector<HTMLElement>(".k-media");
         const art = entry.querySelector<HTMLElement>(".k-media-art");
-        // T11（UI 票 #28）列表揭示瘦身：保留版画 clip 揭示——图片方向按版面交替
-        // （A 左入 / B 右入，其余上入兜底；T7 紧凑行无媒体，media 为空时 clip 分支整体跳过）；
-        // 标题拆字升起与摘要 clip 揭示已移除（静态直显，链接不再补 aria-label），
-        // meta 仅余透明度淡入（原 letterSpacing 字距动画每帧触发布局，已删）。
+        // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入，其余上入兜底；
+        // T7 紧凑行无媒体，media 为空时 clip 分支整体跳过——拆字升起/摘要/meta 照常）
         const clipFrom = entry.classList.contains("layout-a")
           ? "inset(0 100% 0 0)"
           : entry.classList.contains("layout-b")
             ? "inset(0 0 0 100%)"
             : "inset(0 0 100% 0)";
-        if (meta) g.set(meta, { autoAlpha: 0 });
+        // T14：列表标题拆字升起恢复（T11 撤销）；splitChars 为 T13 递归版（T5 aria 语义保留：
+        // 链接 a 命名点 + 字符 aria-hidden）
+        const chs = headlineLink ? splitChars(headlineLink) : [];
+        if (chs.length) g.set(chs, { yPercent: 110, rotate: 2 });
+        if (sum) g.set(sum, { clipPath: "inset(0 0 100% 0)" });
+        if (meta) g.set(meta, { autoAlpha: 0, letterSpacing: ".2em" });
         if (media) {
           g.set(media, { clipPath: clipFrom });
           if (art) g.set(art, { scale: 1.08 });
         }
         const tl = g.timeline({ paused: true, defaults: { ease: "power3.out" } });
-        if (meta) tl.to(meta, { autoAlpha: 1, duration: 0.3, ease: "power2.out" }, 0.14);
+        if (chs.length) tl.to(chs, { yPercent: 0, rotate: 0, duration: 0.5, stagger: 0.02 }, 0);
+        if (sum) tl.to(sum, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power2.out" }, 0.08);
+        if (meta) tl.to(meta, { autoAlpha: 1, letterSpacing: ".04em", duration: 0.3, ease: "power2.out" }, 0.14);
         if (media) {
           tl.to(media, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "power4.out" }, 0.1);
           if (art) tl.to(art, { scale: 1, duration: 0.9, ease: "power4.out" }, 0.1);
@@ -792,6 +800,71 @@ function initCursor(root: HTMLElement): void {
     window.removeEventListener("blur", onLeaveDoc);
     root.classList.remove("k-cursor-on");
     gsap!.killTweensOf([cursor, dot, ringEl, labelEl]);
+  });
+}
+
+/* ---- 磁性 UI（原型 initMagnetic，≤8px，elastic 回正；仅 pointer:fine；T14 恢复） ---- */
+
+function initMagnetic(root: HTMLElement): void {
+  if (!window.matchMedia(FINE_POINTER_QUERY).matches) return;
+  const elements: Element[] = [
+    ...root.querySelectorAll(".k-tabs .tab"),
+    root.querySelector("[data-mode]"),
+    root.querySelector("[data-kmenu-open]"),
+    root.querySelector("[data-ktop]"),
+  ].filter((el): el is Element => el !== null);
+  for (const el of elements) {
+    const target = el as HTMLElement;
+    const mx = gsap!.quickTo(target, "x", { duration: 0.3, ease: "power3" });
+    const my = gsap!.quickTo(target, "y", { duration: 0.3, ease: "power3" });
+    const onMove = (event: MouseEvent) => {
+      const rect = target.getBoundingClientRect();
+      mx(Math.max(-8, Math.min(8, (event.clientX - rect.left - rect.width / 2) * 0.3)));
+      my(Math.max(-8, Math.min(8, (event.clientY - rect.top - rect.height / 2) * 0.3)));
+    };
+    const onLeave = () => gsap!.to(target, { x: 0, y: 0, duration: 0.55, ease: "elastic.out(1,.4)" });
+    target.addEventListener("mousemove", onMove, { passive: true });
+    target.addEventListener("mouseleave", onLeave);
+    cleanups.push(() => {
+      target.removeEventListener("mousemove", onMove);
+      target.removeEventListener("mouseleave", onLeave);
+      gsap!.killTweensOf(target);
+    });
+  }
+}
+
+/* ---- 图片 3D Tilt（原型 initTilt，rotateX ≤±4° / rotateY ≤±5°；仅 pointer:fine；T14 恢复） ---- */
+
+function initTilt(root: HTMLElement): void {
+  if (!window.matchMedia(FINE_POINTER_QUERY).matches) return;
+  root.querySelectorAll<HTMLElement>(".k-media").forEach((media) => {
+    const inner = media.querySelector<HTMLElement>(".k-media-tilt");
+    const art = media.querySelector<HTMLElement>(".k-media-art");
+    if (!inner || !art) return;
+    const rX = gsap!.quickTo(inner, "rotationX", { duration: 0.4, ease: "power3" });
+    const rY = gsap!.quickTo(inner, "rotationY", { duration: 0.4, ease: "power3" });
+    const onMove = (event: MouseEvent) => {
+      const rect = media.getBoundingClientRect();
+      const px = (event.clientX - rect.left) / rect.width - 0.5;
+      const py = (event.clientY - rect.top) / rect.height - 0.5;
+      rX(py * -8);
+      rY(px * 10);
+    };
+    const onEnter = () => gsap!.to(art, { scale: 1.05, duration: 0.45, ease: "power3.out" });
+    const onLeave = () => {
+      rX(0);
+      rY(0);
+      gsap!.to(art, { scale: 1, duration: 0.5, ease: "power3.out" });
+    };
+    media.addEventListener("mousemove", onMove, { passive: true });
+    media.addEventListener("mouseenter", onEnter);
+    media.addEventListener("mouseleave", onLeave);
+    cleanups.push(() => {
+      media.removeEventListener("mousemove", onMove);
+      media.removeEventListener("mouseenter", onEnter);
+      media.removeEventListener("mouseleave", onLeave);
+      gsap!.killTweensOf([inner, art]);
+    });
   });
 }
 

@@ -231,7 +231,8 @@ test("两档版式与数据版画结构正确（有摘要奇偶交替、无摘�
 
   const first = chunks[0]!;
   assert.ok(first.includes('class="k-media"'), "数据版画外层");
-  assert.ok(!first.includes('class="k-media-tilt"'), "tilt 中间层已移除（T11 减动效：两层 clip → art）");
+  // T14（UI 票 #31）：tilt 中间层恢复（三层 clip → tilt → art；T11 移除撤销）
+  assert.ok(first.includes('class="k-media-tilt"'), "tilt 中间层恢复（T14：三层 clip → tilt → art）");
   assert.ok(
     first.includes('class="k-media-art" aria-hidden="true"'),
     "art 层为纯装饰占位（aria-hidden，T9 语义重订）",
@@ -580,7 +581,7 @@ test("动效库（Ticket 06 引入，Ticket 08 自托管）：vendor 双脚本 +
   assert.ok(css.includes("k-themefade"), "无 View Transition API 的颜色过渡降级样式应在构建 CSS 中");
 });
 
-test("跨页过渡（T11，#28）：@view-transition 导航规则与 header/grain 的 view-transition-name 进入构建 CSS，tilt/磁性/scroll hint 循环样式零残留", () => {
+test("跨页过渡（T11，#28）：@view-transition 导航规则与 header/grain 的 view-transition-name 进入构建 CSS；恢复的动效样式（T14）随构建在位", () => {
   const css = cssFiles.map(readDist).join("\n");
   assert.match(
     css,
@@ -589,19 +590,22 @@ test("跨页过渡（T11，#28）：@view-transition 导航规则与 header/grai
   );
   assert.match(css, /view-transition-name:\s*k-header/, "header 应设元素级过渡名（防交叉淡化闪动）");
   assert.match(css, /view-transition-name:\s*k-grain/, "grain 应设元素级过渡名（防交叉淡化闪动）");
-  // 被移除动效的样式悬挂引用零残留（T11 减动效：②tilt ⑤scroll hint 循环）
-  assert.ok(!css.includes("k-media-tilt"), "tilt 层样式应零残留");
-  assert.ok(!css.includes("perspective"), "tilt 的 perspective 应零残留");
-  assert.ok(!css.includes("preserve-3d"), "tilt 的 transform-style: preserve-3d 应零残留");
-  assert.ok(!css.includes("k-hint"), "scroll hint 循环 @keyframes k-hint 应零残留");
+  // T14（UI 票 #31）动效回补：tilt 层样式、scroll hint 循环 keyframes 恢复在位
+  assert.ok(css.includes("k-media-tilt"), "tilt 层样式恢复（T11 移除撤销）");
+  assert.ok(css.includes("perspective"), "tilt 的 perspective 恢复");
+  assert.ok(css.includes("preserve-3d"), "tilt 的 transform-style: preserve-3d 恢复");
+  assert.ok(css.includes("k-hint"), "scroll hint 循环 @keyframes k-hint 恢复");
 });
 
-test("will-change 验收锁定（T11 减动效验收线，总审）：构建 CSS 中 will-change 声明数 ≤5 不回涨", () => {
+test("will-change 验收锁定（T14 调整，#31）：构建 CSS 中 will-change 声明数不高于 a1ce4d5 基线水平", () => {
+  // T14（UI 票 #31）动效回补后合成层按预期回增（视差 ghost/日期、tilt 层、进度线恢复）。
+  // a1ce4d5 基线 7 处：.k-indicator、.k-hero-en、.k-hero-date、.k-headline .ch/.k-hero-title .ch
+  // （并集选择器计 1）、.k-media、.k-media-tilt、.k-day .k-progress——断言改为「不高于基线」。
   const css = cssFiles.map(readDist).join("\n");
   const count = css.match(/will-change\s*:/g)?.length ?? 0;
   assert.ok(
-    count <= 5,
-    `构建 CSS 中 will-change 声明应 ≤5（T11「显著下降」验收线；当前 3 处：.k-indicator、.k-hero-title .ch、.k-media），实测 ${count} 处`,
+    count <= 7,
+    `构建 CSS 中 will-change 声明应 ≤7（a1ce4d5 基线水平；当前 7 处），实测 ${count} 处`,
   );
 });
 
@@ -770,7 +774,8 @@ test("样式经基路径加载且含 v4 设计 token（暖纸白/墨黑/暗红�
   assert.ok(css.includes("--ink:#211e1b"), "墨色 token");
   assert.ok(css.includes("--accent:#8f262b"), "暗红 token");
   assert.ok(css.includes("--serif:georgia"), "衬线字体栈（系统字体，无外部字体）");
-  assert.ok(!css.includes("k-pulse"), "k-dot 脉动动画已移除（静止实心点，UI 票 #15-10）");
+  // T14（UI 票 #31）：k-dot 脉动恢复（T1 移除的 k-pulse 回归）
+  assert.ok(css.includes("k-pulse"), "k-dot 脉动动画恢复（@keyframes k-pulse 在构建 CSS 中）");
 });
 
 test("无 JS 导航兜底：左栏功能导航、页脚导航与页脚主题导航均渲染为真实链接", () => {
@@ -840,7 +845,7 @@ test("展示字体接入（T12，#29）：--font-display token + font-display:sw
   assert.match(css, /\.k-day-batch\{[^}]*var\(--serif\)/, "日组批次行保持既有 serif（不在大字槽位清单）");
 });
 
-test("丝线 B 版 rail 静态呈现（T13，#30）：常驻红线 + 日组钉点入产物，进度线零残留，Hero 丝线仅 Hero 页", () => {
+test("丝线 B 版 rail 静态呈现（T13，#30）与逐日进度线（T14，#31）：常驻红线 + 日组钉点 + 进度线叠合恢复，Hero 丝线仅 Hero 页", () => {
   const html = readDist("index.html");
   assert.ok(html.includes('class="k-line silk-rail"'), "rail 元素带 silk-rail 类（B 版常驻红线）");
   assert.ok(html.includes('class="silk-pin-wrap"'), "日组 rail 顶钉点");
@@ -854,10 +859,14 @@ test("丝线 B 版 rail 静态呈现（T13，#30）：常驻红线 + 日组钉�
     (html.match(/<section class="k-day"/g) ?? []).length,
     "每个日组各一枚钉点",
   );
-  // 替代裁定（ADR 0005）：k-progress 结构/CSS/JS 全产物零残留
-  const all = [...htmlFiles, ...cssFiles, ...jsFiles].map(readDist).join("\n");
-  assert.ok(!all.includes("k-progress"), "进度线 k-progress 零残留（B 版 rail 替代，阅读进度由 HUD 承担）");
-  // rail 静态红线样式：silk-rail 覆盖为 2px accent，无 transition/animation（B 版零动效依赖）
+  // T14（UI 票 #31）：k-progress 进度线叠合恢复（每个日组一段，rail 之上；ADR 0006 取代 ADR 0005 替代段）
+  assert.equal(
+    (html.match(/class="k-progress"/g) ?? []).length,
+    (html.match(/<section class="k-day"/g) ?? []).length,
+    "每个日组各一段进度线（T14 恢复，叠合 silk-rail）",
+  );
+  // rail 静态红线样式：silk-rail 覆盖为 2px accent，无 transition/animation（B 版零动效依赖）；
+  // 进度线恢复 a1ce4d5 形态：scaleY(0) 起始 + will-change
   // （压缩器可能对调声明顺序，两种顺序均接受）
   const css = cssFiles.map(readDist).join("\n");
   assert.match(
@@ -866,18 +875,25 @@ test("丝线 B 版 rail 静态呈现（T13，#30）：常驻红线 + 日组钉�
     "rail 覆盖为 2px accent",
   );
   assert.ok(!/\.silk-rail\{[^}]*transition/.test(css), "silk-rail 不携带 transition（原型 A 版编排态不移植）");
+  assert.match(
+    css,
+    /\.k-day \.k-progress\{[^}]*transform:scaleY\(0\)/,
+    "进度线 scaleY(0) 起始（T14 恢复 a1ce4d5 形态）",
+  );
   // Hero 静态丝线仅首页（Hero 仅时间线第一页，票 #25）；主题/分页页 rail 从首个日组顶起
   assert.ok(html.includes('class="silk-anchor"'), "「茧」字丝线挂点");
   for (const rel of ["page/2/index.html", "topics/news/index.html"]) {
     const noHero = readDist(rel);
     assert.ok(!noHero.includes("silk-static"), `${rel} 无 Hero 页不渲染 Hero 丝线`);
     assert.ok(noHero.includes('class="k-line silk-rail"'), `${rel} rail 常驻红线照常`);
+    assert.ok(noHero.includes('class="k-progress"'), `${rel} 进度线照常（T14 恢复）`);
   }
-  // 客户端重渲染模板同构：JS bundle 内含 silk-rail/钉点/丝纹注入
+  // 客户端重渲染模板同构：JS bundle 内含 silk-rail/钉点/丝纹/进度线注入
   const js = jsFiles.map(readDist).join("\n");
   assert.ok(js.includes("silk-rail"), "客户端 dayGroups 模板带 silk-rail");
   assert.ok(js.includes("silk-pin-wrap"), "客户端 dayGroups 模板带钉点");
   assert.ok(js.includes("silk-texture"), "客户端版画模板注入丝纹（与构建期同一 src/lib/silk.ts）");
+  assert.ok(js.includes("k-progress"), "客户端 dayGroups 模板带进度线（T14 恢复，同构）");
 });
 
 test("靛色站外信号（T13，#30）：token 两主题入 CSS，外链全染 ext、站内链接零染色（全产物逐锚点判定）", () => {
