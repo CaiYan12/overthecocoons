@@ -1,6 +1,7 @@
 ---
 // 数据版画占位图（无图条目的本站占位）：网格底纹 + 色块时间。
-// 结构与原型 .k-media/.k-media-tilt/.k-media-art 三层一致（Tilt 动效属 Ticket 06）。
+// 结构与原型 .k-media/.k-media-art 两层一致（T11/UI 票 #28 移除 tilt 动效后，
+// 原 .k-media-tilt 中间层已删；版画 clip 揭示仍作用于 .k-media）。
 // T9 版面减负（UI 票 #26）：移除出血大序号与竖排英文主题词——线上真实数据主题恒为单一值，
 // 逐条重复同词零信息量；序号是快照内可数位置而非编辑编排（ADR 0003），不再以大字呈现，
 // 阅读位计数仍由 HUD NOW READING n/N 承担。色块时间与网格底纹保留。
@@ -14,12 +15,10 @@ const { clock } = Astro.props;
 ---
 
 <div class="k-media" data-cursor="OPEN">
-  <div class="k-media-tilt">
-    <div class="k-media-art" aria-hidden="true">
-      <span class="tag">
-        <i></i>
-        <span class="tm">{clock}</span>
-      </span>
-    </div>
+  <div class="k-media-art" aria-hidden="true">
+    <span class="tag">
+      <i></i>
+      <span class="tm">{clock}</span>
+    </span>
   </div>
 </div>

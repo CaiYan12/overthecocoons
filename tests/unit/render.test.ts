@@ -227,7 +227,7 @@ test("两档版式与数据版画结构正确（有摘要奇偶交替、无摘�
 
   const first = chunks[0]!;
   assert.ok(first.includes('class="k-media"'), "数据版画外层");
-  assert.ok(first.includes('class="k-media-tilt"'), "tilt 层");
+  assert.ok(!first.includes('class="k-media-tilt"'), "tilt 中间层已移除（T11 减动效：两层 clip → art）");
   assert.ok(
     first.includes('class="k-media-art" aria-hidden="true"'),
     "art 层为纯装饰占位（aria-hidden，T9 语义重订）",
@@ -574,6 +574,22 @@ test("动效库（Ticket 06 引入，Ticket 08 自托管）：vendor 双脚本 +
   assert.ok(css.includes("data-oct-pending"), "预绘制遮蔽选择器应在构建 CSS 中");
   assert.ok(css.includes("view-transition-old(root)"), "View Transition 径向揭示样式应在构建 CSS 中");
   assert.ok(css.includes("k-themefade"), "无 View Transition API 的颜色过渡降级样式应在构建 CSS 中");
+});
+
+test("跨页过渡（T11，#28）：@view-transition 导航规则与 header/grain 的 view-transition-name 进入构建 CSS，tilt/磁性/scroll hint 循环样式零残留", () => {
+  const css = cssFiles.map(readDist).join("\n");
+  assert.match(
+    css,
+    /@view-transition\s*\{[^}]*navigation:\s*auto/,
+    "跨页过渡渐进增强规则（不支持的浏览器静默降级为普通导航）",
+  );
+  assert.match(css, /view-transition-name:\s*k-header/, "header 应设元素级过渡名（防交叉淡化闪动）");
+  assert.match(css, /view-transition-name:\s*k-grain/, "grain 应设元素级过渡名（防交叉淡化闪动）");
+  // 被移除动效的样式悬挂引用零残留（T11 减动效：②tilt ⑤scroll hint 循环）
+  assert.ok(!css.includes("k-media-tilt"), "tilt 层样式应零残留");
+  assert.ok(!css.includes("perspective"), "tilt 的 perspective 应零残留");
+  assert.ok(!css.includes("preserve-3d"), "tilt 的 transform-style: preserve-3d 应零残留");
+  assert.ok(!css.includes("k-hint"), "scroll hint 循环 @keyframes k-hint 应零残留");
 });
 
 test("默认主题初值 auto（T4，UI 票 #21）：所有页面 html 标签为 data-theme=auto，auto 深色映射随 prefers-color-scheme 入构建 CSS", () => {
