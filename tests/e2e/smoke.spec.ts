@@ -129,7 +129,7 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     const s1 = await railState(p1);
     expect(s1, "无 JS：rail 存在").not.toBeNull();
     expect(s1!.bg, "无 JS：rail 旧灰线（accent 让位进度线）").toBe(RULE);
-    expect(s1!.width, "无 JS：rail 1px").toBe("1px");
+    expect(s1!.width, "无 JS：rail 2px（与进度线同宽）").toBe("2px");
     expect(s1!.transform, "无 JS：rail 无变换（静态）").toBe("none");
     expect(s1!.pin, "无 JS：日组钉点在位").toBe(true);
     expect(s1!.heroThread, "无 JS：Hero「茧」底静态丝线在位").toBe(true);

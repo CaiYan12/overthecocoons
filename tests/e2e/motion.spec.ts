@@ -813,7 +813,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
         const cs = getComputedStyle(el);
         return (
           cs.backgroundColor === "rgb(156, 147, 135)" &&
-          cs.width === "1px" &&
+          cs.width === "2px" &&
           cs.transform === "none"
         );
       });

@@ -232,10 +232,11 @@ footer p { margin: 0 0 8px }
 
 /* 日期组 + 时间线 */
 .k-day { position: relative; padding-top: 96px }   /* P1-8：日组呼吸 */
-.k-day .k-line { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 1px; background: var(--rule) }
+.k-day .k-line { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 2px; background: var(--rule) }
 /* T14 追改（UI 票 #31，维护者 2026-10-07 二次裁定）：rail 回归旧灰线样式——T13 的 silk-rail
    2px accent 覆盖删除，红色 accent 让位给进度线（恢复可见性）；暗色恢复 a1ce4d5 的 45% accent
-   混 rule 变体。丝线身份由 Hero 穿出丝线、日组钉点与版画丝纹承载。进度线（2px accent）叠合可见。 */
+   混 rule 变体。丝线身份由 Hero 穿出丝线、日组钉点与版画丝纹承载。进度线（2px accent）叠合可见。
+   三次裁定：灰线加粗至 2px 与进度线同宽（消除同柱粗细不一致）。 */
 :root[data-theme=dark] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) }
 @media (prefers-color-scheme: dark) { :root[data-theme=auto] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) } }
 /* T14：进度线恢复（a1ce4d5 形态）：scaleY(0) 起始，motion scrub 生长 */
