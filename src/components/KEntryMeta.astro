@@ -1,5 +1,9 @@
 ---
 // 条目元信息行：来源 · 主题 · 收录时间 · 独立「查看百度搜索结果」外链（url 缺失时省略外链，不编造）。
+// T13（UI 票 #30）：站外链接判定走确定性规则（src/lib/links.ts isExternalUrl——绝对 http(s)
+// 且 origin ≠ 站点 origin），判定为站外才附加 ext 类（全局 a.ext 靛色）；同源 URL 不染靛。
+import { isExternalUrl } from "../lib/links.ts";
+
 interface Props {
   topic: string;
   /** 已格式化的收录时间（YYYY-MM-DD HH:mm）。 */
@@ -8,6 +12,9 @@ interface Props {
   url: string;
 }
 const { topic, collected, url } = Astro.props;
+// 站点 origin 来自 astro.config site（https://caiyan12.github.io）；未配置时回退空串（安全默认：绝对 http(s) 一律按站外）
+const siteOrigin = Astro.site?.origin ?? "";
+const isExt = url !== "" && isExternalUrl(url, siteOrigin);
 ---
 
 <p class="k-meta">
@@ -19,7 +26,7 @@ const { topic, collected, url } = Astro.props;
     url && (
       <span class="seg">
         <span class="sep">·</span>
-        <a class="ext" href={url} target="_blank" rel="noopener" data-cursor="LINK">
+        <a class={isExt ? "ext" : undefined} href={url} target="_blank" rel="noopener" data-cursor="LINK">
           查看百度搜索结果 ↗
         </a>
       </span>

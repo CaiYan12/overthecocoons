@@ -49,7 +49,8 @@ const totalText = String(total).padStart(2, "0");
     <p class="h">PROJECT</p>
     <p><a class="k-link" href={siteUrl("/principles/")} data-cursor-soft>阅读收录原则</a></p>
     <p>
-      <a class="k-link" href="https://github.com/CaiYan12/overthecocoons/issues/new?template=source-submission.yml" target="_blank" rel="noopener" data-cursor-soft>
+      {/* T13（UI 票 #30）：站外链接（GitHub）带 ext 类走靛色站外信号；「阅读收录原则」为站内保持红 */}
+      <a class="k-link ext" href="https://github.com/CaiYan12/overthecocoons/issues/new?template=source-submission.yml" target="_blank" rel="noopener" data-cursor-soft>
         提交新来源（GitHub Issue）↗
       </a>
     </p>

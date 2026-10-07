@@ -7,8 +7,9 @@
  *   不镜像逻辑；DOM 结构与 KEntry/KEmpty/KPager/TimelinePage 输出一致，CSS 不区分两种来源；
  * - 筛选优先于分页；主题切换重置页码；空主题渲染真实空态与「查看全部」；
  * - 主题切换（Ticket 06）：GSAP 可用时走两段式内容过渡（出 260ms blur+scale / 入 340ms，
- *   日期组头先行、条目 +120ms 延迟揭示），列表动效（进度线/节点激活/分层揭示）随每次渲染
+ *   日期组头先行、条目 +120ms 延迟揭示），列表动效（节点激活/分层揭示）随每次渲染
  *   由 motion.onListRendered 重建（listCtx revert 回收，ScrollTrigger 无泄漏）；
+ *   T13 丝线 B 版 rail 为静态结构（常驻红线+钉点），无动效重建项。
  * - 阅读位置仅存于本次访问内存（模块变量，绝不写 localStorage/sessionStorage）：
  *   仅由用户手势（滚轮/触摸/滚动键）触发的滚动记录阅读条目；翻页/切主题返回时尽量按原条目
  *   恢复或回退有效页码并经 aria-live 播报（决策见 ./position.ts）；
@@ -32,6 +33,8 @@ import {
   sortEntriesDesc,
   topicPagePath,
 } from "../lib/timeline.ts";
+import { isExternalUrl } from "../lib/links.ts";
+import { silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
 import { animateTopicSwitch, moveIndicator, onListRendered } from "./motion.ts";
 import { resolveRestore } from "./position.ts";
 import { announce } from "./status.ts";
@@ -73,15 +76,21 @@ function currentFiltered(): PublicEntry[] {
 function mediaHtml(entry: PublicEntry): string {
   // T9 版面减负：与 KEntryMedia.astro 同构——无竖排主题词与出血大序号，art 层纯装饰 aria-hidden
   // T11（UI 票 #28）：tilt 中间层随动效移除而删除，与 KEntryMedia.astro 保持两层同构
+  // T13（UI 票 #30）：丝纹由稳定 ID 经 src/lib/silk.ts 构建期/客户端同一函数派生（同构注入）
   const clock = formatClock(entry.firstSeenAt);
-  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span></div></div>`;
+  const texture = silkTexturePaths(entry.id)
+    .map((p) => `<path class="${p.cls}" d="${p.d}" stroke-width="${p.width}" opacity="${p.opacity}"></path>`)
+    .join("");
+  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span><svg class="silk-texture" viewBox="0 0 264 198" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${texture}</svg><span class="sid">${silkSidLabel(entry.id)}</span></div></div>`;
 }
 
 function metaHtml(entry: PublicEntry): string {
   const collected = formatDateTime(entry.firstSeenAt);
   // UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂（与 KEntryMeta.astro 同构）
+  // T13：ext 类由确定性规则判定（与构建期同一函数；客户端 origin 即当前站点 origin，与
+  // Astro.site 的部署 origin 一致），站外才染靛
   const ext = entry.url
-    ? `<span class="seg"><span class="sep">·</span><a class="ext" href="${esc(entry.url)}" target="_blank" rel="noopener" data-cursor="LINK">查看百度搜索结果 ↗</a></span>`
+    ? `<span class="seg"><span class="sep">·</span><a class="${isExternalUrl(entry.url, location.origin) ? "ext" : ""}" href="${esc(entry.url)}" target="_blank" rel="noopener" data-cursor="LINK">查看百度搜索结果 ↗</a></span>`
     : "";
   return `<p class="k-meta"><span>百度热点</span><span class="seg"><span class="sep">·</span><span class="tpc">${esc(entry.topic)}</span></span><span class="seg"><span class="sep">·</span>收录 ${collected}</span>${ext}</p>`;
 }
@@ -130,7 +139,7 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
       // 日组头规则在分组收敛后按全组条目计算（与 TimelinePage.astro 同口径）
       const head = dayHeadInfo(group.items.map(({ entry }) => entry));
       const fixtureSuffix = isFixture ? "（演示数据）" : "";
-      return `<section class="k-day" data-day="${group.date}"><div class="k-line" aria-hidden="true"></div><div class="k-progress" aria-hidden="true"></div>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
+      return `<section class="k-day" data-day="${group.date}"><div class="k-line silk-rail" aria-hidden="true"></div><span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin"></span></span>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
     })
     .join("");
 }
@@ -269,7 +278,8 @@ function renderView(nextTopic: string, requestedPage: number, options?: { deferr
   renderPager(page, totalPages, nextTopic);
   syncTopicUi(nextTopic, filtered.length);
   updatePageHead(nextTopic, page);
-  // 列表动效（进度线/节点激活/分层揭示）随本次渲染重建；两段式切换时条目揭示延迟 +120ms
+  // 列表动效（节点激活/分层揭示）随本次渲染重建；T13 丝线 rail 为静态结构无需重建。
+  // 两段式切换时条目揭示延迟 +120ms
   onListRendered(options?.deferredListMotion === true);
   const previousTopic = topic;
   topic = nextTopic;

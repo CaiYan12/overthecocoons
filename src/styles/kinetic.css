@@ -24,6 +24,10 @@
   --muted: #655F58;
   --rule: #9C9387;
   --accent: #8F262B;
+  /* T13（UI 票 #30）：靛色 = 站外信号专用第二色（原型 silk 交接档口径）。
+     对比度实测（WCAG 2.x 相对亮度复算，tests/unit/silk.test.ts 留数）：
+     浅 #2F5168 对纸面 #F8F5EC ≈7.71:1、深 #8DB3C9 对墨底 #191816 ≈7.96:1，均 ≥4.5:1。 */
+  --indigo: #2F5168;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --serif: Georgia, "Times New Roman", "Songti SC", "SimSun", serif;
@@ -47,14 +51,14 @@
 }
 :root[data-theme=dark] { color-scheme: dark;
   --paper: #191816; --surface: #23211E; --ink: #F4EFE5; --muted: #BEB5A8;
-  --rule: #716A61; --accent: #E18B86;
+  --rule: #716A61; --accent: #E18B86; --indigo: #8DB3C9;
 }
 @media (prefers-color-scheme: dark) {
   /* T4（UI 票 #21）：auto 为默认初值，深色系统首访走此块——补 color-scheme 与
      data-theme=dark 语义等价（原型此块缺 color-scheme，移植时按等价性修正） */
   :root[data-theme=auto] { color-scheme: dark;
     --paper: #191816; --surface: #23211E; --ink: #F4EFE5; --muted: #BEB5A8;
-    --rule: #716A61; --accent: #E18B86;
+    --rule: #716A61; --accent: #E18B86; --indigo: #8DB3C9;
   }
 }
 * { box-sizing: border-box }
@@ -63,6 +67,11 @@ html { scroll-behavior: smooth }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--sans) }
 /* 原型依赖 UA 默认下划线；Tailwind 预检将其置为 inherit，此处显式恢复 */
 a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px }
+/* T13（UI 票 #30）：靛色站外信号——站外链接用 --indigo，「↗」保留为非色彩线索；
+   站内链接不加 .ext、颜色零变化。ext 类由确定性规则（src/lib/links.ts isExternalUrl：
+   绝对 http(s) 且 origin ≠ 站点 origin）在构建期/客户端统一判定后附加。 */
+a.ext { color: var(--indigo) }
+a.ext:hover { text-decoration-thickness: 1px }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0 }
 
@@ -157,6 +166,13 @@ footer p { margin: 0 0 8px }
 .k-hero-title { margin: 0; font: 700 clamp(64px, 8vw, 132px)/1.05 var(--font-display); letter-spacing: 1.16em }
 .k-hero-title .line { display: block; white-space: nowrap }
 .k-hero-title .line.l2 { margin-left: clamp(48px, 9vw, 200px) }
+/* T13（UI 票 #30）丝线 B 版（静态连接）：「茧」字为丝线挂点，SVG 自字底穿出（原型 B 版直移：
+   线宽 2px、桌面 110×180 / 移动端 84×138、top 72%/70%、translateX(-55%)——原型参数，总审定稿）。
+   挂点 letter-spacing 归零 + 等值 margin-right 补偿：行距 1.16em（T5）若计入 inline-block
+   会把字形推离锚点中心（尾随字距计入盒宽），补偿后字形位置与原视觉一致。 */
+.silk-anchor { position: relative; display: inline-block; letter-spacing: 0; margin-right: 1.16em }
+.silk-static { position: absolute; left: 50%; top: 72%; width: 110px; height: 180px; transform: translateX(-55%); pointer-events: none; z-index: 7; overflow: visible }
+.silk-static path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round }
 .k-hero-date { position: absolute; right: 0; bottom: 22%; text-align: right; pointer-events: none }
 .k-hero-date .d { display: block; font: 700 clamp(180px, 20vw, 320px)/0.85 var(--font-display); color: var(--ink); opacity: .07 }
 .k-hero-date .m { font-size: 13px; letter-spacing: .38em; color: var(--muted) }
@@ -210,6 +226,10 @@ footer p { margin: 0 0 8px }
 /* 原型为 <button> 桩；真实站点为链接（去下划线，悬停下划线） */
 .k-hud .k-link { color: var(--accent); text-align: left; padding: 2px 0; text-decoration: none; display: inline-block }
 .k-hud .k-link:hover { text-decoration: underline }
+/* T13（UI 票 #30）：HUD「提交新来源（GitHub Issue）↗」为站外链接（票面明确点名的靛色应用点；
+   原型此处仍为 accent 红，票面「全站外链靛色」优先——有意偏离，留档 ADR 0005）。
+   .k-hud .k-link (0,2,0) 压过全局 a.ext (0,1,1)，须同级加权覆盖。 */
+.k-hud .k-link.ext { color: var(--indigo) }
 /* P0-5：系统播报移出文档流（语义保留给屏幕阅读器，视觉不再占据版面）。
    UI 打磨票 #10：加纸面 chip 底——播报出现时不再裸字叠压页面内容；空状态不显示空盒。 */
 .v-kinetic .live-status { position: fixed; left: var(--pad-x); bottom: 16px; z-index: var(--z-float); margin: 0; min-height: 0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; color: var(--muted); pointer-events: none; max-width: 60vw; background: var(--surface); border: 1px solid var(--rule); padding: 6px 12px }
@@ -218,7 +238,16 @@ footer p { margin: 0 0 8px }
 /* 日期组 + 时间线 */
 .k-day { position: relative; padding-top: 96px }   /* P1-8：日组呼吸 */
 .k-day .k-line { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 1px; background: var(--rule) }
-.k-day .k-progress { position: absolute; left: calc(72px + 14px); top: 0; bottom: 0; width: 2px; background: var(--accent); transform: scaleY(0); transform-origin: top center; will-change: transform }
+/* T13（UI 票 #30）丝线 B 版 rail：常驻 2px accent 红线（「已钉入」静态态，原型 B 版直移）。
+   与既有 .k-day .k-progress 进度线的关系裁定为「替代」：rail 常驻红线后红色进度线在同位叠合
+   不可见（同一视觉通道），阅读进度反馈由 HUD READING PROGRESS（readbar + pct）完整承担
+   （同一滚动进度的另一处呈现，T11 保留的信息性反馈不损失）；k-progress 结构/CSS/motion
+   驱动一并移除。B 版无任何动效依赖：原型的 rail 变色 transition 属 A 版编排，不移植。 */
+.k-day .silk-rail { width: 2px; background: var(--accent) }
+/* T13：日组 rail 顶钉点（原型 B 版静态呈现：surface 底 + accent 描边的空心点，钉在 rail 顶端）。
+   每个日组各一枚（rail 按日组分段，钉点标记每段起点）；纯装饰 aria-hidden，无状态无动效。 */
+.silk-pin-wrap { position: absolute; left: calc(72px + 14px + 1px); top: 6px; transform: translateX(-50%); z-index: 3 }
+.silk-pin { display: block; width: 9px; height: 9px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent) }
 .k-day-head { padding: 0 0 32px calc(72px + 28px + 24px) }
 /* T7 版式诚实化（ADR 0003）：取消位置型头条档，大字时刻由日组头承担——
    日期大字提级；批次形态（同日分钟全相同）追加「批次 hh:mm · N 条」中字行——T7 票面级设计参数（实现者拟定，总审裁定） */
@@ -257,7 +286,8 @@ footer p { margin: 0 0 8px }
 .k-meta .tpc { color: var(--accent) }
 /* UI 票 #10：sep 并入后段 .seg 内（行首分隔符），margin-right 代替原 HTML 空格，使段内间距与段间 gap 一致 */
 .k-meta .sep { color: var(--rule); margin-right: 6px }
-.k-meta a.ext { color: var(--accent) }
+/* T13：条目「查看百度搜索结果 ↗」为站外链接，ext 类由 links.isExternalUrl 判定后附加，
+   颜色走全局 a.ext（--indigo）；原 .k-meta a.ext 局部红规则移除（站外信号统一靛色） */
 /* 数据版画占位图（两层：clip → art；T11 移除 tilt 层及其 perspective，clip 揭示保留） */
 .k-media { position: relative; align-self: start; will-change: clip-path }
 .layout-a .k-media, .layout-b .k-media { width: 100%; aspect-ratio: 4/3 }
@@ -276,12 +306,18 @@ footer p { margin: 0 0 8px }
 .k-media-art .tag { position: absolute; left: 12px; top: 12px; display: flex; align-items: center; gap: 8px }
 .k-media-art .tag i { width: 24px; height: 8px; background: var(--accent) }
 .k-media-art .tm { font-size: 12px; font-variant-numeric: tabular-nums }
+/* T13（UI 票 #30）丝纹：构建期由条目稳定 ID 派生的确定性 SVG 曲线（src/lib/silk.ts），
+   注入版画让每条版画携带独有信息（T9 移除竖排词+序号后的替代物）。曲线 stroke 走 token
+   （accent 红 / rule 灰衬）随主题切换；装饰层 aria-hidden 语义不变；零运行时开销。 */
+.silk-texture { position: absolute; inset: 0; width: 100%; height: 100% }
+.silk-texture .s { fill: none; stroke: var(--accent); stroke-linecap: round }
+.silk-texture .s2 { stroke: var(--rule) }
+.k-media-art .sid { position: absolute; left: 12px; bottom: 10px; z-index: 2; font: 11px/1 ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--muted); letter-spacing: .04em }
 
-/* P0-4：深色场景化 —— Hero 暗红氛围 + 时间线红线提亮 */
+/* P0-4：深色场景化 —— Hero 暗红氛围（时间线 rail 已由 T13 丝线 B 版常驻 accent 红，
+   原对灰色 k-line 的深色提亮规则随 rail 替代移除） */
 :root[data-theme=dark] .k-hero { background: radial-gradient(1200px 600px at 85% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%) }
 @media (prefers-color-scheme: dark) { :root[data-theme=auto] .k-hero { background: radial-gradient(1200px 600px at 85% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%) } }
-:root[data-theme=dark] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) }
-@media (prefers-color-scheme: dark) { :root[data-theme=auto] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) } }
 
 /* 空状态（kinetic 微调） */
 .v-kinetic .empty { background: transparent; border-color: var(--rule); text-align: left; margin-top: 24px }
@@ -404,6 +440,8 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
   /* T4（UI 票 #21）：ghost 英文是 aria-hidden 装饰元素，≤767px 与幽灵日期同区叠压——
      移动端整体隐藏，桌面保留 */
   .k-hero-en { display: none }
+  /* T13：丝线静态挂点随字缩小（原型 B 版移动端参数：84×138、top 70%） */
+  .silk-static { width: 84px; height: 138px; top: 70% }
   /* T8：轻量页头移动端压缩顶部净空（60px 固定 header + 呼吸），大字沿用日组头移动档 36px */
   .k-pagehead { padding: 96px 0 0 }
   .k-hero-meta { grid-template-columns: 1fr 1fr; gap: 20px 16px }   /* P1-9：2×2，压缩高度 */
@@ -418,7 +456,8 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
   .k-hud .big { font-size: 18px }
   .k-hud .sec-readbar { flex-basis: 100% }
   .k-day { padding-top: 44px }
-  .k-day .k-line, .k-day .k-progress { left: 9px }
+  .k-day .k-line { left: 9px }
+  .silk-pin-wrap { left: 10px }
   .k-day-head { padding-left: 33px }
   .k-entry { grid-template-columns: 20px minmax(0, 1fr); grid-template-areas: "rail time" "rail body"; padding: 24px 0 }
   .k-time { text-align: left; padding: 4px 0 8px }
@@ -499,7 +538,9 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
 .k-detail-back { margin: 0 0 28px; font-size: 14px }
 .k-detail-ext { margin: 20px 0 0; font-size: 15px }
 .k-detail .k-summary-empty { color: var(--muted) }
-/* 复制链接按钮（Ticket 05 渐进增强）：静态层 hidden 不占位，外观与相邻 .ext 文本一致 */
+/* 复制链接按钮（Ticket 05 渐进增强）：静态层 hidden 不占位。T13 勘误：相邻 .ext 链接已是
+   靛色站外信号，而本按钮复制的是本站详情页 URL（站内动作）——保持 color:inherit（墨色），
+   不随 .ext 染靛，避免伪造站外信号 */
 button.ext { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer }
 .k-detail-ext .ext + .ext { margin-left: 18px }
 
