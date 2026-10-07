@@ -37,4 +37,6 @@ const { activeTopic = "全部", topicTabs } = Astro.props;
     <button class="mode-btn" type="button" data-mode data-cursor-soft>显示：浅色</button>
     <button class="k-menu-open" type="button" data-kmenu-open data-cursor-soft aria-haspopup="dialog" aria-expanded="false">MENU</button>
   </div>
+  <!-- 主题二态化：按钮标签的尽早矫正并入 BaseLayout head 启动脚本（DOMContentLoaded 段）——
+       保持「内联脚本仅 head 启动脚本一种」的脚本形态约束（render.test 白名单） -->
 </header>

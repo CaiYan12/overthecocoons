@@ -266,33 +266,27 @@ test.describe("阅读位置（仅本次访问内存）", () => {
   });
 });
 
-test.describe("三态主题（浅色/深色/跟随系统）", () => {
-  test("初值跟随系统（auto）、循环切换、html data-theme 同步、项目专属 key 本地保存并在重载后恢复", async ({ page }) => {
+test.describe("显示模式（浅色/深色二态 + 系统初始，维护者 2026-10-07 裁定）", () => {
+  test("初始跟随系统（auto）、按钮二态切换、html data-theme 同步、项目专属 key 本地保存并在重载后恢复", async ({ page }) => {
     await page.goto(BASE);
     await waitClientReady(page);
     await showHeader(page);
 
     const modeBtn = page.locator("[data-mode]");
-    // T4（UI 票 #21）：初值为 auto（跟随系统），不再是硬编码浅色
-    await expect(modeBtn).toHaveText("显示：跟随系统");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
-
-    await modeBtn.click(); // auto → 浅色
+    // Playwright 默认 colorScheme=light：初值 auto 解析为浅色（T4 初值机制不变，无存储不落 auto 标签）
     await expect(modeBtn).toHaveText("显示：浅色");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
 
     await modeBtn.click(); // 浅色 → 深色
     await expect(modeBtn).toHaveText("显示：深色");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     expect(await statusText(page)).toContain("显示模式：深色");
 
-    await modeBtn.click(); // 深色 → 跟随系统
-    await expect(modeBtn).toHaveText("显示：跟随系统");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
+    await modeBtn.click(); // 深色 → 浅色
+    await expect(modeBtn).toHaveText("显示：浅色");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 
     // 保存偏好后重载恢复：切到深色 → 重载 → 仍为深色
-    await modeBtn.click(); // auto → 浅色
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await modeBtn.click(); // 浅色 → 深色
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await page.reload();
@@ -325,14 +319,12 @@ test.describe("三态主题（浅色/深色/跟随系统）", () => {
     await waitClientReady(page);
     await showHeader(page);
     const modeBtn = page.locator("[data-mode]");
-    await expect(modeBtn).toHaveText("显示：跟随系统");
-    await modeBtn.click(); // auto → 浅色
     await expect(modeBtn).toHaveText("显示：浅色");
     await modeBtn.click(); // 浅色 → 深色
     await expect(modeBtn).toHaveText("显示：深色");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await modeBtn.click(); // 深色 → 跟随系统
-    await expect(modeBtn).toHaveText("显示：跟随系统");
+    await modeBtn.click(); // 深色 → 浅色
+    await expect(modeBtn).toHaveText("显示：浅色");
     // 交互功能不受存储拒绝影响
     await pickTopic(page, "新闻");
     await expect(page.locator(".k-entry")).toHaveCount(20);
@@ -409,7 +401,8 @@ test.describe("默认主题跟随系统（T4，UI 票 #21）", () => {
     expect(await rootPaper(page), "深色系统无存储首访应解析到深色 --paper").toBe(DARK_PAPER);
 
     await waitClientReady(page);
-    await expect(page.locator("[data-mode]")).toHaveText("显示：跟随系统");
+    // 主题二态化：按钮标签按「解析后的当前外观」显示——深色系统无存储解析为深色
+    await expect(page.locator("[data-mode]")).toHaveText("显示：深色");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "auto");
     await context.close();
   });
@@ -603,8 +596,8 @@ test.describe("播报 chip 自动消退（T5，#22）", () => {
     await waitClientReady(page);
     await showHeader(page);
 
-    await page.locator("[data-mode]").click(); // auto → 浅色：写入「显示模式：浅色」
-    await expectStatusContains(page, "显示模式：浅色");
+    await page.locator("[data-mode]").click(); // 浅色 → 深色：写入「显示模式：深色」
+    await expectStatusContains(page, "显示模式：深色");
 
     // 自动消退：写入起 ANNOUNCE_CLEAR_MS 后清空（等待时长由实现导出常量驱动，不硬编码睡眠）。
     // 清空手法为「摘语义 → 清文本 → 下一帧 rAF 恢复语义」（status.ts）：poll 条件须连同

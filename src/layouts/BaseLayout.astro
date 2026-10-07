@@ -69,6 +69,21 @@ const fontFaceCss = `@font-face{font-family:"Source Han Serif SC Heavy Subset";s
             document.documentElement.removeAttribute("data-oct-pending");
           }, 1500);
         }
+        // 主题二态化（维护者裁定）：按钮标签按「已存储或系统」在解析完成后尽早矫正——
+        // 深色系统用户不短暂看到「浅色」；deferred 模块（initTheme）随后接管并持续同步
+        document.addEventListener("DOMContentLoaded", function () {
+          try {
+            var b = document.querySelector("[data-mode]");
+            if (!b) return;
+            var stored = localStorage.getItem("overthecocoons.theme");
+            var dark =
+              stored === "dark" ||
+              (stored !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+            b.textContent = "显示：" + (dark ? "深色" : "浅色");
+          } catch (error) {
+            /* 存储不可用按系统判定已覆盖；异常静默 */
+          }
+        });
       })();
     </script>
   </head>
