@@ -1,0 +1,20 @@
+---
+interface Props { scope: "page" | "menu" }
+const { scope } = Astro.props;
+---
+<div
+  class="k-scrollbar"
+  data-scrollbar={scope}
+  data-cursor-soft
+  role="scrollbar"
+  aria-label={scope === "page" ? "页面滚动条" : "菜单滚动条"}
+  aria-controls={scope === "page" ? "k-page-scroll" : "k-menu-scroll"}
+  aria-orientation="vertical"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="0"
+  tabindex="0"
+  hidden
+>
+  <span class="k-scrollbar-thumb" aria-hidden="true"></span>
+</div>

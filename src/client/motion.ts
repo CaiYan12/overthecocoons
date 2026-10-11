@@ -57,6 +57,7 @@ interface GsapTimeline {
     position?: number | string,
   ): GsapTimeline;
   play(): GsapTimeline;
+  progress(value: number): GsapTimeline;
   kill(): GsapTimeline;
 }
 interface Gsap {
@@ -64,12 +65,13 @@ interface Gsap {
   set(target: TweenTarget, vars: TweenVars): void;
   to(target: TweenTarget, vars: TweenVars): void;
   fromTo(target: TweenTarget, fromVars: TweenVars, toVars: TweenVars): void;
-  killTweensOf(target: TweenTarget): void;
+  killTweensOf(target: TweenTarget, properties?: string): void;
   delayedCall(delay: number, callback: () => void): void;
   context(func: (self: GsapContext) => void, scope?: Element): GsapContext;
   timeline(vars?: TweenVars): GsapTimeline;
   quickSetter(target: TweenTarget, property: string): (value: number) => void;
-  quickTo(target: TweenTarget, property: string, vars: TweenVars): (value: number) => void;
+  quickTo(target: TweenTarget, property: string, vars: TweenVars): (value: number, startValue?: number) => void;
+  getProperty(target: Element, property: string): number | string | null;
 }
 interface ScrollTriggerPlugin {
   create(vars: TweenVars): unknown;
@@ -80,6 +82,7 @@ interface MotionWindow extends Window {
   gsap?: Gsap;
   ScrollTrigger?: ScrollTriggerPlugin;
 }
+export type { Gsap, GsapContext, ScrollTriggerPlugin };
 interface ViewTransitionLike {
   ready: Promise<void>;
   finished: Promise<void>;
@@ -512,18 +515,28 @@ export function setHudIdle(): void {
 function setHudText(text: string): void {
   const roll = document.querySelector<HTMLElement>("[data-rollin]");
   if (!roll) return;
-  if (roll.textContent === text) return;
   if (!enabled || !gsap) {
     roll.textContent = text;
     return;
   }
+  // 最新阅读位接管：取消旧退出/进入补间，连同其 onComplete，避免快速滚动时旧数字回写。
+  gsap.killTweensOf(roll);
+  // A→B→A（包括 --）：B 尚未换字时屏幕仍是 A，但 A 可能已部分退出，须回到可见位置。
+  if (roll.textContent === text) {
+    gsap.to(roll, { yPercent: 0, duration: 0.26, ease: "power3.out" });
+    return;
+  }
+  // 始态/终态决定方向；-- 是首条之前的阅读位 0，减小序号时上下进出方向对调。
+  const fromIndex = roll.textContent === "--" ? 0 : Number(roll.textContent);
+  const toIndex = text === "--" ? 0 : Number(text);
+  const exitYPercent = toIndex > fromIndex ? -110 : 110;
   gsap.to(roll, {
-    yPercent: -110,
+    yPercent: exitYPercent,
     duration: 0.22,
     ease: "power2.in",
     onComplete: () => {
       roll.textContent = text;
-      gsap!.fromTo(roll, { yPercent: 110 }, { yPercent: 0, duration: 0.26, ease: "power3.out" });
+      gsap!.fromTo(roll, { yPercent: -exitYPercent }, { yPercent: 0, duration: 0.26, ease: "power3.out" });
     },
   });
 }
@@ -598,6 +611,64 @@ export function moveIndicator(targetTopic: string, instant: boolean): void {
 
 /* ---- 显示模式切换（原型 View Transition 径向 + skipTransition 兜底 + themefade 降级） ---- */
 
+/** 原生快照并非跨引擎可靠的实时光标画布。在过渡伪层绘制同一组 GSAP 坐标，
+ * 避免正文裁剪、nav 遮挡、旧快照残影及 WebKit 快照未实时更新。仅切换期间更新。 */
+function themeCursorFrame(): { draw: () => void; start: () => void; stop: () => void } {
+  const cursor = document.querySelector<HTMLElement>("[data-kcursor]");
+  const dot = document.querySelector<HTMLElement>("[data-kcursor-dot]");
+  const ring = document.querySelector<HTMLElement>("[data-kcursor-ring]");
+  const shape = document.querySelector<HTMLElement>("[data-kcursor-shape]");
+  const label = document.querySelector<HTMLElement>("[data-kcursor-label]");
+  if (!gsap || !cursor || !dot || !ring || !shape || !label || !window.matchMedia(FINE_POINTER_QUERY).matches) {
+    return { draw() {}, start() {}, stop() {} };
+  }
+  const g = gsap;
+  const html = document.documentElement;
+  const value = (el: Element, property: string) => Number(g.getProperty(el, property));
+  const escape = (text: string) => text.replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char]!);
+  let frame = 0;
+  let stopped = false;
+  let previous = "";
+  const draw = () => {
+    if (stopped) return;
+    const colors = getComputedStyle(html);
+    const ink = colors.getPropertyValue("--ink").trim();
+    const accent = colors.getPropertyValue("--accent").trim();
+    const scale = value(ring, "scaleX");
+    const angle = value(shape, "rotation") * Math.PI / 180;
+    const sx = value(shape, "scaleX"), sy = value(shape, "scaleY");
+    const matrix = [Math.cos(angle) * sx, Math.sin(angle) * sx, -Math.sin(angle) * sy, Math.cos(angle) * sy, 0, 0].join(" ");
+    const textScale = value(label, "scaleX");
+    // 用户裁定：立即使用目标主题墨色，不添加过渡专用双色边缘。
+    const svg = [
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${innerWidth}" height="${innerHeight}">`,
+      `<g opacity="${value(cursor, "opacity")}">`,
+      `<g transform="translate(${value(ring, "x")} ${value(ring, "y")}) matrix(${matrix})"><circle r="${18 * scale}" fill="none" stroke="${ink}" stroke-width="${2 * scale}"/></g>`,
+      `<circle cx="${value(dot, "x")}" cy="${value(dot, "y")}" r="4" fill="${ink}"/></g>`,
+      `<text x="${value(label, "x")}" y="${value(label, "y")}" text-anchor="middle" dominant-baseline="central" font-family="system-ui,sans-serif" font-size="${9.5 * textScale}" letter-spacing="${1.71 * textScale}" fill="${accent}" opacity="${value(label, "opacity")}">${escape(label.textContent ?? "")}</text></svg>`,
+    ].join("");
+    if (svg !== previous) {
+      previous = svg;
+      html.style.setProperty("--vt-cursor-frame", `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+    }
+  };
+  const tick = () => {
+    if (stopped) return;
+    draw();
+    frame = requestAnimationFrame(tick);
+  };
+  draw();
+  return { draw, start: tick, stop: () => {
+    stopped = true;
+    cancelAnimationFrame(frame);
+    html.style.removeProperty("--vt-cursor-frame");
+  } };
+}
+
+let finishThemeTransition: (() => void) | null = null;
+let refreshCursorTier: (() => void) | null = null;
+let animateThemeCursor: (() => void) | null = null;
+
 export function themeApplyMotion(apply: () => void, origin: Element | null): void {
   const root = rootElement();
   if (!enabled || !gsap) {
@@ -606,6 +677,7 @@ export function themeApplyMotion(apply: () => void, origin: Element | null): voi
   }
   const doc = document as DocumentWithVT;
   if (typeof doc.startViewTransition === "function") {
+    finishThemeTransition?.();
     if (origin) {
       const rect = origin.getBoundingClientRect();
       const htmlStyle = document.documentElement.style;
@@ -613,16 +685,28 @@ export function themeApplyMotion(apply: () => void, origin: Element | null): voi
       htmlStyle.setProperty("--vt-y", `${rect.top + rect.height / 2}px`);
     }
     document.documentElement.setAttribute("data-vt", "");
+    const themeCursor = themeCursorFrame();
     let settled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let vt: ViewTransitionLike | undefined;
     const done = () => {
       if (!settled) {
         settled = true;
+        clearTimeout(timer);
+        themeCursor.stop();
+        window.removeEventListener("pagehide", cancel);
+        finishThemeTransition = null;
         document.documentElement.removeAttribute("data-vt");
+        requestAnimationFrame(() => refreshCursorTier?.());
       }
     };
-    let vt: ViewTransitionLike;
+    const cancel = () => {
+      try { vt?.skipTransition(); } catch { /* 取消异常不阻断回收。 */ } finally { done(); }
+    };
+    finishThemeTransition = cancel;
+    window.addEventListener("pagehide", cancel);
     try {
-      vt = doc.startViewTransition(apply);
+      vt = doc.startViewTransition(() => { apply(); themeCursor.draw(); });
     } catch {
       apply();
       done();
@@ -632,10 +716,10 @@ export function themeApplyMotion(apply: () => void, origin: Element | null): voi
     // 摘除 data-vt 的动画收尾只属于 finished——ready 即摘除会让
     // html[data-vt]::view-transition-new(root) 在 vt-clip 起始帧失配、径向动画被取消，
     // 退化为 UA 默认 cross-fade（#19）。
-    const timer = setTimeout(() => {
+    timer = setTimeout(() => {
       if (!settled) {
         try {
-          vt.skipTransition();
+          vt?.skipTransition();
         } catch {
           // skipTransition 异常不阻断
         }
@@ -645,6 +729,7 @@ export function themeApplyMotion(apply: () => void, origin: Element | null): voi
     vt.ready
       .then(() => {
         clearTimeout(timer);
+        if (!settled) { animateThemeCursor?.(); themeCursor.start(); }
       })
       .catch(() => {
         done();
@@ -654,6 +739,7 @@ export function themeApplyMotion(apply: () => void, origin: Element | null): voi
   } else if (root) {
     root.classList.add("k-themefade");
     apply();
+    animateThemeCursor?.();
     setTimeout(() => root.classList.remove("k-themefade"), 480);
   } else {
     apply();
@@ -668,7 +754,7 @@ export function syncHeroGhost(): void {
   gsap.set(heroEn, { opacity: ghostA });
 }
 
-/* ---- 全屏菜单动效（原型 openMenu/closeMenu；纯 opacity 不用 autoAlpha 保焦点） ---- */
+/* ---- 全屏菜单：不透明面板自顶部覆盖，原路上收；独立于旧全站减动效门控。 ---- */
 
 /* 顶层迁址：showModal 的对话框处于浏览器 top layer，压过一切常规 z-index（--z-cursor:900
    也不例外），全屏菜单打开时光标整体被盖住不可见（用户审查发现）。打开时把光标两件套
@@ -704,36 +790,68 @@ function moveCursorBackFromTopLayer(): void {
   cursorTopLayerHome = null;
 }
 
-export function menuOpenMotion(menu: HTMLDialogElement, closeButton: HTMLElement): void {
-  const g = gsap;
-  if (!enabled || !g) return;
+export function menuOpenMotion(menu: HTMLDialogElement, onOpened: () => void): boolean {
+  const g = (window as MotionWindow).gsap;
+  const surface = menu.querySelector<HTMLElement>(".k-menu-surface");
+  if (!g || !surface) return false;
   killMenuTl();
-  moveCursorIntoTopLayer(menu);
-  const items = menu.querySelectorAll(".k-mi, .k-menu-topics .tab");
+  if (enabled) moveCursorIntoTopLayer(menu);
+  const items = menu.querySelectorAll(".k-mi, .k-menu-data, .k-menu-topics");
+  const duration = motionDuration(menu, "--motion-normal", 280);
+  g.set(surface, { yPercent: -100, willChange: "transform" });
+  g.set(items, { y: -12, opacity: 0 });
   menuTl = g
-    .timeline()
-    .fromTo(menu, { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "power2.out" })
-    .fromTo(
-      items,
-      { y: 60, rotate: 2, autoAlpha: 0 },
-      { y: 0, rotate: 0, autoAlpha: 1, duration: 0.5, stagger: 0.05, ease: "power3.out" },
-      "-=.1",
-    );
-  // 关闭按钮只做 opacity 淡入：autoAlpha 的 visibility:hidden 会让初始焦点失效
-  g.fromTo(closeButton, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" });
+    .timeline({ onComplete: onOpened, onUpdate: () => syncMenuPointer(menu, surface) })
+    .to(surface, { yPercent: 0, duration, ease: "power3.out" }, 0)
+    .to(items, { y: 0, opacity: 1, duration: motionDuration(menu, "--motion-fast", 160),
+      stagger: { amount: Math.max(0, duration - 0.08 - motionDuration(menu, "--motion-fast", 160)) }, ease: "power3.out" }, 0.08);
+  return true;
 }
 
 /** 返回是否走了动画关闭（false = 无动效路径，调用方需立即 menu.close()）。 */
 export function menuCloseMotion(menu: HTMLDialogElement, onClosed: () => void): boolean {
-  const g = gsap;
-  if (!enabled || !g) return false;
+  const g = (window as MotionWindow).gsap;
+  const surface = menu.querySelector<HTMLElement>(".k-menu-surface");
+  if (!g || !surface) return false;
   killMenuTl();
-  const items = menu.querySelectorAll(".k-mi, .k-menu-topics .tab");
+  const items = menu.querySelectorAll(".k-mi, .k-menu-data, .k-menu-topics");
+  g.set(surface, { willChange: "transform" });
   menuTl = g
-    .timeline({ onComplete: onClosed })
-    .to(items, { y: -40, autoAlpha: 0, duration: 0.28, stagger: 0.03, ease: "power2.in" })
-    .to(menu, { opacity: 0, duration: 0.22, ease: "power2.in" }, "-=.08");
+    .timeline({ onComplete: onClosed, onUpdate: () => syncMenuPointer(menu, surface) })
+    .to(items, { y: -12, opacity: 0, duration: motionDuration(menu, "--motion-fast", 160), ease: "power3.out" }, 0)
+    .to(surface, { yPercent: -100, duration: motionDuration(menu, "--motion-normal", 280), ease: "power3.out" }, 0);
   return true;
+}
+
+function motionDuration(element: Element, token: string, fallback: number): number {
+  const value = getComputedStyle(element).getPropertyValue(token).trim();
+  const ms = Number.parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
+  return (Number.isFinite(ms) && ms > 0 ? ms : fallback) / 1000;
+}
+
+function syncMenuPointer(menu: HTMLDialogElement, surface: HTMLElement): void {
+  if (!enabled || !rootElement()?.classList.contains("k-cursor-on")) return;
+  const dot = menu.querySelector<HTMLElement>("[data-kcursor-dot]");
+  if (!dot) return;
+  const rect = dot.getBoundingClientRect();
+  const next = rect.top + rect.height / 2 >= surface.getBoundingClientRect().bottom ? "exposed" : "covered";
+  if (menu.dataset.menuPointer !== next) menu.dataset.menuPointer = next;
+}
+
+/** 同步归位也适用于 GSAP 时钟暂停；回收不遗留隐藏样式或旧回调。 */
+export function resetMenuMotion(menu: HTMLDialogElement, restoreCursor = true): void {
+  killMenuTl();
+  menu.removeAttribute("data-menu-pointer");
+  const elements = menu.querySelectorAll<HTMLElement>(".k-menu-surface, .k-mi, .k-menu-data, .k-menu-topics");
+  // 取消独立 set 补间；父时钟恢复时它们不能再次写回入场初态。
+  (window as MotionWindow).gsap?.killTweensOf(elements);
+  // clearProps 同时使 GSAP 的 transform 缓存失效；显式 render 不依赖父时钟。
+  (window as MotionWindow).gsap?.timeline({ paused: true })
+    .to(elements, { clearProps: "transform,opacity,visibility,willChange", duration: 0.001 }).progress(1).kill();
+  elements.forEach((el) => {
+    for (const property of ["transform", "opacity", "visibility", "will-change"]) el.style.removeProperty(property);
+  });
+  if (restoreCursor) moveCursorBackFromTopLayer();
 }
 
 function killMenuTl(): void {
@@ -760,9 +878,34 @@ function initCursor(root: HTMLElement): void {
   const cursor = root.querySelector<HTMLElement>("[data-kcursor]");
   const dot = root.querySelector<HTMLElement>("[data-kcursor-dot]");
   const ringEl = root.querySelector<HTMLElement>("[data-kcursor-ring]");
+  const shape = root.querySelector<HTMLElement>("[data-kcursor-shape]");
   const labelEl = root.querySelector<HTMLElement>("[data-kcursor-label]");
-  if (!cursor || !dot || !ringEl || !labelEl) return;
-  root.classList.add("k-cursor-on");
+  if (!cursor || !dot || !ringEl || !shape || !labelEl) return;
+  let themeTl: GsapTimeline | null = null;
+  let themeTimer: ReturnType<typeof setTimeout> | undefined;
+  const resetThemeMorph = () => {
+    clearTimeout(themeTimer);
+    themeTl?.kill();
+    themeTl = null;
+    gsap!.killTweensOf(shape);
+    // 强制clearProps同时回收变换缓存，父时钟暂停／恢复也不会复活旧形变。
+    gsap!.timeline({ paused: true }).to(shape, { clearProps: "transform", duration: 0.001 }).progress(1).kill();
+    shape.style.removeProperty("transform");
+  };
+  animateThemeCursor = () => {
+    if (!root.classList.contains("k-cursor-on")) return;
+    clearTimeout(themeTimer);
+    themeTl?.kill(); // 保留当前姿态，新点击从当前值接管。
+    const duration = motionDuration(root, "--motion-normal", 280);
+    const press = Math.min(0.1, duration / 2);
+    themeTl = gsap!.timeline({ onComplete: resetThemeMorph })
+      .to(shape, { scaleX: 1.14, scaleY: 0.86, rotation: document.documentElement.dataset.theme === "dark" ? -12 : 12,
+        duration: press, ease: "power3.out" })
+      .to(shape, { scaleX: 1, scaleY: 1, rotation: 0, duration: duration - press, ease: "back.out(1.7)" });
+    themeTimer = setTimeout(resetThemeMorph, 1000);
+  };
+  window.addEventListener("pagehide", resetThemeMorph);
+  // 坐标尚未知时保留系统指针；首次真实移动定位完成后才接管，避免换页后指针消失。
   // 标签是容器的兄弟元素（不在反相组内），自行居中——原先靠圆环的 grid 居中
   gsap!.set(labelEl, { xPercent: -50, yPercent: -50 });
   const dx = gsap!.quickTo(dot, "x", { duration: 0.1, ease: "power3" });
@@ -772,6 +915,8 @@ function initCursor(root: HTMLElement): void {
   const lx = gsap!.quickTo(labelEl, "x", { duration: 0.38, ease: "power3" });
   const ly = gsap!.quickTo(labelEl, "y", { duration: 0.38, ease: "power3" });
   let shown = false;
+  let pointerX = 0;
+  let pointerY = 0;
   /**
    * 语义档位由「指针下的元素」决定，而不是只由 mouseover 事件决定。
    * 浏览器会在布局/动效变化后静默更新（或不更新）hover 节点却不派发 mouseover——实测入场揭示
@@ -789,50 +934,77 @@ function initCursor(root: HTMLElement): void {
     if (full) {
       labelEl.textContent = label;
       // 标签与圆环同步放大：标签已不在圆环内，不再继承圆环的 transform
-      gsap!.to([ringEl, labelEl], { scale: CURSOR_FULL_SCALE, duration: 0.3, ease: "power3.out" });
-      gsap!.to(labelEl, { autoAlpha: 1, duration: 0.2 });
+      gsap!.to([ringEl, labelEl], { scale: CURSOR_FULL_SCALE, duration: 0.3, ease: "power3.out", overwrite: "auto" });
+      gsap!.to(labelEl, { autoAlpha: 1, duration: 0.2, overwrite: "auto" });
       return;
     }
     gsap!.to(ringEl, {
       scale: key === "soft" ? CURSOR_SOFT_SCALE : 1,
       duration: 0.3,
       ease: "power3.out",
+      overwrite: "auto",
     });
-    gsap!.to(labelEl, { scale: 1, autoAlpha: 0, duration: 0.15 });
+    gsap!.to(labelEl, { scale: 1, autoAlpha: 0, duration: 0.15, overwrite: "auto" });
   };
   /** 按视口坐标重新判定档位（不信任事件自带的 target）。 */
-  const applyTierAt = (x: number, y: number) => applyTier(document.elementFromPoint(x, y));
-  const onMove = (event: MouseEvent) => {
+  const applyTierAt = (x: number, y: number) => {
+    const target = document.querySelector("[data-scrollbar][data-dragging]") ?? document.elementFromPoint(x, y);
+    // Chromium 在文档快照期间可能只命中 html：未知命中不能清空现有光标档位。
+    if (document.documentElement.hasAttribute("data-vt") && target === document.documentElement) return;
+    applyTier(target);
+  };
+  refreshCursorTier = () => { if (shown) applyTierAt(pointerX, pointerY); };
+  const onMove = (event: PointerEvent) => {
+    if (event.pointerType === "touch") return;
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+    const first = !shown;
+    const instant = first || Boolean(document.querySelector("[data-scrollbar][data-dragging]"));
     if (!shown) {
       shown = true;
-      gsap!.to(cursor, { autoAlpha: 1, duration: 0.25 });
+      tierKey = null;
+      gsap!.killTweensOf([cursor, labelEl], "opacity,visibility");
+      gsap!.set(labelEl, { autoAlpha: 0 });
     }
-    dx(event.clientX);
-    dy(event.clientY);
-    rx(event.clientX);
-    ry(event.clientY);
-    lx(event.clientX);
-    ly(event.clientY);
+    // quickTo 缓存起点：首次接管显式给同一坐标，不能从新页默认原点飞入。
+    dx(event.clientX, instant ? event.clientX : undefined);
+    dy(event.clientY, instant ? event.clientY : undefined);
+    rx(event.clientX, instant ? event.clientX : undefined);
+    ry(event.clientY, instant ? event.clientY : undefined);
+    lx(event.clientX, instant ? event.clientX : undefined);
+    ly(event.clientY, instant ? event.clientY : undefined);
+    if (first) {
+      gsap!.set(cursor, { autoAlpha: 1 });
+      root.classList.add("k-cursor-on");
+    }
     applyTierAt(event.clientX, event.clientY);
   };
-  const onOver = (event: MouseEvent) => applyTierAt(event.clientX, event.clientY);
+  const onOver = (event: MouseEvent) => { if (shown) applyTierAt(event.clientX, event.clientY); };
   const onLeaveDoc = () => {
+    resetThemeMorph();
     shown = false;
+    tierKey = null;
+    root.classList.remove("k-cursor-on");
     // 标签是容器的兄弟元素（UI 票 #14），必须与光标一起隐藏，否则语义态下移出窗口会留下悬空残影
-    gsap!.to([cursor, labelEl], { autoAlpha: 0, duration: 0.2 });
+    gsap!.to([cursor, labelEl], { autoAlpha: 0, duration: 0.2, overwrite: "auto" });
   };
-  document.addEventListener("mousemove", onMove, { passive: true });
+  // pointerdown.preventDefault 会抑制兼容mousemove；捕获拖拽仍派发pointermove。
+  document.addEventListener("pointermove", onMove, { passive: true });
   root.addEventListener("mouseover", onOver);
   document.documentElement.addEventListener("mouseleave", onLeaveDoc);
   // 页面失去焦点（切换窗口/应用）同样隐藏，避免指针冻结在页面上
   window.addEventListener("blur", onLeaveDoc);
   cleanups.push(() => {
-    document.removeEventListener("mousemove", onMove);
+    document.removeEventListener("pointermove", onMove);
     root.removeEventListener("mouseover", onOver);
     document.documentElement.removeEventListener("mouseleave", onLeaveDoc);
     window.removeEventListener("blur", onLeaveDoc);
     root.classList.remove("k-cursor-on");
     gsap!.killTweensOf([cursor, dot, ringEl, labelEl]);
+    refreshCursorTier = null;
+    animateThemeCursor = null;
+    window.removeEventListener("pagehide", resetThemeMorph);
+    resetThemeMorph();
   });
 }
 

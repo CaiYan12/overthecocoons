@@ -1,13 +1,20 @@
 ---
 // 来源页：区分原始平台与 Feed 服务提供者，只写核实信息；公开来源状态与隔离条目列表（MVP-Q20/Q22）。
 import KSite from "../components/KSite.astro";
-import KNav from "../components/KNav.astro";
+import KDocNav from "../components/KDocNav.astro";
 import KHud from "../components/KHud.astro";
 import { loadSnapshot } from "../lib/snapshot.ts";
 import { formatDateTime } from "../lib/timeline.ts";
 
 const snapshot = loadSnapshot();
 const snapTime = formatDateTime(snapshot.generatedAt);
+const toc = [
+  { id: "providers", label: "原始平台与 Feed 服务提供者" },
+  { id: "license", label: "使用许可与署名" },
+  { id: "unverified", label: "尚未核实的事项与已核实的限制" },
+  { id: "status", label: "数据状态" },
+  { id: "quarantine", label: "隔离条目" },
+];
 ---
 
 <KSite
@@ -16,9 +23,10 @@ const snapTime = formatDateTime(snapshot.generatedAt);
   isFixture={snapshot.isFixture}
   activeTopic="全部"
   activeNav="sources"
+  footerInColumns
 >
   <Fragment slot="col-start">
-    <KNav active="sources" />
+    <KDocNav active="sources" toc={toc} />
   </Fragment>
 
   {
@@ -29,7 +37,7 @@ const snapTime = formatDateTime(snapshot.generatedAt);
     )
   }
 
-  <article class="k-doc">
+  <article class="k-doc" data-longform-motion>
     <h1>来源</h1>
     <p class="k-doc-lede">首版仅一个来源。本页只记录已核实信息，未核实事项如实标注。</p>
 

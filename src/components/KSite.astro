@@ -5,6 +5,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import KHeader from "./KHeader.astro";
 import KMenu from "./KMenu.astro";
+import KScrollbar from "./KScrollbar.astro";
 import SiteFooter from "./SiteFooter.astro";
 import { formatDateTime, latestDayStats, sortEntriesDesc, topicTabs } from "../lib/timeline.ts";
 import { loadSnapshot } from "../lib/snapshot.ts";
@@ -23,7 +24,7 @@ interface Props {
    * 详情/说明页不传（用户先看到内容，SOURCE/STATUS/PROJECT 移到正文之后）。
    */
   hudMobileFirst?: boolean;
-  /** 长文页把页脚纳入侧栏的 sticky 边界，避免跳到末章后导航被推出窗口。 */
+  /** 页脚跨栏单独一行；侧栏由正文行的边界容器限制，避免相互覆盖。 */
   footerInColumns?: boolean;
 }
 const { title, description, isFixture, activeTopic = "全部", activeNav, hudMobileFirst, footerInColumns = false } = Astro.props;
@@ -72,10 +73,11 @@ const tabs = topicTabs(snapshot.entries);
          隔离组屏蔽，实测渲染为原始白色）；语义标签必须留在容器之外——容器内会随背景一起反相，
          accent 红会漂成青绿，故标签作为兄弟元素独立跟随鼠标 -->
     <div class="k-cursor" data-kcursor aria-hidden="true">
-      <span class="k-cursor-ring" data-kcursor-ring></span>
+      <span class="k-cursor-ring" data-kcursor-ring><span class="k-cursor-ring-shape" data-kcursor-shape></span></span>
       <span class="k-cursor-dot" data-kcursor-dot></span>
     </div>
     <span class="k-cursor-label" data-kcursor-label aria-hidden="true"></span>
+    <KScrollbar scope="page" />
   </div>
   <!-- 客户端增强入口（Ticket 05）：单模块按挂点初始化；无 JS 时页面保持静态可读 -->
   <script src="../client/index.ts"></script>

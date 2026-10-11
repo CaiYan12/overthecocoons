@@ -113,6 +113,7 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
         return {
           bg: cs.backgroundColor,
           width: cs.width,
+          clipPath: cs.clipPath,
           transform: cs.transform,
           left: cs.left,
           pin: document.querySelector(".k-day .silk-pin") !== null,
@@ -129,7 +130,8 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     const s1 = await railState(p1);
     expect(s1, "无 JS：rail 存在").not.toBeNull();
     expect(s1!.bg, "无 JS：rail 旧灰线（accent 让位进度线）").toBe(RULE);
-    expect(s1!.width, "无 JS：rail 2px（与进度线同宽）").toBe("2px");
+    expect(s1!.width, "无 JS：rail与圆点共用9px绘制框").toBe("9px");
+    expect(s1!.clipPath, "无 JS：中央2px轨线（与进度线同宽）").toBe("inset(0px 3.5px)");
     expect(s1!.transform, "无 JS：rail 无变换（静态）").toBe("none");
     expect(s1!.pin, "无 JS：日组钉点在位").toBe(true);
     expect(s1!.heroThread, "无 JS：Hero「茧」底静态丝线在位").toBe(true);
@@ -148,20 +150,21 @@ test.describe("时间线与站点冒烟（Ticket 04）", () => {
     expect(s2!.textures, "reduced-motion：丝纹齐备").toBe(s2!.medias);
     await reduced.close();
 
-    // 降级三：移动端（≤767px：rail 左移 9px、单栏、丝线/丝纹完整）
+    // 降级三：移动端（≤767px：rail中心10px、单栏、丝线/丝纹完整）
     const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const p3 = await mobile.newPage();
     await p3.goto(BASE);
     const s3 = await railState(p3);
     expect(s3!.bg, "移动端：rail 旧灰线").toBe(RULE);
-    expect(s3!.left, "移动端：rail 左移 9px").toBe("9px");
+    expect(s3!.left, "移动端：9px绘制框中心位于10px").toBe("5.5px");
     expect(s3!.heroThread, "移动端：Hero 静态丝线在位").toBe(true);
     expect(s3!.textures, "移动端：丝纹齐备").toBe(s3!.medias);
     await mobile.close();
   });
 
   test("版式诚实化（T7/ADR 0003）：两档版式与日组头规则结构正确（无 JS 上下文即静态层保证）", async ({ browser }) => {
-    const context = await browser.newContext({ javaScriptEnabled: false });
+    // 本例检查桌面主题入口；手机布局有意隐藏顶栏主题，使用MENU入口。
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     await page.goto(BASE);
 

@@ -13,7 +13,7 @@ test(`${title}页保留全站导航，并能返回来源与时间线`, async ({ 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`${BASE}${slug}/`);
   const nav = page.getByRole("complementary", { name: "功能导航" });
-  await expect(nav.locator("nav a")).toHaveText(["时间线", "来源", "关于", "原则", "隐私"]);
+  await expect(nav.locator("nav a")).toHaveText(["时间线", "来源", "关于", "原则", "隐私", "返回主站"]);
   await expect(nav.getByRole("link", { name: title, exact: true })).toHaveAttribute("aria-current", "page");
   await nav.getByRole("link", { name: "来源", exact: true }).click();
   await expect(page).toHaveURL(`${BASE}sources/`);
@@ -22,7 +22,7 @@ test(`${title}页保留全站导航，并能返回来源与时间线`, async ({ 
   await expect(page).toHaveURL(BASE);
 });
 
-test(`${title}极矮桌面：整栏滚动兜底，键盘能到达每个导航与目录入口`, async ({ page }) => {
+test(`${title}极矮桌面：整页滚动，键盘能到达每个导航与目录入口`, async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 360 });
   await page.goto(`${BASE}${slug}/`);
   await page.waitForSelector('html[data-oct-client="ready"]');
@@ -31,40 +31,43 @@ test(`${title}极矮桌面：整栏滚动兜底，键盘能到达每个导航与
   await links.first().focus();
   for (let i = 0; i < await links.count(); i++) {
     await expect(links.nth(i)).toBeFocused();
-    const box = await links.nth(i).boundingBox();
-    const bounds = await sidebar.boundingBox();
-    expect(box!.y, "聚焦入口未被侧栏上缘裁切").toBeGreaterThanOrEqual(bounds!.y);
-    expect(box!.y + box!.height, "聚焦入口未被侧栏下缘裁切").toBeLessThanOrEqual(bounds!.y + bounds!.height);
+    await expect.poll(async () => {
+      const box = await links.nth(i).boundingBox();
+      const header = await page.locator("[data-kheader]").boundingBox();
+      return box!.y >= header!.y + header!.height && box!.y + box!.height <= 360;
+    }, { message: "浏览器完成焦点滚动后，聚焦入口完整可见" }).toBe(true);
     if (i + 1 < await links.count()) await page.keyboard.press("Tab");
   }
-  expect(await sidebar.evaluate((el) => el.scrollTop), "整栏已滚动").toBeGreaterThan(0);
-  expect(await page.locator(".k-toccol").evaluate((el) => el.scrollTop), "兜底不形成第二个目录滚动区域").toBe(0);
+  expect(await sidebar.evaluate((el) => el.scrollTop), "侧栏不独立滚动").toBe(0);
+  expect(await page.evaluate(() => scrollY), "整页发生滚动").toBeGreaterThan(0);
+  expect(await page.locator(".k-toccol").evaluate((el) => el.scrollTop)).toBe(0);
   await links.last().click();
   await expect(page).toHaveURL(`${BASE}${slug}/#${last}`);
 });
 
-test(`${title}常规短屏：目录独立滚动，全站导航保持可见`, async ({ page }) => {
+test(`${title}常规短屏：滚轮由整页处理，目录保持完整高度`, async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 600 });
   await page.goto(`${BASE}${slug}/`);
   const nav = page.getByRole("complementary", { name: "功能导航" });
   const toc = page.getByRole("complementary", { name: "本页目录" });
-  const before = await nav.boundingBox();
+  await toc.scrollIntoViewIfNeeded();
   const box = await toc.boundingBox();
-  expect(box!.y + box!.height, "目录不应在窗口下方被裁掉").toBeLessThanOrEqual(600);
-  await toc.locator("a").first().focus();
+  const before = await page.evaluate(() => scrollY);
   await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
   await wheelBy(page, 450);
-  await expect.poll(() => toc.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
-  expect((await nav.boundingBox())!.y, "目录滚动不移动全站入口").toBeCloseTo(before!.y, 1);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(before);
+  expect(await toc.evaluate((el) => el.scrollTop)).toBe(0);
+  await nav.locator("nav a").first().scrollIntoViewIfNeeded();
   await nav.getByRole("link", { name: "时间线", exact: true }).click();
   await expect(page).toHaveURL(BASE);
 });
 
-test(`${title}跳到最后章节后，全站入口仍在固定页头下方可点击`, async ({ page }) => {
+test(`${title}跳到最后章节后，可整页返回全站入口`, async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 600 });
   await page.goto(`${BASE}${slug}/#${last}`);
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(100);
   const link = page.getByRole("complementary", { name: "功能导航" }).getByRole("link", { name: "时间线", exact: true });
+  await link.scrollIntoViewIfNeeded();
   const header = await page.locator("[data-kheader]").boundingBox();
   await expect.poll(async () => (await link.boundingBox())!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
   await link.click();
@@ -111,7 +114,7 @@ test(`${title}无 JS：全站入口和章节锚点仍可使用`, async ({ browse
 });
 }
 
-test("调整窗口高度后，侧栏在目录滚动与整栏滚动之间恢复", async ({ page }) => {
+test("调整窗口高度后，侧栏继续保持无内部滚动", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 360 });
   await page.goto(`${BASE}about/`);
   await page.waitForSelector('html[data-oct-client="ready"]');
@@ -124,13 +127,14 @@ test("调整窗口高度后，侧栏在目录滚动与整栏滚动之间恢复",
 });
 
 for (const height of [430, 450]) {
-  test(`临界高度 ${height}：全站导航加一行目录放不下时整栏滚动`, async ({ page }) => {
+  test(`临界高度 ${height}：完整目录用整页滚动到达`, async ({ page }) => {
     await page.setViewportSize({ width: 1440, height });
     await page.goto(`${BASE}principles/`);
     await page.waitForSelector('html[data-oct-client="ready"]');
     const last = page.locator(".k-toccol a").last();
     await last.focus();
-    expect(await page.locator(".k-docnav").evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+    expect(await page.locator(".k-docnav").evaluate((el) => el.scrollTop)).toBe(0);
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
     expect(await page.locator(".k-toccol").evaluate((el) => el.scrollTop)).toBe(0);
     const box = await last.boundingBox();
     const header = await page.locator("[data-kheader]").boundingBox();

@@ -1,32 +1,29 @@
-/** 长文侧栏：按实际可用空间选择目录滚动或整栏兜底，不绑定猜测的高度断点。 */
+/** 左右侧栏保持完整高度：能完整放进窗口才吸附，否则随整页滚动，不创建内部滚动区。 */
 export function initDocNavigation(): void {
-  const sidebar = document.querySelector<HTMLElement>("[data-docnav]");
-  const nav = sidebar?.querySelector<HTMLElement>(".k-nav");
-  const toc = sidebar?.querySelector<HTMLElement>(".k-toccol");
-  if (!sidebar || !nav || !toc) return;
-
-  const update = () => {
-    if (getComputedStyle(nav).display === "none") {
-      sidebar.removeAttribute("data-scroll-all");
-      toc.style.removeProperty("min-height");
-      return;
-    }
-    const style = getComputedStyle(sidebar);
-    const available = sidebar.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-    // 目录至少留一行可操作空间；再小就改为单一整栏滚动，避免目录成为零高度区域。
-    const firstLink = toc.querySelector<HTMLElement>("a");
-    if (!firstLink) return;
-    const tocStyle = getComputedStyle(toc);
-    const minimumToc = firstLink.getBoundingClientRect().height
-      + parseFloat(tocStyle.paddingTop) + parseFloat(tocStyle.paddingBottom);
-    toc.style.minHeight = `${minimumToc}px`;
-    const required = nav.getBoundingClientRect().height + parseFloat(style.rowGap) + minimumToc;
-    sidebar.toggleAttribute("data-scroll-all", required > available);
-  };
-  update();
-  window.addEventListener("resize", update, { passive: true });
-  if (typeof ResizeObserver !== "undefined") {
-    // 导航字体、换行或内容尺寸变化也会重新计算；仅观察导航，不受滚动模式切换影响。
-    new ResizeObserver(update).observe(nav);
-  }
+  document.querySelectorAll<HTMLElement>("[data-docnav], [data-khud]").forEach((sidebar) => {
+    const isHud = sidebar.hasAttribute("data-khud");
+    const stickyAttribute = isHud ? "data-hud-sticky" : "data-docnav-sticky";
+    const update = () => {
+      const nav = sidebar.querySelector(".k-nav");
+      if ((nav && getComputedStyle(nav).display === "none") || (isHud && getComputedStyle(sidebar).flexDirection === "row")) {
+        sidebar.removeAttribute(stickyAttribute);
+        return;
+      }
+      const top = parseFloat(getComputedStyle(sidebar).top);
+      const fits = Number.isFinite(top) && sidebar.offsetHeight <= innerHeight - top - 24;
+      sidebar.toggleAttribute(stickyAttribute, fits);
+    };
+    update();
+    window.addEventListener("resize", update, { passive: true });
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(update).observe(sidebar);
+    sidebar.addEventListener("focusin", (event) => {
+      if (!(event.target instanceof HTMLAnchorElement) || !event.target.matches(":focus-visible")) return;
+      const box = event.target.getBoundingClientRect();
+      const headerBottom = document.querySelector("[data-kheader]")?.getBoundingClientRect().bottom ?? 0;
+      if (box.top < headerBottom + 6 || box.bottom > innerHeight - 6) {
+        // 整页焦点滚动也要避开固定页头，不使用任何侧栏内的scrollTop。
+        event.target.scrollIntoView({ block: "center", behavior: "instant" });
+      }
+    });
+  });
 }

@@ -5,7 +5,7 @@
 import KSite from "./KSite.astro";
 import KHero from "./KHero.astro";
 import KPageHead from "./KPageHead.astro";
-import KNav from "./KNav.astro";
+import KDocNav from "./KDocNav.astro";
 import KHud from "./KHud.astro";
 import KEntry from "./KEntry.astro";
 import KPager from "./KPager.astro";
@@ -78,6 +78,7 @@ const description =
   activeTopic={topic}
   activeNav="home"
   hudMobileFirst
+  footerInColumns
 >
   <Fragment slot="hero">
     {topic === "全部" && page === 1 ? (
@@ -87,7 +88,7 @@ const description =
     )}
   </Fragment>
   <Fragment slot="col-start">
-    <KNav active="home" />
+    <KDocNav active="home" timeline toc={groups.map((group) => ({ id: `day-${group.date}`, label: `${group.date} · ${group.items.length} 条` }))} />
   </Fragment>
 
   <script is:inline type="application/json" data-kdata set:html={kdataIsland}></script>
@@ -97,7 +98,7 @@ const description =
         <KEmpty topic={topic} />
       ) : (
         groups.map((group) => (
-          <section class="k-day" data-day={group.date}>
+          <section class="k-day" data-day={group.date} id={`day-${group.date}`}>
             {/* T14 追改（UI 票 #31）：rail 回归旧灰线（silk-rail 覆盖删除，accent 让位进度线）；
                 丝线身份由 Hero 穿出丝线、钉点与版画丝纹承载。逐日进度线 .k-progress 叠合 rail
                 之上（a1ce4d5 形态，scaleY scrub 驱动） */}

@@ -26,7 +26,7 @@ const fontFaceCss = `@font-face{font-family:"Source Han Serif SC Heavy Subset";s
 <!doctype html>
 <!-- T4（UI 票 #21）：初值 auto（跟随系统），CSS prefers-color-scheme 映射无 JS 亦生效；
      head 脚本仅在存在持久化偏好时覆盖（循环语义不变） -->
-<html lang="zh-CN" data-theme="auto">
+<html lang="zh-CN" data-theme="auto" id="k-page-scroll">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -63,10 +63,26 @@ const fontFaceCss = `@font-face{font-family:"Source Han Serif SC Heavy Subset";s
         } catch (error) {
           /* 存储不可用（隐私模式）：保持 auto 初值，模块内再降级内存态 */
         }
+        // 自绘覆盖式滚动条首绘不占槽位；模块迟到／失效时回到原生滚动条。
+        if ("PointerEvent" in window && CSS.supports("scrollbar-width", "none")) {
+          document.documentElement.dataset.octScrollbars = "pending";
+          setTimeout(function () {
+            if (document.documentElement.dataset.octScrollbars === "pending") {
+              document.documentElement.removeAttribute("data-oct-scrollbars");
+            }
+          }, 1500);
+        }
+        // 说明页新动效独立门控，按2026-10-11用户裁定完整播放；失败兜底仍保持可读。
+        document.documentElement.setAttribute("data-oct-doc-pending", "");
+        setTimeout(function () {
+          document.documentElement.removeAttribute("data-oct-doc-pending");
+        }, 1500);
         if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
           document.documentElement.setAttribute("data-oct-pending", "");
+          document.documentElement.setAttribute("data-oct-toc-pending", "");
           setTimeout(function () {
             document.documentElement.removeAttribute("data-oct-pending");
+            document.documentElement.removeAttribute("data-oct-toc-pending");
           }, 1500);
         }
         // 主题二态化（维护者裁定）：按钮标签按「已存储或系统」在解析完成后尽早矫正——

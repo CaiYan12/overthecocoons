@@ -52,7 +52,12 @@
   }
 }
 * { box-sizing: border-box }
-html { scroll-behavior: smooth }
+html { scroll-behavior: smooth; scrollbar-width: auto; scrollbar-gutter: auto }
+/* 自绘纵向滚动条覆盖内容而不占槽位；无JS／增强失败保留原生条。 */
+html[data-oct-scrollbars] { scrollbar-width: none; scrollbar-gutter: auto }
+html[data-oct-scrollbars] .k-menu-inner { scrollbar-width: none }
+html[data-oct-scrollbars]::-webkit-scrollbar,
+html[data-oct-scrollbars] .k-menu-inner::-webkit-scrollbar { display: none }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto } }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--sans) }
 /* 原型依赖 UA 默认下划线；Tailwind 预检将其置为 inherit，此处显式恢复 */
@@ -94,6 +99,7 @@ footer p { margin: 0 0 8px }
   --content-max: 1440px;
   --space-1: 4px; --space-2: 8px; --space-3: 16px; --space-4: 24px; --space-5: 40px; --space-6: 64px;
   --motion-fast: 160ms; --motion-normal: 280ms; --motion-slow: 550ms;
+  --header-height: 68px;
   --pad-x: clamp(20px, 4vw, 72px);
   --z-bg: 0; --z-content: 10; --z-sticky: 20; --z-header: 50; --z-float: 100;
   --z-menu: 500; --z-cursor: 900;
@@ -111,7 +117,7 @@ footer p { margin: 0 0 8px }
 @media (prefers-reduced-motion: reduce) { .k-grain { opacity: calc(var(--grain-o) * .66) } }
 
 /* 紧凑吸顶导航（首屏隐藏由 GSAP yPercent 控制，属 Ticket 06；无 JS 时导航保持可见） */
-.k-header { position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-header); height: 68px;
+.k-header { position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-header); height: var(--header-height);
   display: flex; align-items: center; gap: 24px; padding: 0 var(--pad-x);
   background: color-mix(in srgb, var(--paper) 84%, transparent);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
@@ -201,15 +207,23 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 /* 左侧竖向导航 */
 .k-nav { position: sticky; top: 100px; padding-top: 8px }
 .k-navhead { font-size: 11px; letter-spacing: .28em; color: var(--muted); margin: 0 0 14px }
-.k-nav nav { position: relative; display: flex; flex-direction: column; border-left: 1px solid var(--rule); padding-left: 18px; gap: 2px }
-.k-marker { position: absolute; left: -4.5px; top: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent) }
+/* 轨线与圆点共用8px绘制框和矢量裁剪；中央仅绘制2px，避免缩放后分别取整。 */
+.k-nav nav { position: relative; display: flex; flex-direction: column; padding-left: 20px; gap: 2px }
+.k-nav nav::before, .k-toc::before { content: ""; position: absolute; left: -3px; top: 0; width: 8px; height: 100%; background: var(--rule); clip-path: inset(0 3px); pointer-events: none }
+.k-marker { position: absolute; left: -23px; top: calc(50% + 1px); transform: translateY(-50%); width: 8px; height: 8px; pointer-events: none }
+/* 与时间线激活节点共用5px、16% accent光圈；只裁剪内点，保留完整外圈。 */
+.k-marker, .k-toc-marker { border-radius: 50%; box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent) }
+.k-marker::before, .k-toc-marker::before { content: ""; position: absolute; inset: 0; background: var(--accent); clip-path: circle(50%); pointer-events: none }
+.k-nav-progress { position: absolute; left: -3px; top: 0; width: 8px; height: 100%; background: var(--accent); clip-path: inset(0 3px); transform: scaleY(0); transform-origin: top; opacity: 0; pointer-events: none }
 /* 原型为 <button> 桩；真实站点为链接，选择器补 <a> 并去下划线 */
-.k-nav nav button, .k-nav nav a { text-align: left; font-size: 14.5px; padding: 7px 0; color: var(--ink); text-decoration: none; display: block }
+.k-nav nav button, .k-nav nav a { position: relative; text-align: left; font-size: 14.5px; padding: 7px 0; color: var(--ink); text-decoration: none; display: block }
 .k-nav nav button:hover, .k-nav nav a:hover { color: var(--accent) }
 .k-nav nav [aria-current=page] { color: var(--accent); font-weight: 600 }
-.k-navfoot { margin: 20px 0 0 18px; font-size: 13px }
 /* 右侧 Editorial HUD */
-.k-hud { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 22px; font-size: 13px }
+.k-hud-boundary { align-self: stretch; min-width: 0 }
+.k-hud { position: static; top: 100px; margin-top: 100px; display: flex; flex-direction: column; gap: 22px; font-size: 13px }
+.k-hud[data-hud-timeline] { margin-top: 0 }
+.k-hud[data-hud-sticky] { position: sticky }
 .k-hud .sec { border-top: 1px solid var(--rule); padding-top: 10px }
 /* T9（UI 票 #26）：HUD 英文小标规格提级——字号 10.5px→11.5px（区间 11–12px 取中）、
    字距 .3em→.14em（区间 .12–.16em 取中，与 .k-hero-meta 同频）；参数为票面级「实现者拟定」，
@@ -241,22 +255,24 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 .v-kinetic .live-status:empty { display: none }
 
 /* 日期组 + 时间线 */
-.k-day { position: relative; padding-top: 96px }   /* P1-8：日组呼吸 */
-.k-day .k-line { position: absolute; left: calc(72px + 13px); top: 0; bottom: 0; width: 2px; background: var(--rule) }
+.k-day { position: relative; padding-top: 96px; scroll-margin-top: 100px }   /* P1-8：日组呼吸 */
+.k-day .k-line { position: absolute; left: calc(72px + 9.5px); top: 0; bottom: 0; width: 9px; background: var(--rule); clip-path: inset(0 3.5px) }
 /* T14 追改（UI 票 #31，维护者 2026-10-07 二次裁定）：rail 回归旧灰线样式——T13 的 silk-rail
    2px accent 覆盖删除，红色 accent 让位给进度线（恢复可见性）；暗色恢复 a1ce4d5 的 45% accent
    混 rule 变体。丝线身份由 Hero 穿出丝线、日组钉点与版画丝纹承载。进度线（2px accent）叠合可见。
    三次裁定：灰线加粗至 2px 与进度线同宽（消除同柱粗细不一致）。
-   轴心对齐（用户审查发现节点 1px 漂移）：rail 轴心=节点列中心 86px（72+28 列的中点）——
-   线/进度线 left 13px（宽 2px → 中心 86）、钉点 left 14px 平移 -50%（中心 86），三者同轴。 */
+   轴心=节点列中心86px（72+28列中点）。轨线／进度与节点共用9px绘制框，
+   裁剪中央2px；空心点以同类矢量裁剪绘制，避免缩放时边框与圆角分别取整。 */
 :root[data-theme=dark] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) }
 @media (prefers-color-scheme: dark) { :root[data-theme=auto] .k-day .k-line { background: color-mix(in srgb, var(--accent) 45%, var(--rule)) } }
 /* T14：进度线恢复（a1ce4d5 形态）：scaleY(0) 起始，motion scrub 生长 */
-.k-day .k-progress { position: absolute; left: calc(72px + 13px); top: 0; bottom: 0; width: 2px; background: var(--accent); transform: scaleY(0); transform-origin: top center; will-change: transform }
+.k-day .k-progress { position: absolute; left: calc(72px + 9.5px); top: 0; bottom: 0; width: 9px; background: var(--accent); clip-path: inset(0 3.5px); transform: scaleY(0); transform-origin: top center; will-change: transform }
 /* T13：日组 rail 顶钉点（原型 B 版静态呈现：surface 底 + accent 描边的空心点，钉在 rail 顶端）。
    每个日组各一枚（rail 按日组分段，钉点标记每段起点）；纯装饰 aria-hidden，无状态无动效。 */
-.silk-pin-wrap { position: absolute; left: calc(72px + 14px); top: 6px; transform: translateX(-50%); z-index: 3 }
-.silk-pin { display: block; width: 9px; height: 9px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent) }
+.silk-pin-wrap { position: absolute; left: calc(72px + 9.5px); top: 6px; width: 9px; z-index: 3 }
+.silk-pin { position: relative; display: block; width: 9px; height: 9px; color: var(--accent) }
+.silk-pin::before, .k-node::before { content: ""; position: absolute; inset: 0; background: currentColor; clip-path: circle(50%); pointer-events: none }
+.silk-pin::after, .k-node::after { content: ""; position: absolute; inset: 2px; background: var(--surface); clip-path: circle(50%); pointer-events: none; transition: background-color var(--motion-fast) ease-out }
 .k-day-head { padding: 0 0 32px calc(72px + 28px + 24px) }
 /* T7 版式诚实化（ADR 0003）：取消位置型头条档，大字时刻由日组头承担——
    日期大字提级；批次形态（同日分钟全相同）追加「批次 hh:mm · N 条」中字行——T7 票面级设计参数（实现者拟定，总审裁定） */
@@ -270,8 +286,10 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 .k-day .k-entry:last-of-type { margin-bottom: 24px }
 .k-time { grid-area: time; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; padding: 12px 12px 0 0 }
 .k-node-rail { grid-area: rail; position: relative }
-.k-node { position: absolute; left: 50%; top: 16px; width: 9px; height: 9px; border-radius: 50%; background: var(--surface); border: 2px solid var(--rule); transform: translate(-50%, 0); transition: border-color var(--motion-fast) ease-out, background-color var(--motion-fast) ease-out, box-shadow var(--motion-fast) ease-out }
-.k-entry.is-active .k-node { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent) }
+.k-node { position: absolute; left: calc(50% - 4.5px); top: 16px; width: 9px; height: 9px; border-radius: 50%; color: var(--rule); transition: color var(--motion-fast) ease-out, box-shadow var(--motion-fast) ease-out }
+.k-entry:has(.k-time) .k-node { top: 17.5px }
+.k-entry.is-active .k-node { color: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent) }
+.k-entry.is-active .k-node::after { background: var(--accent) }
 .k-body { grid-area: body; min-width: 0 }
 .k-body-inner { display: grid; gap: 0 }
 .layout-a .k-body-inner { grid-template-columns: minmax(0, 1fr) 264px; column-gap: 40px; align-items: start }
@@ -353,32 +371,50 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 .k-top .arr { font-size: 15px; line-height: 1 }
 @media (prefers-reduced-motion: reduce) { .k-top { transition: none } }
 
-/* 全屏导航（原生 dialog，倒置配色；静态层保留结构与真实链接，打开行为属 Ticket 06） */
-dialog.k-menu { border: 0; padding: 0; margin: 0; width: 100vw; max-width: 100vw; height: 100dvh; max-height: none; background: var(--ink); color: var(--paper) }
+/* 全屏导航：同主题底色轻微分层，下沿投影随面板进退，不改变全屏覆盖尺寸。 */
+dialog.k-menu { border: 0; padding: 0; margin: 0; width: 100vw; max-width: 100vw; height: 100dvh; max-height: none; background: transparent; color: var(--ink); overflow: hidden }
 dialog.k-menu::backdrop { background: transparent }
+.k-menu-surface { position: relative; height: 100%; background: color-mix(in srgb, var(--paper) 94%, var(--ink)); transform-origin: center top;
+  box-shadow: 0 1px 0 rgb(0 0 0 / .08) }
+/* 下沿投影限于4px，保留轻微覆盖感。 */
+.k-menu-surface::after { content: ""; position: absolute; top: 100%; left: 0; right: 0; height: 4px; pointer-events: none;
+  background: linear-gradient(to bottom, rgb(0 0 0 / .1), rgb(0 0 0 / .04) 35%, transparent) }
 .k-menu-inner { height: 100%; display: flex; flex-direction: column; padding: 24px var(--pad-x) 40px; overflow: auto }
-.k-menu-close { align-self: flex-end; font-size: 12px; letter-spacing: .24em; border: 1px solid color-mix(in srgb, var(--paper) 40%, transparent); padding: 10px 16px; min-height: 44px; color: var(--paper) }
+.k-menu-close { align-self: flex-end; font-size: 12px; letter-spacing: .24em; border: 1px solid var(--rule); padding: 10px 16px; min-height: 44px; color: var(--ink) }
 .k-menu-close:hover { color: var(--accent); border-color: var(--accent) }
 .k-menu-grid { flex: 1; display: grid; grid-template-columns: 1fr auto; column-gap: 6vw; align-items: center; align-content: space-evenly }
-.k-mi { display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; text-align: left; color: var(--paper); text-decoration: none }
+.k-mi { display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; text-align: left; color: var(--ink); text-decoration: none }
 .k-mi:hover .lb { color: var(--accent) }
-.k-mi .no { font: 700 clamp(20px, 3vw, 34px)/1 var(--font-display); color: var(--paper); opacity: .35; min-width: 2.4em; font-variant-numeric: tabular-nums }
-.k-mi .lb { font: 600 clamp(44px, 6vw, 76px)/1.15 var(--font-display); color: var(--paper); transition: color var(--motion-fast) ease-out }
+.k-mi .no { font: 700 clamp(20px, 3vw, 34px)/1 var(--font-display); color: var(--ink); opacity: .35; min-width: 2.4em; font-variant-numeric: tabular-nums }
+.k-mi .lb { font: 600 clamp(44px, 6vw, 76px)/1.15 var(--font-display); color: var(--ink); transition: color var(--motion-fast) ease-out }
 .k-mi[aria-current=page] .lb { color: var(--accent) }
 /* P0-3：菜单右半 —— 编辑部数据列 */
 .k-menu-data { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; text-align: right }
-.k-menu-data .ghost { font: 700 96px/1 var(--font-display); color: var(--paper); opacity: .08; letter-spacing: .04em }
-.k-menu-data .row { font-size: 12px; letter-spacing: .12em; color: color-mix(in srgb, var(--paper) 60%, transparent); font-variant-numeric: tabular-nums }
+.k-menu-data .ghost { font: 700 96px/1 var(--font-display); color: var(--ink); opacity: .08; letter-spacing: .04em }
+.k-menu-data .row { font-size: 12px; letter-spacing: .12em; color: var(--muted); font-variant-numeric: tabular-nums }
 @media (max-width: 1199px) { .k-menu-data { display: none } .k-menu-grid { grid-template-columns: 1fr } }
 .k-menu-list { display: flex; flex-direction: column; gap: 6px }
-.k-menu-topics { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 28px; border-top: 1px solid color-mix(in srgb, var(--paper) 22%, transparent) }
-.k-menu-topics .tab { color: color-mix(in srgb, var(--paper) 65%, transparent); border: 1px solid color-mix(in srgb, var(--paper) 25%, transparent); padding: 8px 14px; min-height: 40px }
-.k-menu-topics .tab:hover { color: var(--paper); border-color: var(--paper) }
+.k-menu-topics { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 28px; border-top: 1px solid var(--rule) }
+.k-menu-topics .tab { color: var(--muted); border: 1px solid var(--rule); padding: 8px 14px; min-height: 40px }
+.k-menu-topics .tab:hover { color: var(--ink); border-color: var(--ink) }
 .k-menu-topics .tab[aria-current=true] { color: var(--accent); border-color: var(--accent) }
-/* T9（UI 票 #26）：菜单主题列空主题同步降权——倒置配色下以 paper@62% 定界：
-   对墨底 = 4.73:1（深色 token）/ 6.61:1（浅色 token），60% 起深色跌破 4.5（0.60=4.44），
-   取 62% 留余量；min-height 40px 触控目标不变 */
-.k-menu-topics .tab.tab-empty { color: color-mix(in srgb, var(--paper) 62%, transparent) }
+/* 菜单跟随页面主题：空主题沿用可读的次要文字色，触控目标仍为40px。 */
+.k-menu-topics .tab.tab-empty { color: var(--muted) }
+
+/* 页面与MENU共用自绘覆盖式轨道。原生wheel/touch/键盘滚动容器不变。 */
+.k-scrollbar { position: fixed; top: 6px; bottom: 6px; right: 2px; width: 14px; z-index: var(--z-float); touch-action: none; cursor: pointer; outline-offset: -2px }
+[data-scrollbar=page] { top: calc(var(--header-height) + 6px); z-index: var(--z-sticky) }
+.k-scrollbar[hidden] { display: none }
+.k-scrollbar::before { content: ""; position: absolute; top: 0; bottom: 0; right: 5px; width: 1px; background: color-mix(in srgb, var(--rule) 30%, transparent); pointer-events: none }
+.k-scrollbar-thumb { position: absolute; top: 0; right: 4px; width: 6px; min-height: 32px; border-radius: 2px; background: var(--accent); cursor: grab; scale: .5 1; transform-origin: right center; transition: scale var(--motion-fast) var(--ease-out) }
+.k-scrollbar:focus-visible { outline: 2px solid var(--accent) }
+.k-scrollbar[data-dragging] .k-scrollbar-thumb { cursor: grabbing; scale: 1 1 }
+.k-menu-surface > .k-scrollbar { position: absolute; z-index: 1 }
+.k-menu .k-scrollbar::before { background: color-mix(in srgb, var(--rule) 30%, transparent) }
+.k-menu .k-scrollbar-thumb { background: var(--ink) }
+.k-menu:not([data-menu-state=open]) .k-scrollbar { pointer-events: none }
+html:has(dialog[data-kmenu][open]) [data-scrollbar=page] { visibility: hidden }
+@media (hover: hover) and (pointer: fine) { .k-scrollbar:hover .k-scrollbar-thumb { scale: 1 1 } }
 
 /* 页面过渡面板样式已删除（T4，UI 票 #21）：客户端零驱动的死代码，P2 采用原生
    View Transition 跨页过渡（其样式见上方 data-vt 块），此面板不再保留结构占位。 */
@@ -395,7 +431,12 @@ dialog.k-menu::backdrop { background: transparent }
 /* UI 票 #14：点 8px 纯白，随容器一起反相（跨深浅色恒最大对比） */
 .k-cursor-dot { position: fixed; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #fff }
 /* UI 票 #14：描边取 2px —— Blink 把 border-width 取整到整像素，1.5px 实测渲染为 1.00 CSS px（无效值） */
-.k-cursor-ring { position: fixed; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #fff }
+.k-cursor-ring { position: fixed; left: -19px; top: -19px; width: 38px; height: 38px; border-radius: 50%; border: 2px solid transparent }
+.k-cursor-ring-shape { position: absolute; inset: -2px; border: 2px solid #fff; border-radius: 50%; transform-origin: center }
+/* 透明 dialog 顶层无法与外部纸面反相：覆盖边缘外的指针用当前主题墨色。 */
+[data-kmenu][data-menu-pointer=exposed] .k-cursor { mix-blend-mode: normal }
+[data-kmenu][data-menu-pointer=exposed] .k-cursor-dot { background: var(--ink) }
+[data-kmenu][data-menu-pointer=exposed] .k-cursor-ring-shape { border-color: var(--ink) }
 /* UI 票 #14：语义标签在 .k-cursor 之外（隔离组内会随背景反相，accent 红漂成青绿），
    独立跟随鼠标并自行居中（xPercent/yPercent 由 motion.initCursor 设置），保持主题 accent 原色 */
 .k-cursor-label { position: fixed; left: 0; top: 0; z-index: var(--z-cursor); pointer-events: none; font-size: 9.5px; letter-spacing: .18em; color: var(--accent); opacity: 0; white-space: nowrap }
@@ -419,6 +460,24 @@ dialog.k-menu::backdrop { background: transparent }
 @view-transition { navigation: auto }
 .k-header { view-transition-name: k-header }
 .k-grain { view-transition-name: k-grain }
+/* 光标独立于正文径向裁剪；过渡伪层帧沿用实际光标坐标，兼容冻结实时快照的引擎。
+   同页切换才命名；跨页继续由新页首次真实指针移动接管。 */
+@media (pointer: fine) {
+  html[data-vt] .k-cursor { view-transition-name: k-cursor; width: 100vw; height: 100vh }
+  html[data-vt] .k-cursor-label { view-transition-name: k-cursor-label }
+}
+html[data-vt]::view-transition,
+html[data-vt]::view-transition-group(*),
+html[data-vt]::view-transition-image-pair(*),
+html[data-vt]::view-transition-old(*),
+html[data-vt]::view-transition-new(*) { pointer-events: none }
+html[data-vt]::view-transition-group(k-cursor),
+html[data-vt]::view-transition-group(k-cursor-label) { z-index: 900; animation: none }
+html[data-vt]::view-transition-group(k-cursor) { mix-blend-mode: normal; background-image: var(--vt-cursor-frame); background-repeat: no-repeat }
+html[data-vt]::view-transition-old(k-cursor),
+html[data-vt]::view-transition-old(k-cursor-label),
+html[data-vt]::view-transition-new(k-cursor),
+html[data-vt]::view-transition-new(k-cursor-label) { display: none }
 /* View Transition 径向主题切换（仅当 JS 调 startViewTransition 时生效） */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal }
 html[data-vt]::view-transition-new(root) { animation: vt-clip 450ms var(--ease-out) }
@@ -441,10 +500,14 @@ html[data-oct-pending] .k-hero-date,
 html[data-oct-pending] .k-hero-meta li,
 html[data-oct-pending] .k-scrollhint,
 html[data-oct-pending] .k-hero-title .line { opacity: 0 }
+/* 目录也需在首个绘制前遮蔽；只在启动脚本可用时启用，1500ms 兜底解除。 */
+html[data-oct-toc-pending] .k-toccol { opacity: 0 }
+@media (prefers-reduced-motion: reduce) { html[data-oct-toc-pending] .k-toccol { opacity: 1 } }
 
 /* 响应式：移动端（单栏 + 左线时间线 + HUD 元数据条） */
 @media (max-width: 767px) {
-  .k-header { height: 60px; gap: 10px }
+  .v-kinetic { --header-height: 60px }
+  .k-header { gap: 10px }
   .k-brand { font-size: 17px }
   .k-tabs { display: none }               /* 移动端主题入口在全屏菜单 */
   .k-menu-open { padding: 8px 10px; letter-spacing: .14em }
@@ -462,18 +525,19 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
   .k-cols { grid-template-columns: 1fr }
   /* UI 票 #10：order:-1 只作用于时间线页（.k-cols.hud-first）——进度 HUD 随列表前置；
      详情/说明页不加该类，用户先看到返回链接与标题，SOURCE/STATUS/PROJECT 移到正文之后 */
-  .k-hud { position: static; flex-direction: row; flex-wrap: wrap; gap: 8px 24px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 14px 0; margin-bottom: 10px }
-  .k-cols.hud-first .k-hud { order: -1 }
+  .k-hud { position: static; flex-direction: row; flex-wrap: wrap; gap: 8px 24px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 14px 0; margin-top: 0; margin-bottom: 10px }
+  .k-cols.hud-first .k-hud-boundary { order: -1 }
   .k-hud .sec { border-top: 0; padding-top: 0; min-width: 130px; flex: 1 }
   .k-hud .big { font-size: 18px }
   .k-hud .sec-readbar { flex-basis: 100% }
-  .k-day { padding-top: 44px }
-  .k-day .k-line, .k-day .k-progress { left: 9px }
-  .silk-pin-wrap { left: 10px }
+  .k-day { padding-top: 44px; scroll-margin-top: 92px }
+  .k-day .k-line, .k-day .k-progress { left: 5.5px }
+  .silk-pin-wrap { left: 5.5px }
   .k-day-head { padding-left: 33px }
   .k-entry { grid-template-columns: 20px minmax(0, 1fr); grid-template-areas: "rail time" "rail body"; padding: 24px 0 }
   .k-time { text-align: left; padding: 4px 0 8px }
   .k-node { top: 6px }
+  .k-entry:has(.k-time) .k-node { top: 9.5px }
   .k-headline { font-size: clamp(24px, 6vw, 32px) }
   /* T7：紧凑行在移动端显式以同级 (0,2,0) 选择器覆盖，避免被上方 .k-headline (0,1,0) 之外的
      桌面 .layout-compact .k-headline (0,2,0) 特异性压制（历史上 .k-media 同类坑） */
@@ -513,24 +577,34 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
 }
 
 /* 长文页左栏目录（≥1200px 常驻；平板隐藏；手机显示在正文上方） */
-.k-docnav { --docnav-pad: 6px; position: sticky; top: calc(100px - var(--docnav-pad));
+.k-docnav-boundary { align-self: stretch; min-width: 0 }
+.k-docnav { --docnav-pad: 6px; position: static; top: calc(100px - var(--docnav-pad));
   display: flex; flex-direction: column; gap: 24px;
-  max-height: calc(100dvh - 100px + var(--docnav-pad) - 24px);
-  padding: var(--docnav-pad); margin-inline: calc(-1 * var(--docnav-pad)); overflow-y: auto;
+  padding: var(--docnav-pad); margin-inline: calc(-1 * var(--docnav-pad)); overflow: visible;
+  margin-top: calc(100px - var(--docnav-pad));
   scroll-padding-block: var(--docnav-pad) }
+.k-docnav[data-timeline-nav] { margin-top: 0 }
+.k-docnav[data-docnav-sticky] { position: sticky }
 .k-docnav .k-nav, .k-docnav .k-toccol { position: static }
 .k-docnav .k-nav { flex-shrink: 0 }
-/* 留一行可操作空间；6px 内边距容纳 focus-visible 描边，负外边距保持两组竖线对齐。 */
-.k-docnav .k-toccol { flex: 0 1 auto; min-height: 44px; overflow-y: auto;
+/* 目录按完整内容展开；6px 内边距容纳 focus-visible 描边，负外边距保持两组竖线对齐。 */
+.k-docnav .k-toccol { flex: 0 0 auto; overflow: visible;
   padding: var(--docnav-pad); margin-inline: calc(-1 * var(--docnav-pad)); scroll-padding-block: var(--docnav-pad) }
 .k-docnav a { scroll-margin-block: var(--docnav-pad) }
-.k-docnav[data-scroll-all] .k-toccol { flex-shrink: 0; overflow: visible }
-/* 长文页脚在同一三栏容器末尾跨栏；侧栏的 sticky 边界因此覆盖最后章节与页脚。 */
+/* 页脚独占跨栏行，侧栏边界容器只占正文行，吸附不会进入页脚区域。 */
 .k-cols > footer { grid-column: 1 / -1 }
 .k-toccol { position: sticky; top: 100px; padding-top: 8px }
-.k-toc ol { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 1px solid var(--rule); display: flex; flex-direction: column; gap: 2px }
+.k-toc-empty { font-size: 13px; color: var(--muted); margin: 0 }
+.k-toc ol { list-style: none; margin: 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 2px }
 .k-toc a { display: block; font-size: 14.5px; padding: 7px 0; color: var(--ink); text-decoration: none }
 .k-toc a:hover { color: var(--accent) }
+.k-toc { position: relative }
+.k-toc-progress { position: absolute; left: -3px; top: 0; width: 8px; height: 100%; background: var(--accent); clip-path: inset(0 3px); transform: scaleY(0); transform-origin: top; opacity: 0; pointer-events: none }
+.k-toc a { position: relative }
+.k-toc a[aria-current=location] { color: var(--accent); font-weight: 600 }
+.k-toc-marker { position: absolute; left: -3px; top: 1px; width: 8px; height: 8px; transform: translateY(-50%); opacity: 0; pointer-events: none }
+.k-toc-meter { position: absolute; left: 0; right: 0; bottom: 3px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; opacity: 0; pointer-events: none }
+.k-toc a[aria-current=location] .k-toc-meter { opacity: .65 }
 
 /* 演示数据说明（数据页顶部，role=note） */
 .k-notice { border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); background: color-mix(in srgb, var(--accent) 6%, transparent); padding: 12px 16px; font-size: 13.5px; margin: 0 0 24px }
@@ -543,6 +617,8 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
    - h2 字距补 .04em（同大字族；行高 1.25 保持）；
    - 目录行距 6px→7px（对齐左栏导航 .k-nav nav a 的 7px 0） */
 .k-doc { min-width: 0 }
+/* 无 Hero 的说明页正文主动避让固定页头，不依赖演示提示或侧栏高度占位。 */
+.k-main:has(> .k-doc) { padding-top: 100px }
 .k-doc h1 { font: 700 clamp(34px, 4vw, 56px)/1.1 var(--font-display); letter-spacing: .04em; margin: 8px 0 8px }
 .k-doc .k-doc-lede { color: var(--muted); margin: 0 0 32px; max-width: 62ch }
 .k-doc h2 { font: 700 clamp(24px, 2.4vw, 32px)/1.25 var(--serif); letter-spacing: .04em; margin: 48px 0 12px; scroll-margin-top: 96px }
@@ -556,8 +632,23 @@ html[data-oct-pending] .k-hero-title .line { opacity: 0 }
 .k-doc table { border-collapse: collapse; width: 100%; margin: 0 0 16px; font-size: 14px; display: block; overflow-x: auto }
 .k-doc th, .k-doc td { border: 1px solid var(--rule); padding: 8px 10px; text-align: left; vertical-align: top }
 .k-doc th { font-weight: 600; background: var(--surface) }
-.k-doc td a, .k-doc dd, .k-doc td { overflow-wrap: anywhere }
+.k-doc a, .k-doc dd, .k-doc td { overflow-wrap: anywhere }
 .k-doc code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .92em; overflow-wrap: anywhere }
+
+/* 说明页编辑式揭幕：预绘制门控由head放行；无JS不会设置此属性。 */
+html[data-oct-doc-pending] [data-longform-motion] > *,
+html[data-oct-doc-pending] .k-cols:has([data-longform-motion]) [data-khud] .sec > * { opacity: 0 }
+[data-longform-motion] h1, [data-longform-motion] h2 { position: relative }
+.k-doc-char-mask { display: inline-block; overflow: hidden; vertical-align: bottom }
+.k-doc-char { display: inline-block; white-space: pre }
+.k-doc-rule { position: absolute; left: 0; bottom: -5px; width: 48px; height: 2px; background: var(--accent); pointer-events: none }
+[data-longform-hud] .sec { position: relative; border-top-color: transparent }
+.k-hud-rule { position: absolute; top: -1px; left: 0; width: 100%; height: 1px; background: var(--rule); pointer-events: none }
+[data-longform-hud] .k-link { position: relative }
+[data-longform-hud] .k-link:has(.k-hud-link-text):hover { text-decoration: none }
+.k-hud-link-text { display: inline-block; pointer-events: none }
+.k-hud-link-rule { position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left center; pointer-events: none }
+@media (max-width: 767px) { .k-hud-rule { display: none } }
 
 /* 详情页（版画取原时间线大图尺度；返回行与外链行） */
 .k-detail { min-width: 0 }
@@ -575,11 +666,17 @@ button.ext { background: none; border: 0; padding: 0; font: inherit; color: inhe
 
 /* 长文页目录响应式：平板隐藏，手机回到正文上方（grid order） */
 @media (max-width: 1199px) {
+  .k-docnav-boundary { display: none }
   .k-docnav { display: none }
   .k-toccol { display: none }
 }
 @media (max-width: 767px) {
+  .k-docnav-boundary { display: block; order: -1 }
   .k-docnav { display: block; position: static; order: -1; max-height: none; overflow: visible; padding: 84px 0 0; margin: 0 }
   .k-docnav .k-toccol { min-height: 0; overflow: visible; padding: 8px 0 0; margin: 0 0 8px }
+  .k-docnav[data-timeline-nav] { padding-top: 8px }
+  .k-doc h2 { scroll-margin-top: 92px }
+  /* 手机目录已在正文之前自然占位。 */
+  .k-main:has(> .k-doc) { padding-top: 0 }
   .k-toccol { display: block; position: static; order: -1; margin-bottom: 8px }
 }

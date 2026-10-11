@@ -1,0 +1,34 @@
+---
+import KNav from "./KNav.astro";
+
+export interface TocItem {
+  id: string;
+  label: string;
+}
+
+interface Props {
+  active: string;
+  toc: TocItem[];
+  timeline?: boolean;
+}
+const { active, toc, timeline = false } = Astro.props;
+---
+
+<div class="k-docnav-boundary" data-docnav-boundary>
+  <div class="k-docnav" data-docnav data-timeline-nav={timeline ? "" : undefined}>
+    <KNav active={active} />
+    <aside class="k-toccol" aria-label="本页目录">
+      <p class="k-navhead">本页目录 · TOC</p>
+      <nav class="k-toc" data-toc data-timeline-toc={timeline ? "" : undefined} hidden={toc.length === 0}>
+        <span class="k-toc-progress" aria-hidden="true" data-toc-progress></span>
+        <span class="k-toc-marker" aria-hidden="true" data-toc-marker></span>
+        <ol>
+          {toc.map((item) => (
+            <li><a href={`#${item.id}`} data-cursor-soft tabindex="0">{item.label}<span class="k-toc-meter" aria-hidden="true"></span></a></li>
+          ))}
+        </ol>
+      </nav>
+      <p class="k-toc-empty" data-toc-empty hidden={toc.length > 0}>本页暂无条目</p>
+    </aside>
+  </div>
+</div>

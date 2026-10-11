@@ -140,7 +140,7 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
       // 日组头规则在分组收敛后按全组条目计算（与 TimelinePage.astro 同口径）
       const head = dayHeadInfo(group.items.map(({ entry }) => entry));
       const fixtureSuffix = isFixture ? "（演示数据）" : "";
-      return `<section class="k-day" data-day="${group.date}"><div class="k-line" aria-hidden="true"></div><div class="k-progress" aria-hidden="true"></div><span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin"></span></span>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
+      return `<section class="k-day" data-day="${group.date}" id="day-${group.date}"><div class="k-line" aria-hidden="true"></div><div class="k-progress" aria-hidden="true"></div><span class="silk-pin-wrap" aria-hidden="true"><span class="silk-pin"></span></span>${dayHeadHtml(group.date, head, fixtureSuffix)}${group.items.map(({ entry, gi, di }) => entryHtml(entry, gi, di, head.batch)).join("")}</section>`;
     })
     .join("");
 }
@@ -366,6 +366,8 @@ export function initTimeline(): void {
     )
     .forEach((tab) => {
       tab.addEventListener("click", (event) => {
+        // MENU 先退场再重放筛选；修饰键与新窗口保留原生链接语义。
+        if (tab.closest("[data-kmenu]") && (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || tab.target && tab.target !== "_self")) return;
         event.preventDefault();
         const next = tab.dataset.topic ?? "";
         if (!next) return;

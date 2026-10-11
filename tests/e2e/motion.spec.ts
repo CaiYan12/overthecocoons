@@ -484,8 +484,10 @@ test.describe("intro 每页重播（T14：T8 首次到达判定撤销，ADR 0006
 
     // 站内整页导航到 about（左栏真实链接，非客户端接管），再点品牌回首页
     await page.locator('.k-nav nav a[href*="/about/"]').click();
+    await expect(page).toHaveURL(`${BASE}about/`);
     await waitClientReady(page);
     await page.locator(".k-brand").click();
+    await expect(page).toHaveURL(BASE);
     await waitClientReady(page);
 
     // 立即取值（零容差）：intro 若重播，此刻应未打 done（补间需 ~1.35s）
@@ -804,6 +806,162 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     expect(clipNumbers(final.artScale)[0], "art 回到 scale 1").toBeCloseTo(1, 2);
   });
 
+  test("NOW READING 快速上下滑：数字最多一段补间，停止后跟随当前条目", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(BASE);
+    await waitClientReady(page);
+    await waitMotionOn(page);
+    await page.evaluate(() => {
+      const w = window as unknown as {
+        gsap: { getTweensOf(target: Element): unknown[] };
+        __octHudProbe: { max: number; stop: boolean };
+      };
+      const roll = document.querySelector("[data-rollin]")!;
+      w.__octHudProbe = { max: 0, stop: false };
+      const tick = () => {
+        w.__octHudProbe.max = Math.max(w.__octHudProbe.max, w.gsap.getTweensOf(roll).length);
+        if (!w.__octHudProbe.stop) requestAnimationFrame(tick);
+      };
+      tick();
+    });
+    await page.mouse.move(200, 300);
+    for (let i = 0; i < 14; i++) {
+      await wheelBy(page, 200);
+      await page.waitForTimeout(25);
+    }
+    const settled = () => page.evaluate(() => {
+      const active = [...document.querySelectorAll<HTMLElement>(".k-entry.is-active")]
+        .map((el) => String(Number(el.dataset.gi) + 1).padStart(2, "0"));
+      const roll = document.querySelector("[data-rollin]");
+      const transform = roll ? getComputedStyle(roll).transform : "none";
+      return active.includes(roll?.textContent ?? "") &&
+        (transform === "none" || Math.abs(new DOMMatrixReadOnly(transform).m42) < 0.1);
+    });
+    await expect.poll(settled, { timeout: 5000 }).toBe(true);
+    for (let i = 0; i < 6; i++) {
+      await wheelBy(page, -200);
+      await page.waitForTimeout(25);
+    }
+    await expect.poll(settled, { timeout: 5000 }).toBe(true);
+    const max = await page.evaluate(() => {
+      const w = window as unknown as { __octHudProbe: { max: number; stop: boolean } };
+      w.__octHudProbe.stop = true;
+      return w.__octHudProbe.max;
+    });
+    expect(max, "快速上下滑确实触发数字补间").toBeGreaterThan(0);
+    expect(max, "旧的退场/入场补间必须取消，不能叠加写同一数字").toBeLessThanOrEqual(1);
+  });
+
+  for (const [from, to, sign] of [
+    ["01", "02", -1], ["02", "01", 1], ["--", "01", -1], ["01", "--", 1],
+  ] as const) {
+    test(`NOW READING 方向 ${from}→${to}：旧值与新值反向进出遮罩`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(BASE);
+      await waitClientReady(page);
+      await waitMotionOn(page);
+      await page.evaluate((value) => {
+        const w = window as unknown as {
+          ScrollTrigger: { getAll(): Array<{ vars: { trigger?: HTMLElement; start?: string; onToggle?: (state: { isActive: boolean }) => void } }> };
+        };
+        const trigger = w.ScrollTrigger.getAll().find((t) =>
+          t.vars.start === "top 62%" && t.vars.trigger?.dataset.gi === (value === "02" ? "1" : "0"));
+        if (!trigger?.vars.onToggle) throw new Error("找不到阅读位触发器");
+        trigger.vars.onToggle({ isActive: value !== "--" });
+      }, from);
+      await page.waitForFunction(() => {
+        const w = window as unknown as { gsap: { getTweensOf(target: Element): unknown[] } };
+        return w.gsap.getTweensOf(document.querySelector("[data-rollin]")!).length === 0;
+      });
+      await expect(page.locator("[data-rollin]")).toHaveText(from);
+      await page.evaluate((value) => {
+        const w = window as unknown as {
+          gsap: { getTweensOf(target: Element): unknown[]; globalTimeline: { timeScale(value: number): void } };
+          ScrollTrigger: { getAll(): Array<{ vars: { trigger?: HTMLElement; start?: string; onToggle?: (state: { isActive: boolean }) => void } }> };
+          __octHudDirection: { frames: Array<{ text: string; y: number; tweens: number }>; done: boolean };
+        };
+        const roll = document.querySelector("[data-rollin]")!;
+        const trigger = w.ScrollTrigger.getAll().find((t) =>
+          t.vars.start === "top 62%" && t.vars.trigger?.dataset.gi === (value === "02" ? "1" : "0"));
+        if (!trigger?.vars.onToggle) throw new Error("找不到阅读位触发器");
+        w.__octHudDirection = { frames: [], done: false };
+        // 方向测试放慢 GSAP 时钟，避免低帧率移动 WebKit 的 rAF 跨过 220ms 退场；产品时长不改。
+        w.gsap.globalTimeline.timeScale(0.25);
+        trigger.vars.onToggle({ isActive: value !== "--" });
+        const started = performance.now();
+        const tick = () => {
+          const transform = getComputedStyle(roll).transform;
+          const tweens = w.gsap.getTweensOf(roll).length;
+          w.__octHudDirection.frames.push({
+            text: roll.textContent ?? "",
+            y: transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42,
+            tweens,
+          });
+          if (tweens === 0 || performance.now() - started > 6000) w.__octHudDirection.done = true;
+          else requestAnimationFrame(tick);
+        };
+        tick();
+      }, to);
+      await page.waitForFunction(() =>
+        (window as unknown as { __octHudDirection: { done: boolean } }).__octHudDirection.done,
+      );
+      const frames = await page.evaluate(() =>
+        (window as unknown as { __octHudDirection: { frames: Array<{ text: string; y: number; tweens: number }> } }).__octHudDirection.frames,
+      );
+      expect(frames.some((f) => f.text === from && f.y * sign > 0.1), "旧值按序号变化方向退出").toBe(true);
+      expect(frames.some((f) => f.text === to && f.y * sign < -0.1), "新值从遮罩相反一侧进入").toBe(true);
+      expect(frames.at(-1)?.text, "最新阅读位").toBe(to);
+      expect(Math.abs(frames.at(-1)?.y ?? Infinity), "新值完整归位").toBeLessThan(0.1);
+      expect(Math.max(...frames.map((f) => f.tweens)), "方向切换不能叠加补间").toBeLessThanOrEqual(1);
+    });
+  }
+
+  for (const initial of ["01", "--"] as const) {
+    test(`NOW READING 更新中返回 ${initial}：取消旧回调并回到可见位置`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(BASE);
+      await waitClientReady(page);
+      await waitMotionOn(page);
+      // 用真实 ScrollTrigger 注册的 HUD 回调控制 A→B→A 的短时序，避免滚轮合帧漏掉中间状态。
+      const request = async (value: "01" | "02" | "--") => page.evaluate((value) => {
+        const w = window as unknown as {
+          ScrollTrigger: { getAll(): Array<{ vars: { trigger?: HTMLElement; start?: string; onToggle?: (state: { isActive: boolean }) => void } }> };
+        };
+        const gi = value === "02" ? "1" : "0";
+        const trigger = w.ScrollTrigger.getAll().find((t) =>
+          t.vars.start === "top 62%" && t.vars.trigger?.dataset.gi === gi);
+        if (!trigger?.vars.onToggle) throw new Error("找不到阅读位触发器");
+        trigger.vars.onToggle({ isActive: value !== "--" });
+      }, value);
+      const roll = page.locator("[data-rollin]");
+      if (initial === "01") {
+        await request("01");
+        await expect(roll).toHaveText("01");
+        await page.waitForFunction(() => {
+          const w = window as unknown as { gsap: { getTweensOf(target: Element): unknown[] } };
+          return w.gsap.getTweensOf(document.querySelector("[data-rollin]")!).length === 0;
+        });
+      }
+      await request("02");
+      await page.waitForFunction(() => {
+        const el = document.querySelector("[data-rollin]")!;
+        const transform = getComputedStyle(el).transform;
+        return transform !== "none" && new DOMMatrixReadOnly(transform).m42 < -0.1;
+      });
+      await request(initial);
+      await page.waitForFunction(() => {
+        const w = window as unknown as { gsap: { getTweensOf(target: Element): unknown[] } };
+        return w.gsap.getTweensOf(document.querySelector("[data-rollin]")!).length === 0;
+      });
+      await expect(roll).toHaveText(initial);
+      const y = await roll.evaluate((el) => {
+        const transform = getComputedStyle(el).transform;
+        return transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42;
+      });
+      expect(Math.abs(y), "取消旧更新后数字仍完整可见").toBeLessThan(0.1);
+    });
+  }
+
   test("丝线 rail 静态 + 进度线 scrub（T14 恢复）与节点仅当前激活：rail 恒静态、进度线 scaleY 生长、激活节点存在且 HUD 序号跟随", async ({
     page,
   }) => {
@@ -838,12 +996,13 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
       .toMatchObject({ synced: true });
     const state = await page.evaluate(() => {
       const rails = [...document.querySelectorAll<HTMLElement>(".k-day .k-line")];
-      // T14 追改（UI 票 #31）：rail 回归旧灰线——1px var(--rule)、无 transform、无进行中的补间
+      // 静态灰线：9px绘制框裁剪中央2px，与圆点采用相同的亚像素绘制方式。
       const railStatic = rails.every((el) => {
         const cs = getComputedStyle(el);
         return (
           cs.backgroundColor === "rgb(156, 147, 135)" &&
-          cs.width === "2px" &&
+          cs.width === "9px" &&
+          cs.clipPath === "inset(0px 3.5px)" &&
           cs.transform === "none"
         );
       });
@@ -872,7 +1031,7 @@ test.describe("时间线动效（进度线 / 节点激活 / 分层揭示）", ()
     expect(state.progressCount, "进度线结构恢复（T14：每个日组一段，叠合 rail）").toBe(
       state.dayCount,
     );
-    expect(state.railStatic, "丝线 B 版 rail 静态常驻红线（2px accent、无变换）").toBe(true);
+    expect(state.railStatic, "rail 静态常驻灰线（中央2px、无变换）").toBe(true);
     expect(state.progressGrown, "进度线 scaleY scrub 生长（T14 恢复）").toBe(true);
     expect(state.active.length, "存在当前激活节点").toBeGreaterThanOrEqual(1);
     expect(
@@ -1009,8 +1168,10 @@ test.describe("显示模式切换（View Transition 径向 + 兜底）", () => {
 
   test("径向动画真实播放：vt-clip 出现且 running、clip 半径增长至完成、data-vt 存续至 finished（#19）", async ({
     page,
+    isMobile,
   }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
+    // 手机配置保留原生视口；高DPR手机模拟下强设桌面宽度会扩大快照栅格，漏掉中间帧。
+    if (!isMobile) await page.setViewportSize({ width: 1440, height: 900 });
     // T4（UI 票 #21）：默认初值改为 auto——预置 light 存储保持「点击一次 → 深色」基准
     await page.addInitScript(() => {
       try {
@@ -1252,7 +1413,7 @@ test.describe("显示模式切换（View Transition 径向 + 兜底）", () => {
 });
 
 test.describe("全屏菜单动效", () => {
-  test("打开：整体 opacity 渐入 + 条目 stagger 痕迹；关闭：动画后 dialog 关闭且焦点返回", async ({
+  test("打开：不透明面板下拉覆盖；关闭：上收后 dialog 关闭且焦点返回", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -1266,13 +1427,15 @@ test.describe("全屏菜单动效", () => {
     await expect(page.locator("[data-kmenu]")).toHaveJSProperty("open", true);
     await page.waitForFunction(() => {
       const menu = document.querySelector<HTMLElement>("dialog[data-kmenu]");
-      return menu !== null && Number.parseFloat(getComputedStyle(menu).opacity) > 0.99;
+      return menu?.dataset.menuState === "open";
     });
-    const staggered = await page.evaluate(() => {
-      const item = document.querySelector<HTMLElement>("[data-kmenu] .k-mi");
-      return item?.style.transform ?? "";
+    const settled = await page.evaluate(() => {
+      const menu = document.querySelector<HTMLElement>("[data-kmenu]")!;
+      const surface = menu.querySelector<HTMLElement>(".k-menu-surface")!;
+      return { opacity: getComputedStyle(surface).opacity, bottom: surface.getBoundingClientRect().bottom / menu.clientHeight };
     });
-    expect(staggered, "菜单条目经过 y/rotate stagger（动效痕迹）").not.toBe("");
+    expect(settled.opacity).toBe("1");
+    expect(settled.bottom, "入场后完整覆盖视口").toBeCloseTo(1, 3);
 
     await page.keyboard.press("Escape");
     await waitMenuClosed(page);
@@ -1926,6 +2089,9 @@ test.describe("桌面限定动效门槛（pointer:fine）", () => {
     await page.waitForTimeout(300);
     expect(await tab.evaluate((el) => el.style.transform), "tab 无磁性位移痕迹").toBe("");
     const topBtn = page.locator("[data-ktop]");
+    // 页头已常驻；其显示不再保证越过返回顶部按钮的400px门槛。
+    await wheelBy(page, 500);
+    await expect(topBtn).toHaveClass(/show/);
     await topBtn.hover();
     await page.waitForTimeout(300);
     expect(await topBtn.evaluate((el) => el.style.transform), "ktop 无磁性位移痕迹").toBe("");

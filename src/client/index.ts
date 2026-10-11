@@ -10,17 +10,20 @@
 import { initCopyLink } from "./copy.ts";
 import { initDocNavigation } from "./doc-navigation.ts";
 import { initMenu } from "./menu.ts";
+import { initLongformMotion } from "./longform-motion.ts";
 import { initMotion } from "./motion.ts";
+import { initNavigationMotion } from "./navigation-motion.ts";
 import { initTheme } from "./theme.ts";
 import { initTimeline } from "./timeline-view.ts";
 import { initTopButton } from "./top.ts";
+import { initScrollbars } from "./scrollbars.ts";
 
 function boot(): void {
   // 阅读位置仅在本次访问内存中：关闭浏览器跨加载滚动恢复，使「刷新重置」语义成立
   if ("scrollRestoration" in history) {
     history.scrollRestoration = "manual";
   }
-  for (const init of [initMotion, initDocNavigation, initTheme, initMenu, initTopButton, initCopyLink, initTimeline]) {
+  for (const init of [initMotion, initLongformMotion, initDocNavigation, initNavigationMotion, initTheme, initScrollbars, initMenu, initTopButton, initCopyLink, initTimeline]) {
     try {
       init();
     } catch {

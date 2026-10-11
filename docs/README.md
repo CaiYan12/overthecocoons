@@ -17,10 +17,15 @@
 - [UI对齐](ui-alignment.md)
 - [UI设计与动效](ui-design.md)
 - [长文页导航优化方案与本地验收](ui-navigation-alignment.md)
+- [说明页编辑式动效](ui-longform-motion.md)
+- [MENU 顶部覆盖与对称退场](ui-menu-motion.md)
+- [自绘覆盖式纵向滚动条与全屏MENU](ui-scrollbars.md)
+- [显示切换中的光标修复](ui-theme-cursor.md)
 - [设计样本](design/brief-preview.html)
 
 ## 状态报告
 
+- [2026-10-11 UI 动效验收与发布记录](ui-release-20261011.md)
 - [剩余未完事项报告（2026-10-04）](remaining-work-report.md)
 
 ## ADR与协作配置

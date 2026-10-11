@@ -15,13 +15,14 @@ const links = [
   { key: "about", label: "关于", href: siteUrl("/about/") },
   { key: "principles", label: "原则", href: siteUrl("/principles/") },
   { key: "privacy", label: "隐私", href: siteUrl("/privacy/") },
+  { key: "main", label: "返回主站", href: "https://caiyan12.github.io/" },
 ];
 ---
 
 <aside class="k-nav" aria-label="功能导航">
   <p class="k-navhead">导航 · INDEX</p>
   <nav data-knav>
-    <span class="k-marker" aria-hidden="true" data-kmarker></span>
+    <span class="k-nav-progress" aria-hidden="true" data-nav-progress></span>
     {
       links.map((link, index) => (
         <a
@@ -29,14 +30,13 @@ const links = [
           data-cursor-soft
           tabindex="0"
           href={link.href}
+          rel={link.key === "main" ? "noopener" : undefined}
           aria-current={active === link.key ? "page" : undefined}
         >
+          {active === link.key && <span class="k-marker" aria-hidden="true" data-kmarker></span>}
           {link.label}
         </a>
       ))
     }
   </nav>
-  <p class="k-navfoot">
-    <a href="https://caiyan12.github.io/" rel="noopener" data-cursor-soft tabindex="0">↩ 返回主站</a>
-  </p>
 </aside>

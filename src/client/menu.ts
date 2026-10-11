@@ -1,15 +1,5 @@
-/**
- * 全屏菜单（Ticket 05/06）：原生 dialog 行为接管（原型 v-kinetic 行为）。
- * - 打开：showModal、aria-expanded=true、焦点移到「关闭」按钮（焦点进入），
- *   GSAP 可用时整体 opacity 渐入 + 条目 stagger（关闭按钮只做纯 opacity 淡入，
- *   不用 autoAlpha——其 visibility:hidden 会让初始焦点失效，与原型一致）；
- * - 关闭（按钮/Esc→cancel）：GSAP 可用时走退出时间线，结束后 menu.close()；
- *   close 事件统一收口——aria-expanded=false、焦点返回触发按钮；
- * - 菜单内主题 Tab：时间线页由 timeline-view 接管为客户端筛选，这里只负责关闭菜单；
- *   非时间线页不拦截，保持静态链接导航（无 JS 兜底语义）。
- * 焦点圈由 dialog 原生提供；连续开合依赖 showModal/close 的可重入性（退出时间线可打断重启动）。
- */
-import { menuCloseMotion, menuOpenMotion } from "./motion.ts";
+/** 原生 dialog 保留焦点约束；覆盖面板退完后才执行原生链接／客户端筛选。 */
+import { menuCloseMotion, menuOpenMotion, resetMenuMotion } from "./motion.ts";
 
 export function initMenu(): void {
   const menu = document.querySelector<HTMLDialogElement>("[data-kmenu]");
@@ -17,21 +7,64 @@ export function initMenu(): void {
   const closeButton = menu?.querySelector<HTMLButtonElement>("[data-kmenu-close]");
   if (!menu || !openButton || !closeButton) return;
 
-  const closeMenu = () => {
+  let state: "closed" | "opening" | "open" | "closing" = "closed";
+  let selected: HTMLAnchorElement | null = null;
+  let replaying = false;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let bodyOverflow = "";
+  const setState = (next: typeof state) => { state = next; menu.dataset.menuState = next; };
+  const stopTimer = () => { if (timer) clearTimeout(timer); timer = null; };
+  const opened = () => {
+    if (state !== "opening") return;
+    stopTimer();
+    resetMenuMotion(menu, false);
+    setState("open");
+  };
+  const finishClose = () => {
+    if (state !== "closing") return;
+    stopTimer();
+    const link = selected;
+    selected = null;
+    menu.close();
+    resetMenuMotion(menu);
+    setState("closed");
+    document.body.style.overflow = bodyOverflow;
+    openButton.setAttribute("aria-expanded", "false");
+    if (!link) openButton.focus({ preventScroll: true });
+    if (link) {
+      // 保留时间线筛选及静态链接语义；仅在覆盖面板完全退出后重放一次。
+      replaying = true;
+      link.click();
+      replaying = false;
+    }
+  };
+  const closeMenu = (link: HTMLAnchorElement | null = null) => {
     if (!menu.open) return;
-    const animated = menuCloseMotion(menu, () => menu.close());
-    if (!animated) menu.close();
+    selected = link;
+    if (state === "closing") return; // 最后选择接管，不重复播放退出。
+    stopTimer();
+    setState("closing");
+    timer = setTimeout(finishClose, 1500);
+    try { if (!menuCloseMotion(menu, finishClose)) finishClose(); }
+    catch { finishClose(); }
   };
 
   openButton.addEventListener("click", () => {
     if (menu.open) return;
+    selected = null;
+    bodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     menu.showModal();
+    setState("opening");
     openButton.setAttribute("aria-expanded", "true");
-    closeButton.focus();
-    menuOpenMotion(menu, closeButton);
+    menu.querySelector(".k-menu-inner")?.scrollTo(0, 0);
+    closeButton.focus({ preventScroll: true });
+    timer = setTimeout(opened, 1500);
+    try { if (!menuOpenMotion(menu, opened)) opened(); }
+    catch { opened(); }
   });
 
-  closeButton.addEventListener("click", closeMenu);
+  closeButton.addEventListener("click", () => closeMenu());
 
   // Esc（原生 cancel）：拦截默认立即关闭，改走统一关闭路径（动效模式下播放退出动画）
   menu.addEventListener("cancel", (event) => {
@@ -39,15 +72,38 @@ export function initMenu(): void {
     closeMenu();
   });
 
-  menu.addEventListener("close", () => {
-    openButton.setAttribute("aria-expanded", "false");
-    openButton.focus();
-  });
+  menu.addEventListener("click", (event) => {
+    if (replaying || !menu.open || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
+    if (!link || link.hasAttribute("download") || (link.target && link.target !== "_self")) return;
+    const url = new URL(link.href);
+    if (!/^https?:$/.test(url.protocol) || url.origin !== location.origin) return;
+    event.preventDefault();
+    // 当前页面只收起，不刷新重播。主题保留筛选的既有语义。
+    const current = !url.hash && url.pathname === location.pathname && url.search === location.search && !link.matches("[data-topic]");
+    closeMenu(current ? null : link);
+  }, { capture: true });
 
-  // 菜单主题点击后关闭菜单；筛选本身由 timeline-view（若存在）拦截
-  menu.querySelectorAll<HTMLAnchorElement>(".k-menu-topics .tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      closeMenu();
-    });
+  // 外部原生 close() 及 BFCache 回收同样恢复样式与整页滚动。
+  menu.addEventListener("close", () => {
+    if (menu.open || state === "closed") return;
+    selected = null;
+    stopTimer();
+    resetMenuMotion(menu);
+    setState("closed");
+    document.body.style.overflow = bodyOverflow;
+    openButton.setAttribute("aria-expanded", "false");
+    openButton.focus({ preventScroll: true });
   });
+  window.addEventListener("pagehide", () => {
+    if (state === "closed") return;
+    selected = null;
+    stopTimer();
+    if (menu.open) menu.close();
+    resetMenuMotion(menu);
+    setState("closed");
+    document.body.style.overflow = bodyOverflow;
+    openButton.setAttribute("aria-expanded", "false");
+  });
+  setState("closed");
 }
