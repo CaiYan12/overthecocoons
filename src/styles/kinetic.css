@@ -360,6 +360,43 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 .v-kinetic .page-btn[aria-current=page] { color: var(--accent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px }
 .v-kinetic .page-btn[aria-disabled="true"] { opacity: .35 }
 .v-kinetic .pager .of { display: none }
+/* 页码像报刊页签：按内容列宽度收拢，页数增长也不换行、不产生局部滚动。 */
+.v-kinetic .pager { display: block; container: pagination / inline-size; flex-wrap: nowrap }
+.pager-row, .pager-pages { display: flex; flex-wrap: nowrap; align-items: center }
+.pager-row { justify-content: flex-end; gap: 10px; white-space: nowrap }
+.pager-pages { gap: 2px }
+.v-kinetic .pager .page-btn { display: grid; place-items: center; flex: 0 0 auto; min-width: 24px; padding: 0 2px; font-size: 15px; transition: color var(--motion-fast) ease-out }
+.pager [data-density] { display: none !important }
+.pager [data-density~=minimal] { display: grid !important }
+.pager-gap { width: 10px; color: var(--muted); text-align: center; font: 15px/1 var(--serif) }
+.pager-jump { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; padding-left: 8px; border-left: 1px solid var(--rule) }
+.pager-jump[hidden] { display: none }
+.pager-jump input { appearance: textfield; width: 38px; min-width: 0; height: 36px; padding: 0 2px; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; background: transparent; color: var(--ink); text-align: center; font: 16px/1 var(--serif); transition: border-color var(--motion-fast) ease-out }
+.pager-jump input::-webkit-inner-spin-button, .pager-jump input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0 }
+.pager-jump input::placeholder { font: 11px/1 var(--sans); color: var(--muted) }
+.pager-jump input:hover, .pager-jump input:focus { border-color: var(--accent) }
+.pager-jump button { min-height: 44px; padding: 0 2px; color: var(--muted); font-size: 12px; cursor: pointer; transition: color var(--motion-fast) ease-out }
+.pager-jump button:hover { color: var(--accent) }
+.pager-total { display: none; color: var(--muted); font-size: 11px }
+@container pagination (min-width: 440px) {
+  .pager [data-density] { display: none !important }
+  .pager [data-density~=compact] { display: grid !important }
+  .v-kinetic .pager .page-btn { min-width: 28px; font-size: 17px }
+  .pager-row { gap: 14px }
+  .pager-pages { gap: 4px }
+  .pager-gap { width: 12px }
+  .pager-jump { padding-left: 12px; gap: 6px }
+  .pager-total { display: inline }
+}
+@container pagination (min-width: 660px) {
+  .pager [data-density] { display: none !important }
+  .pager [data-density~=wide] { display: grid !important }
+  .v-kinetic .pager .page-btn { min-width: 32px; font-size: 19px }
+  .pager-row { gap: 20px }
+  .pager-jump { padding-left: 16px; gap: 8px }
+  .pager-jump input { width: 44px; font-size: 17px }
+  .pager-jump button { font-size: 13px }
+}
 
 /* 圆形进度返回顶部（显示/进度由 JS 驱动，属 Ticket 06；无 JS 时保持隐藏不遮挡内容） */
 .k-top { position: fixed; right: 24px; bottom: 88px; z-index: var(--z-float); width: 64px; height: 64px; border-radius: 50%; background: var(--surface); border: 1px solid var(--rule); display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity var(--motion-fast) ease-out; cursor: pointer }

@@ -21,6 +21,7 @@
 - [MENU 顶部覆盖与对称退场](ui-menu-motion.md)
 - [自绘覆盖式纵向滚动条与全屏MENU](ui-scrollbars.md)
 - [显示切换中的光标修复](ui-theme-cursor.md)
+- [有界单行分页与页码跳转](ui-pagination.md)
 - [设计样本](design/brief-preview.html)
 
 ## 状态报告

@@ -35,6 +35,7 @@ import {
   topicPagePath,
 } from "../lib/timeline.ts";
 import { isExternalUrl } from "../lib/links.ts";
+import { pagerHtml } from "../lib/pager.ts";
 import { SILK_VIEWBOX, silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
 import { animateTopicSwitch, moveIndicator, onListRendered } from "./motion.ts";
 import { resolveRestore } from "./position.ts";
@@ -158,19 +159,7 @@ function renderPager(page: number, totalPages: number, renderTopic: string): voi
   }
   pager.hidden = false;
   const href = (target: number) => `${base}${topicPagePath(renderTopic, target)}`;
-  let html =
-    page > 1
-      ? `<a class="page-btn" data-page="${page - 1}" data-cursor-soft href="${href(page - 1)}" rel="prev" aria-label="上一页">‹</a>`
-      : `<span class="page-btn" aria-disabled="true">‹</span>`;
-  for (let p = 1; p <= totalPages; p++) {
-    html += `<a class="page-btn" data-page="${p}" data-cursor-soft href="${href(p)}"${p === page ? ' aria-current="page"' : ""} aria-label="第 ${p} 页">${pad2(p)}</a>`;
-  }
-  html +=
-    page < totalPages
-      ? `<a class="page-btn" data-page="${page + 1}" data-cursor-soft href="${href(page + 1)}" rel="next" aria-label="下一页">›</a>`
-      : `<span class="page-btn" aria-disabled="true">›</span>`;
-  html += `<span class="of">第 ${page} / ${totalPages} 页</span>`;
-  pager.innerHTML = html;
+  pager.innerHTML = pagerHtml(page, totalPages, href, true);
 }
 
 /* ---- 同步 header/菜单/HUD/轻量页头 ---- */
@@ -356,6 +345,19 @@ export function initTimeline(): void {
   topic = (TOPICS as readonly string[]).includes(initialTopic) ? initialTopic : "全部";
   list = listElement;
   pager = ensurePager();
+  const initialJump = pager.querySelector<HTMLFormElement>("[data-page-jump]");
+  if (initialJump) initialJump.hidden = false;
+  pager.addEventListener("submit", (event) => {
+    const form = (event.target as Element | null)?.closest<HTMLFormElement>("[data-page-jump]");
+    if (!form) return;
+    event.preventDefault();
+    const input = form.elements.namedItem("page") as HTMLInputElement;
+    if (!input.reportValidity()) return;
+    const target = input.valueAsNumber;
+    if (!Number.isSafeInteger(target)) return;
+    const current = Number(pager.querySelector<HTMLElement>('[aria-current="page"]')?.dataset.page);
+    if (target !== current) renderView(topic, target);
+  });
 
   // 主题 Tab（header + 全屏菜单）：客户端筛选接管；非时间线页不初始化本模块，链接保持原生导航。
   // 点击当前主题 Tab 与静态链接语义对齐（T05 收尾项）：静态链接指向该主题第 1 页，
