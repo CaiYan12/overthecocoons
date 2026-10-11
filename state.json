@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "stateTakenAt": "2026-10-10T04:21:27.658Z",
-  "publicContentVersion": 7,
-  "publicContentDigest": "63b771920118860263ca05ad97cf38042959b34cc46d8cf4370e2e98836f590d",
+  "stateTakenAt": "2026-10-11T04:01:41.592Z",
+  "publicContentVersion": 8,
+  "publicContentDigest": "a8b2cf6a0ef9ba1b4a2e9a73ac0ecc32b11bf5ce2b08e43ccb0098be99f1c4cf",
   "identities": [
     {
       "stableId": "51ef84820b12549c057fd31599464c2bc962db5d5955e7e78ac2a2da188bc496",
@@ -5603,14 +5603,814 @@
       "firstSeenAt": "2026-10-10T04:21:27.658Z",
       "wdFingerprint": "德前总理施罗德在普京家中为其庆生",
       "wdMissing": false
+    },
+    {
+      "stableId": "99474ce2f8efdf1f11f7edccc295eab5c0c44777a2945fc8ee962fadf6939fd7",
+      "sourceId": "baidu-aishort",
+      "guid": "2222955",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "驻沙特大使馆：尚无中国公民伤亡报告",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a8259838368f5dc474fc284fe29e1d744f80eddb12b1cdbb9d2171cc1bfa324e",
+      "sourceId": "baidu-aishort",
+      "guid": "2222954",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "《你好星期六》下期是《玉簟秋》剧组",
+      "wdMissing": false
+    },
+    {
+      "stableId": "61855fb448c8bc48a4c34baea600f2e9214eeb3cc95e55bf5c71825e147ff7fd",
+      "sourceId": "baidu-aishort",
+      "guid": "2222953",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "16岁高中生骑摩托发生事故致人死亡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9d6d701144726cd36421719ab893382ed428e4bbdd9b18d9be3c06dc90706628",
+      "sourceId": "baidu-aishort",
+      "guid": "2222952",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "泽连斯基与多个欧洲国家领导人通话",
+      "wdMissing": false
+    },
+    {
+      "stableId": "826e15ea80c419ab84e759d271f38b52aa001c1947e8c5076a6f63ba5af1ac1b",
+      "sourceId": "baidu-aishort",
+      "guid": "2222951",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "英国一男子闯动物园虎园遇袭身亡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "cc1b72d62ff721761d33d2c2d0889e4708352befd888f1aec807d930e8d1e113",
+      "sourceId": "baidu-aishort",
+      "guid": "2222950",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "沙特：胡塞武装犯下战争罪",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e5517f24e599c9286375dc0ccb61a951ccb6a429ac2cdff94549132803ade89a",
+      "sourceId": "baidu-aishort",
+      "guid": "2222949",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "新疆五胞胎平安抵达乌鲁木齐",
+      "wdMissing": false
+    },
+    {
+      "stableId": "07cf9b9fc8ab47772899871ea2e60bf5b94f6b090088dacd8583549cdf77d071",
+      "sourceId": "baidu-aishort",
+      "guid": "2222948",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "连辑被开除党籍 文旅部表态",
+      "wdMissing": false
+    },
+    {
+      "stableId": "87eea83082b60acaef2973809c5489f995805472430676bf1f4a822f899770b2",
+      "sourceId": "baidu-aishort",
+      "guid": "2222947",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "美国一逃犯成名厨后上电视被捕",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4630fe0bd5541d1476adfe098fc4eadce4dfd0f7ea8f21615f848a90699e796f",
+      "sourceId": "baidu-aishort",
+      "guid": "2222946",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "医生两次对五胞胎母亲说希望别后悔",
+      "wdMissing": false
+    },
+    {
+      "stableId": "8ba914c05232678b5e5a26b6cb524389ab1b97dcf173169ed8458d9e2f0f115a",
+      "sourceId": "baidu-aishort",
+      "guid": "2222945",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "年轻人勇闯“夕阳红”旅行团",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a195924fa3305433d22558402f9c39a2a0786bb2c4d807554e9206b4f08e2698",
+      "sourceId": "baidu-aishort",
+      "guid": "2222944",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "车企跟风推新拟迎严管",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1ba444c236153c4034922744d5dfc500ee9789273ce8bbca9dc485e2ed33707b",
+      "sourceId": "baidu-aishort",
+      "guid": "2222943",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "女子陪孩子看病顺带查出自己患癌",
+      "wdMissing": false
+    },
+    {
+      "stableId": "eafad53ffc259f9f29a94daab41e2b73152435a18941433a3a12b74dd49d3d4d",
+      "sourceId": "baidu-aishort",
+      "guid": "2222942",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "特朗普：建议乌克兰总统换人",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c818f38fbbf7d444f323e422c0f86668116c8f77699ea0f4f97a0d2b432cb4d2",
+      "sourceId": "baidu-aishort",
+      "guid": "2222941",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "人社部：全面推进“退休预服务”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9c26e883e852c61f956d45d57de839915b3b8e9e796d1f421a84899874e80484",
+      "sourceId": "baidu-aishort",
+      "guid": "2222940",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "两名中国男子国庆赴泰旅游失联",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a07dec83d7e05c1eac7da7b091613c3c457944067d81a05623f8230138163ad3",
+      "sourceId": "baidu-aishort",
+      "guid": "2222939",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "泽连斯基最凶险的时刻来了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7cbfe1759f8721b95680a22fae758419ba62bbd9a0b41d50ceb4c82058c070e5",
+      "sourceId": "baidu-aishort",
+      "guid": "2222938",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "被举报女局长曾称选择了扶贫式婚姻",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ce8bc65a9d9fe931f29c58138cc28fe8245d16f5c3cff6c4df4b75687e8c70d1",
+      "sourceId": "baidu-aishort",
+      "guid": "2222922",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "美国有可能加入沙特对胡塞打击行动",
+      "wdMissing": false
+    },
+    {
+      "stableId": "8003e52f2681047de880063ea4cb5c40d6d40f56bdf3c05d19680978e2e8f321",
+      "sourceId": "baidu-aishort",
+      "guid": "2222917",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "交警上班发现：单位门口这辆车不对劲",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7c20ae53ed0677f6a6975d9112aebbe955b496c3a6c5a8121ebb2a3a037cf9ed",
+      "sourceId": "baidu-aishort",
+      "guid": "2222916",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "亚锦赛换将：理性看待国乒人员调整",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c94885283b004901808f0e472694fd21b2869447d5c23a7d3ae50f0e4be75706",
+      "sourceId": "baidu-aishort",
+      "guid": "2222915",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "公积金功能又上新了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1cc81953b714f2594bd5bb968a16ba522f69a8ae7db05c59c181a10d91de5b7e",
+      "sourceId": "baidu-aishort",
+      "guid": "2222914",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "美强烈谴责对沙特袭击 有美公民死亡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c9351898d620c4599298b97bee5eae6e383956acc70c1882e6d8d5df15815312",
+      "sourceId": "baidu-aishort",
+      "guid": "2222913",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "反复流传的孩子被拐寻人启事系谣言",
+      "wdMissing": false
+    },
+    {
+      "stableId": "24aebb4865fb3b7c3133c165d3d96cccf931ebe0686ae3031fceeacaa746ada8",
+      "sourceId": "baidu-aishort",
+      "guid": "2222908",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "沙特首都机场遭袭：碎片满地",
+      "wdMissing": false
+    },
+    {
+      "stableId": "03c50a0820dd035c25b770e8741ed38edf16d49417eb26c7eefb932679597368",
+      "sourceId": "baidu-aishort",
+      "guid": "2222905",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "WTT中国大满贯今日收官",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e015b690d7321ddccc94ae598b09177152bee6d518d54639d92c7af495bca2b6",
+      "sourceId": "baidu-aishort",
+      "guid": "2222902",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "俄罗斯“鼠疫”疑云",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9b105554b136363b80e82b6bdc10a2c1a47a88d7935addc5b58072187eda7234",
+      "sourceId": "baidu-aishort",
+      "guid": "2222899",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "台湾民众在台北街头高喊我们要统一",
+      "wdMissing": false
+    },
+    {
+      "stableId": "416c70ac10c31c2efc7b62ff1bf045d52967490c470dde2649ebaab09eb49bfa",
+      "sourceId": "baidu-aishort",
+      "guid": "2222896",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "香港近年多位名人骨灰被盗",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0c69c0b354b9a6cb002d22ce9db05310ba3676cf10122ca7b718d4216ad0f862",
+      "sourceId": "baidu-aishort",
+      "guid": "2222895",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "男子国庆被排7天班 1天都没去遭开除",
+      "wdMissing": false
+    },
+    {
+      "stableId": "58f9f166001faaad66bfc0b6d54cb0f0b055f39906383d8f5297daa4accbdc89",
+      "sourceId": "baidu-aishort",
+      "guid": "2222894",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "中国新能源产业做对了什么",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2f559d82ac45cd41f0ada97e57d9c4586d9e4d8b0cbc526653869ae79c518990",
+      "sourceId": "baidu-aishort",
+      "guid": "2222893",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "中国旅客：在机场听到巨响多人被吓哭",
+      "wdMissing": false
+    },
+    {
+      "stableId": "aea90281c0c086e071f882f508507d9c27a831323362a3d4f2b3129977a87035",
+      "sourceId": "baidu-aishort",
+      "guid": "2222892",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "沙特利雅得机场遭袭 致12死309伤",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e13eccfff25d7ba081bea9bb89242c4415552e055ba54635dee4568406ad7791",
+      "sourceId": "baidu-aishort",
+      "guid": "2222623",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "云南一沟渠发现死猪死牛尸体",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c776f42c588d359846ec9c8ff6ae0f3825375e4a47917113a110c9fb5ddbbd6d",
+      "sourceId": "baidu-aishort",
+      "guid": "2222622",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "王曼昱称将凭毅力全力去拼决赛",
+      "wdMissing": false
+    },
+    {
+      "stableId": "af7388ed219a7c251c15c252341dc91b2f4f6a1abe7debfe9cf1ce4f852d2d63",
+      "sourceId": "baidu-aishort",
+      "guid": "2222611",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "王炳忠：卢秀燕给蓝白合一剂强心针",
+      "wdMissing": false
+    },
+    {
+      "stableId": "088af3398dc9684916748e79967c12fc9f7a8f82983df474ffa72caff661113d",
+      "sourceId": "baidu-aishort",
+      "guid": "2222608",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "郑钦文赛后动情感谢观众",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c42e9c9b5196cc0933e7b7fd24bcc1bba341c2fa4754cb367c55003f3cc7ac7c",
+      "sourceId": "baidu-aishort",
+      "guid": "2222607",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "沙特首都国际机场传出爆炸声",
+      "wdMissing": false
+    },
+    {
+      "stableId": "004333dea69f5730fc026496b2414159e7d8c0a2cbfd6ab00b05dd9b5273ada0",
+      "sourceId": "baidu-aishort",
+      "guid": "2222606",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "虚拟外卖点了永远不会送达",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6e36665d7bbbb15c28d960a4783553fe7a8cb8e9618d896cc922cde4ffd6c5ff",
+      "sourceId": "baidu-aishort",
+      "guid": "2222605",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "郑钦文：中网就像第五个大满贯",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0f6d1b21089423c14ce60c5c2dc684e4818037bc9906d52eff3c10abce1e4a8e",
+      "sourceId": "baidu-aishort",
+      "guid": "2222316",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "男子吃凉拌折耳根感染罕见寄生虫",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e0ec2065f57953e80263cc1788687fa98cde4783b255b7b896f91d0eb7e4a915",
+      "sourceId": "baidu-aishort",
+      "guid": "2222315",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "男子拒绝离婚刺死小舅子将开庭",
+      "wdMissing": false
+    },
+    {
+      "stableId": "25a0ab8ac493cd8c7013b8030b1410a9581ed213f543d53a6f4c9c389eab56f6",
+      "sourceId": "baidu-aishort",
+      "guid": "2222314",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "证监会主席吴清：更好回报广大投资者",
+      "wdMissing": false
+    },
+    {
+      "stableId": "8cfa068d3c6d52b72ff030f20c1af3cdf12a6ef9968ac98b99122d5a4888fad7",
+      "sourceId": "baidu-aishort",
+      "guid": "2222313",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "蒸大闸蟹陷入抓蟹无限循环",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4c3c414d5a151d76f908e7b9e74551c5be086f2f52384f1a10710b1c2d877a44",
+      "sourceId": "baidu-aishort",
+      "guid": "2222312",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "U18女篮亚洲杯中国队大胜韩国获季军",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d9cf3285ec59e203fd3f3686f26255ba39df0cbe24d2cb7938db621555e00ebd",
+      "sourceId": "baidu-aishort",
+      "guid": "2222311",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "91份危货车检验报告 没一份真检",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6f4ef9a3feacd09bc5ceffca30b9bff18c5aeccbdfed9b4c847965e8e4b55b60",
+      "sourceId": "baidu-aishort",
+      "guid": "2222307",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "汽车设计不得采用折叠屏柔性屏",
+      "wdMissing": false
+    },
+    {
+      "stableId": "106a62672ebf5aa88f89bbb857d851fc49229b4d618acd93bd5f51c1a834c3c6",
+      "sourceId": "baidu-aishort",
+      "guid": "2222298",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "家长插队被拒 要投诉儿科急诊医生",
+      "wdMissing": false
+    },
+    {
+      "stableId": "086d8683e944d211b48151ea009443544d232ff0b0b3732cc1c98a6e8606d37c",
+      "sourceId": "baidu-aishort",
+      "guid": "2222296",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "食品安全法修订草案公开征求意见",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c6728e59ae70a8044fb7e4f32817539a04bd580e035618ac869a294f98dc6228",
+      "sourceId": "baidu-aishort",
+      "guid": "2222294",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "新郎遭好友婚闹被砸鸡蛋泼酱油",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f523f676331695e4c97cae05aab9e823d77fe5450e4e6a117aa2924f7697f1fd",
+      "sourceId": "baidu-aishort",
+      "guid": "2222293",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "钟南山：最有成就感的是研发出新药",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f74896ce215370337d7ed08742ce4186e40ad501f32376463a57c6e6bebde51d",
+      "sourceId": "baidu-aishort",
+      "guid": "2222292",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "王曼昱：决赛和佐藤瞳打会很艰苦",
+      "wdMissing": false
+    },
+    {
+      "stableId": "60bf6123006188a389afbb5394aa067b35dddfb01e14cb31ea8f54524d91c8bc",
+      "sourceId": "baidu-aishort",
+      "guid": "2222291",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "日本乐天热销雪糕挤出红色异物是血",
+      "wdMissing": false
+    },
+    {
+      "stableId": "273509ab86a866be8ff61578149d1a11b2ba344dd7c93981d6e2d5ca3a733bff",
+      "sourceId": "baidu-aishort",
+      "guid": "2222290",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "郑钦文成首位闯入中网决赛的中国球员",
+      "wdMissing": false
+    },
+    {
+      "stableId": "371dbcda7d28c468eed13f396553757c88ebd81a80c87c2aff71f2bdd14b122d",
+      "sourceId": "baidu-aishort",
+      "guid": "2222285",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "11岁成都女孩拿下世界街舞冠军",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2d87b64f7ea1ffccc461c30072d10825343fc75f0b7dd8cac9e59af9b04aa8f7",
+      "sourceId": "baidu-aishort",
+      "guid": "2222282",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "普京向美方转达伊朗方面解决冲突构想",
+      "wdMissing": false
+    },
+    {
+      "stableId": "8c54ca680c6708d4cee4cdf18f2a1d9334913dde8c51940b0ad9222384a0cf25",
+      "sourceId": "baidu-aishort",
+      "guid": "2222279",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "葡萄牙足协：对C罗停赛 启动调查",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4132add6a16480831dcbcc5ec068aa18ba0073ef44605d3feca0d3ecc1c9d0aa",
+      "sourceId": "baidu-aishort",
+      "guid": "2222276",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "垃圾桶里捡72张5元纸币 疑被做成花束",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1c03b42725b397d3049d028368a1420b08601f0399cbca7056acec3ee872ef06",
+      "sourceId": "baidu-aishort",
+      "guid": "2222272",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "郑钦文：最好的我在现在和未来",
+      "wdMissing": false
+    },
+    {
+      "stableId": "331afd9aa3ea9ff6f05c75a151440cdc5ea6011bc1726594876ed7fe5a124ee3",
+      "sourceId": "baidu-aishort",
+      "guid": "2222264",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "雅思考试取消考生在考场外大哭",
+      "wdMissing": false
+    },
+    {
+      "stableId": "795ae7d0d30569a631f3560d9921a78f24239bf54cc961492593a462041c4035",
+      "sourceId": "baidu-aishort",
+      "guid": "2222260",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "巴拿马7.6级地震 暂无中国公民伤亡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "91501b08a7f4f33aede42a17d5890a747745c213ab94a667a1674969eef9451f",
+      "sourceId": "baidu-aishort",
+      "guid": "2222259",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "郑钦文打丢高压球现场喊话：不要说话",
+      "wdMissing": false
+    },
+    {
+      "stableId": "32b8efc58ed84c7e2c2f1d93823dbed47fd6b93d36c779cf6e37f9b494d091a5",
+      "sourceId": "baidu-aishort",
+      "guid": "2222258",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "郑钦文决赛将战安德烈耶娃",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3dca8fb68296c91fc4e9598dc83ed55e562f9d58300c946fca00bde1ae2a4888",
+      "sourceId": "baidu-aishort",
+      "guid": "2222257",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "抗癌药物研发迎来重要突破",
+      "wdMissing": false
+    },
+    {
+      "stableId": "58c8a01ff82350e6094b39f73c7ad2ad67c555b04624bf2d00c019fc501df624",
+      "sourceId": "baidu-aishort",
+      "guid": "2222256",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "中国军号：战争的走向由我说了算",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e568ff87e5e0a22ac14299aa410acb7001d0d95b389d656f05092cf794eb18d0",
+      "sourceId": "baidu-aishort",
+      "guid": "2222255",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "梅艳芳骨灰被盗",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7ad3bba9dfb94343abdebbc46133f1ba1c6f402d22cc6b9b4abfe0a1bba30026",
+      "sourceId": "baidu-aishort",
+      "guid": "2222254",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "办社保卡金卡每月发补贴？系诈骗",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2bb51b06e63367825839254b8c765b1faaf0b58eb5728f92b3443bfc8c016410",
+      "sourceId": "baidu-aishort",
+      "guid": "2222253",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "自闭症男童电梯被踹飞 当地妇联回应",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7b5ba137fd46c6a77b1beaeada2ae43c130dcd64c00093df8fe0569155744af0",
+      "sourceId": "baidu-aishort",
+      "guid": "2222252",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "张雪机车德比斯夺葡萄牙站首回合第6",
+      "wdMissing": false
+    },
+    {
+      "stableId": "05e67e1b1fb89b5206e89460730bc719136ae18218e349fceb9076cab89b2f07",
+      "sourceId": "baidu-aishort",
+      "guid": "2222251",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "郑钦文赛后再现经典庆祝动作",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b4c1f552de4a60e3b89cc398f9f35cc27eb562da3e97add8e6eec3a4029c3a98",
+      "sourceId": "baidu-aishort",
+      "guid": "2222250",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "检查你发的朋友圈 这7种照片建议删掉",
+      "wdMissing": false
+    },
+    {
+      "stableId": "41884852edad5761446ffc80324bd53765209b4a99b98abd3d81f013f3ef2d9a",
+      "sourceId": "baidu-aishort",
+      "guid": "2222249",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "桂花香 “非牛顿流体”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6008e7b6189a42f1a0cffedc24c8fcb52a904015b82b5b6a7f9501b43031c09a",
+      "sourceId": "baidu-aishort",
+      "guid": "2222248",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "未来五年推进就业有哪些新变化",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3adb3b9baa2998a85b27499ffc97e488497c00ae5c4a68005677dc5de4ded68a",
+      "sourceId": "baidu-aishort",
+      "guid": "2222247",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "快把家里的盐换了 可以帮助控血压",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0683bd8b15512a80d5828c1389b2103bd80cd55d9874a04a3be049849bcb5e21",
+      "sourceId": "baidu-aishort",
+      "guid": "2222246",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "郑钦文首次晋级中网女单决赛",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6c7c22907786f9ed0f0e54c6114ef80690697b80acb6ba3d7b8d66af4a72bf03",
+      "sourceId": "baidu-aishort",
+      "guid": "2221959",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "“冰城”哈尔滨提前10天正式供热",
+      "wdMissing": false
+    },
+    {
+      "stableId": "99d6df19b650d94edc264de71e81a63b7868203b0af6084c7a368c081ebe9c32",
+      "sourceId": "baidu-aishort",
+      "guid": "2221958",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "母亲为被骚扰女儿讨说法目击者发声",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5adff6e6eeee2b69ac5cd03e9527665de9a065341c0a1d950c15155642d76424",
+      "sourceId": "baidu-aishort",
+      "guid": "2221957",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "陈幸同1比4不敌佐藤瞳 止步女单4强",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0b0ba5de6c5842d9d6423bc275232cab6ccba70ebaf29a001c2139bdbde8e260",
+      "sourceId": "baidu-aishort",
+      "guid": "2221956",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "班主任心梗离世 学生自发赶来送行",
+      "wdMissing": false
+    },
+    {
+      "stableId": "141e8c8aad731e1e458e822ff0b22cd476ea33d7d6d5a751d1481c9cd978321d",
+      "sourceId": "baidu-aishort",
+      "guid": "2221955",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "泽连斯基称感觉自己被背叛",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c51479c093551e0b8f0e804df2c37bb0d5a01f5b0e15e75c6aba8dc2778ba355",
+      "sourceId": "baidu-aishort",
+      "guid": "2221954",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "东风快递“区域拒止”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "28f194627aa8b24ccb5091358c98a46a755c869f7b9603df6799be2b0d6164a5",
+      "sourceId": "baidu-aishort",
+      "guid": "2221953",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "钢笔、黑胶唱片、胶片、刺绣火了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d543e33953f0d29ba6f523e2156a258e3c121b1b90c1e42f07fd268edf408408",
+      "sourceId": "baidu-aishort",
+      "guid": "2221952",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "游戏主机越来越贵 销量却创新低",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3c9cbe57f6a3d8438f8822530b411e8dcfe944290d1f45e9f6b72f27b5cf15f4",
+      "sourceId": "baidu-aishort",
+      "guid": "2221951",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "优衣库中国店少了 却赚更多了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e1d599aaebef894cb800d2031c09c4650e64f0c44bca7a892f17b9ad6d5c3487",
+      "sourceId": "baidu-aishort",
+      "guid": "2221950",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "蔚来、比亚迪、理想发布国庆充电报告",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ce607602111921324c88242e8f3654226e03c8eecc7da6ab513c73b40d9b7e82",
+      "sourceId": "baidu-aishort",
+      "guid": "2221949",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "四部门就提升汽车安全性能征求意见",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b390ec97b3ad78d940d165818c47b1f04d1b46eb77c834f51115e3d14e623eb7",
+      "sourceId": "baidu-aishort",
+      "guid": "2221948",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "男子婚礼使用AI生成婚纱照",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c703b164a0a68650e4878ff5c901da08b426ea6244dc06fe9945ee1cbf48780b",
+      "sourceId": "baidu-aishort",
+      "guid": "2221946",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "超长蛋挞9月爆火10月下架",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ea17d7bdf121446b98ae164a8faaf5e0b2f49260591ee6ef3019962e3ef9e985",
+      "sourceId": "baidu-aishort",
+      "guid": "2221945",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "人社部：社保关系转移全国通办",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4300341ff44ad214594e9abc7fc919e82791c55d8f19dccbfc7fd64bbd861434",
+      "sourceId": "baidu-aishort",
+      "guid": "2221934",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "AI时代 程序员何处去",
+      "wdMissing": false
+    },
+    {
+      "stableId": "035e99193bd304cf03ab9971949b6305a64d0de2eba459fa4c4d70eaf010f84b",
+      "sourceId": "baidu-aishort",
+      "guid": "2221933",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "宋佳回应飞天奖争议",
+      "wdMissing": false
+    },
+    {
+      "stableId": "989288fd3071e6c41a2dc6651d37a0902f71acb4512cd0f97da0ce28d3f7f6eb",
+      "sourceId": "baidu-aishort",
+      "guid": "2221930",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "城市里的柿子不能摘 要留给小鸟吃",
+      "wdMissing": false
+    },
+    {
+      "stableId": "df975fc1db3e30e186a389123841c75785194f66e8e06756612e8e0f07c5138e",
+      "sourceId": "baidu-aishort",
+      "guid": "2221929",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "证监会召开资本市场和金融形势座谈会",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f6faa12ceb13d18051cc44e29273d0ba02aab07b52ece74bb10c37fdcf4e3b87",
+      "sourceId": "baidu-aishort",
+      "guid": "2221927",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "自闭症男童乘电梯遭陌生男子踹倒",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b5d55259b66d8b06df8c7c88e1a72e7f469450a3ab9b9187c7b9638c5f8e7dca",
+      "sourceId": "baidu-aishort",
+      "guid": "2221924",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "赵露思周杰伦报名格莱美",
+      "wdMissing": false
+    },
+    {
+      "stableId": "73dd3ec2a98c951f569fff45e159c26960e37b873adc9617ef42dd94511bc3e2",
+      "sourceId": "baidu-aishort",
+      "guid": "2221923",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "四部门拟禁止汽车配备全隐藏式门把手",
+      "wdMissing": false
+    },
+    {
+      "stableId": "876ed53fef951d1d46da145a43b167a78ae22b9a1e525a9c1ab25e8414787d92",
+      "sourceId": "baidu-aishort",
+      "guid": "2221921",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "这些车内物品可能是“定时炸弹”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c9d28ad521102b0a23a0ca4792eca828efdc8ae82b4d7b5fb4fa98ea08bc4885",
+      "sourceId": "baidu-aishort",
+      "guid": "2221920",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "别再误解精神疾病了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a3edce334c6237b2f29bf80263ef052d28458a52be6d17f2032cb316aceb8330",
+      "sourceId": "baidu-aishort",
+      "guid": "2221918",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "煤老板挖坏中国首条“高速”获刑7年",
+      "wdMissing": false
+    },
+    {
+      "stableId": "905e2e9b3659dd3f92967e910d99bf516869f1aef9200d17e61027a3596de558",
+      "sourceId": "baidu-aishort",
+      "guid": "2221917",
+      "firstSeenAt": "2026-10-11T04:01:41.592Z",
+      "wdFingerprint": "深圳一高颜值新娘撞脸赵丽颖赵露思",
+      "wdMissing": false
     }
   ],
   "quarantined": [],
   "sources": [
     {
       "sourceId": "baidu-aishort",
-      "lastAttemptedAt": "2026-10-10T04:21:27.507Z",
-      "lastSucceededAt": "2026-10-10T04:21:27.658Z",
+      "lastAttemptedAt": "2026-10-11T04:01:41.450Z",
+      "lastSucceededAt": "2026-10-11T04:01:41.592Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     }
