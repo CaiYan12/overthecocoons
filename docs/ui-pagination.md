@@ -18,4 +18,9 @@
 - 最终构建独立浏览器320/390/768/1024/1440px，分页均44px高，分页及整页横向溢出均0；首／中／尾页、浅深主题外观已查看。0页被原生范围校验阻止，回车跳39成功；主题切换完成后新闻内跳40，下一页禁用且首页链接保持 `/overthecocoons/topics/news/`。中间20页的所有可见页码同一基线。
 - 主题切换保留既有两段动画；验证等待主题语义状态实际生效后再操作分页，避免把旧主题的瞬时状态当新主题。
 
-线上发布结果在部署完成后追加。移动宽度为浏览器模拟，不代替手机实机。
+## 线上发布
+
+- 功能提交 `f79ac8626588843816f70d57922468d718eac4ce` 已推送main。[build-deploy 38139089994](https://github.com/CaiYan12/overthecocoons/actions/runs/38139089994) 的build／deploy均success；日志记录代码SHA一致，dataSHA仍为 `b643266ffc875e6bd2b6c0407c696fac8864143e`。
+- 独立浏览器访问 [线上网站](https://caiyan12.github.io/overthecocoons/)：40页首页44px高；回车跳20后20条条目、所有可见页码同一行；跳40后下一页禁用；输入41被范围校验拒绝且仍在20页。320/390/768/1024/1440px均44px高，分页横溢出0、整页无横溢出；浅深色外观已检查，浏览器错误日志为空。
+- 可见线上浅色分页截图：`C:/Users/Einn Tzai/AppData/Local/Temp/otc-pagination-live-light.jpg`；深色截图：`C:/Users/Einn Tzai/AppData/Local/Temp/otc-pagination-live-dark.jpg`。截图未加入仓库。
+- CI/CD工作流执行真实数据构建和部署，不包含Node或E2E测试；本地304／30是独立证据。移动宽度为浏览器模拟，不代替手机实机。
