@@ -32,4 +32,16 @@
 
 ## 发布核对
 
-待提交推送后记录代码SHA、实际build-deploy运行结果及线上特征验证。现有工作流main推送触发build与Pages deploy，读取固定data提交并校验快照；工作流没有Node／E2E测试步骤，本地回归与远端部署结果分别报告。
+功能提交`d2f50e6ef6e192e6982c6b3f50ee164da71014e0`已推送main，本地与远端SHA一致；同时发布了此前已授权的两个本地提交`66a9905`与`e8a1ec0`。本地启动脚本与临时目录保持未跟踪。
+
+[build-deploy运行38135446881](https://github.com/CaiYan12/overthecocoons/actions/runs/38135446881)的build与deploy均success（2026-10-11 19:25北京时间）。日志代码SHA与上述提交一致，固定数据SHA为`b643266ffc875e6bd2b6c0407c696fac8864143e`。现有工作流main推送触发构建与Pages部署，读取固定data提交并校验快照；没有Node／E2E测试步骤，本地回归与远端部署结果分别报告。
+
+线上地址：[跳出茧房](https://caiyan12.github.io/overthecocoons/)。独立Chromium1440×900分别检查显式light／dark的关于页：
+
+- 标题逐字动画24／25个中间位移值，`data-oct-longform=on`；生产token为`.16s`，说明单位修复在产物中生效。
+- MENU全展开不透明、1440×900完整覆盖，渐隐阴影高度4px、接触线黑色8%；明暗截图均已实际查看，关闭完成后回到页面。
+- 6项左导航最后为返回主站；页头底68px、页面滚动条顶74px、正文标题顶108px。
+- 页底footer顶728.28125、目录底664.28125（间隔64px）、HUD底391.65625；无横向溢出、两侧内部scrollTop=0、两主题pageerror均为空。
+- 线上`KNav.PWpoDAWw.css`响应内容与本地构建文件逐字节相同。
+
+证据为真实线上浏览器，不是仅HTTP200；未新增真实手机或FPS验收。截图和详细数值在本机Temp的`overthecocoons-live-menu-light.png`／`overthecocoons-live-menu-dark.png`／`overthecocoons-release-live.json`，不提交生成文件。
