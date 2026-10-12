@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "stateTakenAt": "2026-10-11T04:01:41.592Z",
-  "publicContentVersion": 8,
-  "publicContentDigest": "a8b2cf6a0ef9ba1b4a2e9a73ac0ecc32b11bf5ce2b08e43ccb0098be99f1c4cf",
+  "stateTakenAt": "2026-10-12T04:21:37.784Z",
+  "publicContentVersion": 9,
+  "publicContentDigest": "93c7d70cb0b472b52b8d3b7f6125309f63e274c37af706b654b37b9a4d8b32f4",
   "identities": [
     {
       "stableId": "51ef84820b12549c057fd31599464c2bc962db5d5955e7e78ac2a2da188bc496",
@@ -6403,14 +6403,814 @@
       "firstSeenAt": "2026-10-11T04:01:41.592Z",
       "wdFingerprint": "深圳一高颜值新娘撞脸赵丽颖赵露思",
       "wdMissing": false
+    },
+    {
+      "stableId": "a22e95abbba314dac29330f1377c73a5cd3de1cd14fbf4b761646372706e9f89",
+      "sourceId": "baidu-aishort",
+      "guid": "2224464",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "中国赛-杜兰特轮休独行侠大胜火箭",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b24e44a96877634681e70cf1f06ca595f6eb9a394152a2fedd4b68b66a8001f7",
+      "sourceId": "baidu-aishort",
+      "guid": "2224463",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "江西立法杜绝 “新官不理旧账”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d7c337cf5ec804f244201e19270bb4cde9e01429be4a89707c9f8f37f773c7c0",
+      "sourceId": "baidu-aishort",
+      "guid": "2224462",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "昆明一道路坍塌致多车受损 当地回应",
+      "wdMissing": false
+    },
+    {
+      "stableId": "434dbfdfac2af750c07101196481d5bdbc02e52371682ee89e0c1e8ff3c167bf",
+      "sourceId": "baidu-aishort",
+      "guid": "2224461",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "关晓彤惊喜现身宋雨琦演唱会",
+      "wdMissing": false
+    },
+    {
+      "stableId": "525a14cbd134d8794d9c9f22ce00de62656639658135bb83a1a1a5f8e4a1abae",
+      "sourceId": "baidu-aishort",
+      "guid": "2224460",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "深圳公布一起高处坠落事故调查报告",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a205dc27765fad3060ddb43da85ed64d69943a1123142759ea09518f8dd0784c",
+      "sourceId": "baidu-aishort",
+      "guid": "2224459",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文：非常非常难但我有口气顶在那",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ab6af080d6d81ae077e8ecd29196182f6a273d3421af373a13db9d5ffe0c2836",
+      "sourceId": "baidu-aishort",
+      "guid": "2224458",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "“蛟龙”号载人潜水器入海",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1c81d346aeb095bae335bf850b1811746c8f67e0fe775e48c141ae60cb2ad475",
+      "sourceId": "baidu-aishort",
+      "guid": "2224457",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "搬运直播切片带货 侵权",
+      "wdMissing": false
+    },
+    {
+      "stableId": "abbaff81b90b5f0ee4cf6afc859b064ae33d3b67cf32815e74318aefa93c5edc",
+      "sourceId": "baidu-aishort",
+      "guid": "2224456",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "余依婷三日连夺三金",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9c1c11576d75cb0c7ed7d8b51f4c03963db942668a896a21e73ce868d773ab6d",
+      "sourceId": "baidu-aishort",
+      "guid": "2224191",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "逃单乌龙 “挂人式维权”没有赢家",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7b1e8c2fb25569d66d588d8e8f791396ec937d6b3554360d0230a1f407451f88",
+      "sourceId": "baidu-aishort",
+      "guid": "2224190",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "尼泊尔山洪现场房屋桥梁瞬间被冲塌",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d5974afdfc279f024680eb6db1631082e79b6f743871c383a6a609f38ade4bf4",
+      "sourceId": "baidu-aishort",
+      "guid": "2224189",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "2026中网票房超1.32亿",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5ab24d1bbd8b244d60202c5ebf694a2ece516a826bab7c3da71fea0031a3e936",
+      "sourceId": "baidu-aishort",
+      "guid": "2224188",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文登上中网冠军走廊",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2ede84db9114fc9b6cb0678f03b7e73953e8d1305b99a8ccda4ddfae6401e8d4",
+      "sourceId": "baidu-aishort",
+      "guid": "2224187",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文 低谷的火焰炼出冠军的心",
+      "wdMissing": false
+    },
+    {
+      "stableId": "bd31dec5501c089893204138aa325f4e661404d10cead30a4bdc32a40c09320c",
+      "sourceId": "baidu-aishort",
+      "guid": "2224186",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "安德列娃恭喜郑钦文夺冠",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1071be1dabb3a7e7a9936bedd577774dd96ac9f43d0588032f4c0c17ecc7e317",
+      "sourceId": "baidu-aishort",
+      "guid": "2224174",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "潘玮柏自曝瘦了26斤 瘦到穿女装",
+      "wdMissing": false
+    },
+    {
+      "stableId": "07425559004bdc4dea36070611ff58142765fc7d6e36c8b9604ddf88385d3340",
+      "sourceId": "baidu-aishort",
+      "guid": "2224173",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "山姆客服回应开心果被倒卖一包赚28元",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7857bdba708999eace16ec0ff0aea951ca64102003e28cca117955f13a533e9b",
+      "sourceId": "baidu-aishort",
+      "guid": "2224172",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文回应夺冠：这个冠军有你们一份",
+      "wdMissing": false
+    },
+    {
+      "stableId": "943d6b515291098e57c67a8fc07ab647e65d219bca1b912982d61888bf537ea1",
+      "sourceId": "baidu-aishort",
+      "guid": "2224171",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "男子在家晾衣服一套操作看呆网友",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f9d63f2b38089d8bd995ebabbfe1a5e8042b9154ef6d786947217578903795b3",
+      "sourceId": "baidu-aishort",
+      "guid": "2224160",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文救球神来之笔",
+      "wdMissing": false
+    },
+    {
+      "stableId": "67e0db8bd481edde80971df7f8708ed5d584ebcc633ca15792c4dfe9a483f418",
+      "sourceId": "baidu-aishort",
+      "guid": "2224159",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "24岁郑钦文霸气7连胜",
+      "wdMissing": false
+    },
+    {
+      "stableId": "219a83c0ff4f6727fa35a42d828d9a9ce70950c0f43b86a59f2bf8c0587dea30",
+      "sourceId": "baidu-aishort",
+      "guid": "2224157",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文连救3个盘点",
+      "wdMissing": false
+    },
+    {
+      "stableId": "236535bd4eea7ff0a2289086d07782db16dc7b1d2ef34fe17b9e5288766c04a7",
+      "sourceId": "baidu-aishort",
+      "guid": "2224156",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "河南小吃开伦敦首店 一碗胡辣汤87元",
+      "wdMissing": false
+    },
+    {
+      "stableId": "42e614f24257dd7d5e7d2c5518d844d3c2685ea1de664beebb05df0ede6c8ec8",
+      "sourceId": "baidu-aishort",
+      "guid": "2224155",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "清渣工触电身亡 国企追责表述消失",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5342e5b1b2709822ddec219d4123951d4bd2ef8f9e07a6f1eeabedcfb2cc8fce",
+      "sourceId": "baidu-aishort",
+      "guid": "2224147",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "山东大爷一开口网友听出“伦敦腔”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d7c7b64534ea3052422e4116f68017b04aedaafe225587d82f9e8f5bad3a20f6",
+      "sourceId": "baidu-aishort",
+      "guid": "2224139",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文赛后唱王心凌《梦的光点》",
+      "wdMissing": false
+    },
+    {
+      "stableId": "04a86ed3c11315a45299aabc6198809ce831500308968be0a408a42bf3f5b615",
+      "sourceId": "baidu-aishort",
+      "guid": "2224134",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文哭了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "454ab15b95e72e7ed3314307675490d8f3cfad0ca685f944e8b6d1ecb9c0c7cb",
+      "sourceId": "baidu-aishort",
+      "guid": "2224131",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "女生被迫吸二手烟怒吼抽烟的把烟掐了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "62bf1e8a2fb5cdc44ca55b2d88b62f41b67bc6f3f8c565d9d66e767e8ac88144",
+      "sourceId": "baidu-aishort",
+      "guid": "2224128",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "村民自建房用的砖可以徒手掰断",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2aa17cf15701668493d9be2fdc505a44a7b5a8a9ed67538168276fb55e30f92d",
+      "sourceId": "baidu-aishort",
+      "guid": "2224127",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "央视曝光个别地区蔬菜大棚撂荒",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0607c10c6e608b0836df73cc1c380745d4d5c00fef0fd069b6d428d69fac875d",
+      "sourceId": "baidu-aishort",
+      "guid": "2224126",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "张雪全网寻找“加油站摔倒车主”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0630c7ad39f7862fd3d18de6f23d3e8e8ea7576988294d8f84a44aed4274198c",
+      "sourceId": "baidu-aishort",
+      "guid": "2224125",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "搜“中国石油”被导航到“中国加油”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c2a26511df77a447735b2a08eeb12f91ed610006829be602cb9895f29007e736",
+      "sourceId": "baidu-aishort",
+      "guid": "2224124",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文 中网首位本土女单冠军",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5a7134af8bc9ed526a691cd6c265c457e44df2446a74c4d8d207e967e5c62d3d",
+      "sourceId": "baidu-aishort",
+      "guid": "2224123",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文：自己太想赢 赛前不停呕吐",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b6f79722ca4ec9a7fe5e04628542bf6f60dce20acbc2a1a3fad8eb82078dae45",
+      "sourceId": "baidu-aishort",
+      "guid": "2224122",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文收获115万美元奖金",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ce758bcdd881b4e60794827e643260c0ad6622b9bfd0c0af8392b42287d4f19d",
+      "sourceId": "baidu-aishort",
+      "guid": "2224121",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "解说哽咽：我们迎来了自己的女单冠军",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c2e4e7fc982c37620bef9e65f87964148d9118c3c296e768d6ee730b73211f91",
+      "sourceId": "baidu-aishort",
+      "guid": "2224120",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "中央考核巡查专家：你们这么挂灯没用",
+      "wdMissing": false
+    },
+    {
+      "stableId": "82d7300b2a316a461e5cf52ab165298341e4e71c59274957267586d9c6e84f97",
+      "sourceId": "baidu-aishort",
+      "guid": "2224119",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文的24岁夯爆了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "067ea41d7919b775488e4a24f35e8240be9a5c53e4b634eb19651c85271b25d2",
+      "sourceId": "baidu-aishort",
+      "guid": "2224118",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "胖东来施工现场 干净得像AI",
+      "wdMissing": false
+    },
+    {
+      "stableId": "12a69fd54b637cf69ad26299de2bbf18e6ee3750727714d790b5648a32ac6188",
+      "sourceId": "baidu-aishort",
+      "guid": "2224117",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "特朗普：俄乌双方同意“能源停火”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "8f0c7d5173f5873fb40f002a82e3176544f1fc67a55fb7c0f3fa12ccadbd0a70",
+      "sourceId": "baidu-aishort",
+      "guid": "2224116",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文决赛上演闪身步",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ad31c24f76312c4e4c119c8dbdb591fe9368bb25ce51532eae4586e9a05a5087",
+      "sourceId": "baidu-aishort",
+      "guid": "2224115",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "沙特主导联军称利雅得机场航站楼遭袭",
+      "wdMissing": false
+    },
+    {
+      "stableId": "dcb1ca2b0134307915091b922df23a26e595f87808795d52d1e1c28f0d646f90",
+      "sourceId": "baidu-aishort",
+      "guid": "2224114",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文夺冠后拥抱教练里巴",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1d600a8eb06fbe9995fdf8acb14afd5c26b86e05dccabd7dcbb6ca2c973bf46b",
+      "sourceId": "baidu-aishort",
+      "guid": "2224113",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "周鸿祎攀岩摔伤致左膝粉碎性骨折",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ef8e1c4367ebe224a8f04f8b55c8cbc710b05fd9a054c00385cde7f94ec34952",
+      "sourceId": "baidu-aishort",
+      "guid": "2224112",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "李娜之后苦等14年",
+      "wdMissing": false
+    },
+    {
+      "stableId": "95744f40990011cd6a70e1ddae77febd0d1a5a78603b278eca0a857b92400469",
+      "sourceId": "baidu-aishort",
+      "guid": "2224111",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文父母现场见证夺冠",
+      "wdMissing": false
+    },
+    {
+      "stableId": "8c4c1be803b586d724b7a226887e55e32e9005034afbb32690f2d068721e02c5",
+      "sourceId": "baidu-aishort",
+      "guid": "2224110",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "这些文物见证伟大远征",
+      "wdMissing": false
+    },
+    {
+      "stableId": "365b27cf3f8b1941d51c6d0c3a427cbec2ad30c6f018923dfb61bfa91e50e375",
+      "sourceId": "baidu-aishort",
+      "guid": "2224109",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文 排名",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f3ff7effd7d7907a959c30678a60e34e849141a06c81323184391b5fd901b8d1",
+      "sourceId": "baidu-aishort",
+      "guid": "2224108",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "创造历史！郑钦文中网夺冠",
+      "wdMissing": false
+    },
+    {
+      "stableId": "915a3effe0a680e9d6da03f982bf1a8bd72234ec12dc042d91dd3ef7c6ae1973",
+      "sourceId": "baidu-aishort",
+      "guid": "2223750",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "航班滑行后突然要求全体旅客下机",
+      "wdMissing": false
+    },
+    {
+      "stableId": "676752c556c8065f37b571a15d413eec174d49004c754ef1db2e4d6a2fcdfabb",
+      "sourceId": "baidu-aishort",
+      "guid": "2223749",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文两站排名狂升超130位",
+      "wdMissing": false
+    },
+    {
+      "stableId": "fc15f8bf7a3207f280eeaaf5f849c206386ec7ad5f288684ee4d40a26e85a1a0",
+      "sourceId": "baidu-aishort",
+      "guid": "2223748",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "张帅组合获中网女双亚军",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0f7b534742124c3bbf7af9180f16c2bfe70be7bece0e00136e329db923ab81b1",
+      "sourceId": "baidu-aishort",
+      "guid": "2223747",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "古特雷斯谴责胡塞武装袭击沙特机场",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c3ddeae7168b5a4a08d210aac92e908a598d89d504bcecf3cb9ec344e2d0d578",
+      "sourceId": "baidu-aishort",
+      "guid": "2223746",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "直击闽超：南平vs平潭",
+      "wdMissing": false
+    },
+    {
+      "stableId": "27a3a75cd36f3a712133fda3c86427540a76706f88c627149108d9b59f5b4272",
+      "sourceId": "baidu-aishort",
+      "guid": "2223745",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "有老人愿出10万元找“机器保姆”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a7fbd4e912d02b6f388d4873ba99617b2a09e33847e2d8efa7b9e426328d132a",
+      "sourceId": "baidu-aishort",
+      "guid": "2223744",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "马化腾带28岁青年与省委书记座谈",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ca1bb77adc03af1786d5db6de1c9a92ed87608806f328c50adf7b1dc55d6a753",
+      "sourceId": "baidu-aishort",
+      "guid": "2223743",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "直击闽超：厦门vs泉州",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7be816fd3cde9603d602b306f95a575011ca7e823184d834805c3f1a16988b47",
+      "sourceId": "baidu-aishort",
+      "guid": "2223742",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "超长蛋挞要凉了吗",
+      "wdMissing": false
+    },
+    {
+      "stableId": "26c3175a8883bc2ffe19283bca8e62bc7d9843be033753340f9964af615f16a4",
+      "sourceId": "baidu-aishort",
+      "guid": "2223741",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "王曼昱捧起女单冠军奖杯",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9013e3ddacb409a3835ab9e0eb52691b041d678d28bd92199519f6bcbbfdad34",
+      "sourceId": "baidu-aishort",
+      "guid": "2223740",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "银行业“反内卷”再升级",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b4f2cea5d63b2ad53eea9d0514e79838e2ff717d8a9433c1769d98f2f5d30ca4",
+      "sourceId": "baidu-aishort",
+      "guid": "2223739",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "俄罗斯熊患难控 2个月20多人死亡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "80c7115549f9ff0dc31f14c42d32a07ae06e90f75a73e464c5f988e97a675154",
+      "sourceId": "baidu-aishort",
+      "guid": "2223738",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "江苏一地百岁老人超600位",
+      "wdMissing": false
+    },
+    {
+      "stableId": "10cfa2efc0a576d4d4677362ea7bbe02093915107e762a622883fdfbee555ab6",
+      "sourceId": "baidu-aishort",
+      "guid": "2223737",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "吊车吊小麦时坠落 父亲迅速护住孩子",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1ff2fbc5344202de50be209c73f725297027a25cd9a5ac45bc42c95e9875ee50",
+      "sourceId": "baidu-aishort",
+      "guid": "2223736",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "张家齐妈妈饭下面怎么藏着肉",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2458e26cbd9cf9bf4772bda77fe1f9010cc80f5b1e3e53a5da6e26a97e8ffedb",
+      "sourceId": "baidu-aishort",
+      "guid": "2223735",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "经销商联谊会集中解散 茅台回应",
+      "wdMissing": false
+    },
+    {
+      "stableId": "14a8f17ce051a9995e637520346a7f802b52b64fe957aa4c2d9a768c0f85c17c",
+      "sourceId": "baidu-aishort",
+      "guid": "2223734",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "二十年夫妻因1万元打斗致丈夫死亡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3ec9ef3cf93c34367427bc1bbd8f6d933ce8848c680e9e4dbe1cc14b6a6decce",
+      "sourceId": "baidu-aishort",
+      "guid": "2223733",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "河南高速一路段夜间有人躺路中",
+      "wdMissing": false
+    },
+    {
+      "stableId": "40c62eeca7dcce238f9c3534c0dd0e9a07991f53e5ab15fd3f274b92a016ab26",
+      "sourceId": "baidu-aishort",
+      "guid": "2223732",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "珠海回应学校家委让家长轮流看午休",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e0c151d9e1eb39af972757d781d43c31ecabc7407d3f35342059ba4b41fb16ab",
+      "sourceId": "baidu-aishort",
+      "guid": "2223731",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "不到20人的团队配了76个AI员工",
+      "wdMissing": false
+    },
+    {
+      "stableId": "75b9af31ab7392a99f658487199ca7fc05db3d5db022dcfcc0fa4d2c1a7abe27",
+      "sourceId": "baidu-aishort",
+      "guid": "2223730",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "花钱进天眼核心区 谁开的违规口子",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9435ef967161ed39b19de763fe5a5ccc982921ffc5e5b9f828f3848c5c8ab845",
+      "sourceId": "baidu-aishort",
+      "guid": "2223729",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "付费可进天眼 大国重器不容商业蚕食",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c0bc34a38632508951c963c62d318c2f82fe6910b8a3f39cf7f69e8dbfa0751f",
+      "sourceId": "baidu-aishort",
+      "guid": "2223727",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "邻里闹纠纷一方拿出乾隆年间地契",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d6cb2549adc762442a380ec0ce88ff8861ddf89ff8217f21c36da5c8fbda0f93",
+      "sourceId": "baidu-aishort",
+      "guid": "2223726",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "《美人余》 闻不了老人味",
+      "wdMissing": false
+    },
+    {
+      "stableId": "52d71fef331a309c1210c41787e1a061db9e6346b33961310dd7374463131cf9",
+      "sourceId": "baidu-aishort",
+      "guid": "2223714",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "丁宁陈梦现身观众席",
+      "wdMissing": false
+    },
+    {
+      "stableId": "251ccb59eedaec5c676dcfab365357774b88d7289d6ed0583d39dbdea7fb3ad7",
+      "sourceId": "baidu-aishort",
+      "guid": "2223713",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "王曼昱两天两卫冕",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e74a15cd5b2836d222c58696da368066e2d98284a7461fa58db37f96986cbab9",
+      "sourceId": "baidu-aishort",
+      "guid": "2223711",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "唐国强曝《雍正王朝》最初角色是老八",
+      "wdMissing": false
+    },
+    {
+      "stableId": "53cbc7ff65cae42a2cd0217d61c811be477a5f22fdce43d9a182c327aedd5106",
+      "sourceId": "baidu-aishort",
+      "guid": "2223710",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "王曼昱夺冠后比出两个1",
+      "wdMissing": false
+    },
+    {
+      "stableId": "161d55b1d39b7f2210e3d1b1a3df5a6765a4bf062db722133d633249b8f58f90",
+      "sourceId": "baidu-aishort",
+      "guid": "2223709",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "周星驰1港元交易 看似亏本实则精明",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9d5d5b82c6fa233c4bcd4918a9f3775e1fa67da632c293a52020facb32db2d79",
+      "sourceId": "baidu-aishort",
+      "guid": "2223708",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "古偶终于开始过日子了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c97949d4f479301f3af31edf9404d409d0e0144939446a6bd8156028185eff92",
+      "sourceId": "baidu-aishort",
+      "guid": "2223707",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "胡歌称拍仙剑三很无聊",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4d465966b97de90172da25b780b743dd13df4b910ebbee5163f095cfa90f7b07",
+      "sourceId": "baidu-aishort",
+      "guid": "2223706",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "女子往麻辣烫放头发骗退款被监控拍下",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a59b7a8389a4c6ac64095417764b68239e567564f598603a1cf217b7d3da21f7",
+      "sourceId": "baidu-aishort",
+      "guid": "2223705",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "张帅：亚军也不错",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7852048c7c7e9682ed344efbf3d09bbb5326d5598bca4e342fa23010d42df0cc",
+      "sourceId": "baidu-aishort",
+      "guid": "2223704",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "81岁马德华再现猪八戒名场面",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7df5df8905d8c1d695305ebc6cb69e0670c61d15b1b594c00528c2e8021dd942",
+      "sourceId": "baidu-aishort",
+      "guid": "2223701",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "被《美人余》的“高端”饭局恶心到了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5aaf82ed53d02e4a8a4fb3429e83f057d21a15511fc52cfdf1ec3fb42e34f1f0",
+      "sourceId": "baidu-aishort",
+      "guid": "2223699",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "王婆说媒现场29岁女舞蹈老师火了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "017b697e8b2bfb695185e8ad0ca682d77957088eeb0068472c86db9157b412e2",
+      "sourceId": "baidu-aishort",
+      "guid": "2223696",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "亲子鉴定32份报告21个非亲生？假的",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d04f981797ff76bc7eb3bcb465d1f582cef8f2ec180a5bb316dd1e8c8107e6c8",
+      "sourceId": "baidu-aishort",
+      "guid": "2223693",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "王曼昱：这个冠军意义非凡",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3dcaa6086477d12f899d82335394f3dac3784117bdfef1110ebab69efa5a8036",
+      "sourceId": "baidu-aishort",
+      "guid": "2223689",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "胖东来连水果糖分都给你标明白了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1a3def570b4f5400c863d2c514e62222550d67680bea16f13dd88dd08fb676c8",
+      "sourceId": "baidu-aishort",
+      "guid": "2223681",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "中网",
+      "wdMissing": false
+    },
+    {
+      "stableId": "618b29633fbfbba326a9021b9c30a80fbf05710ffe25abefc1156240818fb63d",
+      "sourceId": "baidu-aishort",
+      "guid": "2223677",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "松岛辉空中国大满贯男单夺冠",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d853b5b9596b174ef1cfce11f521aacf3bfc8a5bb8c8c59d1185499251e6e5e7",
+      "sourceId": "baidu-aishort",
+      "guid": "2223676",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "郑钦文出场全场沸腾 靳东担任嘉宾",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4ad79f12a00e69948619b0ca04add6f43e8ce8bb7221280db0d3b09a36b02b06",
+      "sourceId": "baidu-aishort",
+      "guid": "2223675",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "外地务工人员2元彩票中500万",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a2d49bdec0a76ef85bcbe171d36af316fba40a708b712bc28379171cb4d14a51",
+      "sourceId": "baidu-aishort",
+      "guid": "2223674",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "地磁暴",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ec4479807fa388815424f370c9b830e41e32e7fce30d4815cccceac2e444daff",
+      "sourceId": "baidu-aishort",
+      "guid": "2223673",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "本周中国“硬核”成绩刷屏",
+      "wdMissing": false
+    },
+    {
+      "stableId": "820532ab70f776478c316e32cd6f18347c24ffd3410bc95677c1a68a9a70e193",
+      "sourceId": "baidu-aishort",
+      "guid": "2223672",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "王曼昱卫冕中国大满贯女单冠军",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e67b1feb5f59bb53cb1b435605b0053eaa67a94fbc6fe1b7cc2a1d700a5c9999",
+      "sourceId": "baidu-aishort",
+      "guid": "2223671",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "陪看：郑钦文冲击中网首冠",
+      "wdMissing": false
+    },
+    {
+      "stableId": "650edc40177f5ae1d2822bb6ee29afafa3f209d1c2275185f34f5950ae270c12",
+      "sourceId": "baidu-aishort",
+      "guid": "2223670",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "每一代人都要走好自己的长征路",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6404d6313a3239ea69705303a73042ddcb26e31330ec6f18c9cbd557d8ed6d79",
+      "sourceId": "baidu-aishort",
+      "guid": "2223309",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "河北涿州深夜突发火灾",
+      "wdMissing": false
+    },
+    {
+      "stableId": "46148563ffc0899a2aa4d4b94dd95229058f032e9e30786ff4a943f20ebe25ec",
+      "sourceId": "baidu-aishort",
+      "guid": "2223308",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "律师解读盗取梅艳芳骨灰法律后果",
+      "wdMissing": false
+    },
+    {
+      "stableId": "34c8fa03ca9dd89197aadb35fe2c357bc020414f01e72bcfc4da5015dea34681",
+      "sourceId": "baidu-aishort",
+      "guid": "2223307",
+      "firstSeenAt": "2026-10-12T04:21:37.784Z",
+      "wdFingerprint": "山姆整治副卡乱象 一年最多绑2张",
+      "wdMissing": false
     }
   ],
   "quarantined": [],
   "sources": [
     {
       "sourceId": "baidu-aishort",
-      "lastAttemptedAt": "2026-10-11T04:01:41.450Z",
-      "lastSucceededAt": "2026-10-11T04:01:41.592Z",
+      "lastAttemptedAt": "2026-10-12T04:21:37.606Z",
+      "lastSucceededAt": "2026-10-12T04:21:37.784Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     }
