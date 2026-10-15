@@ -53,12 +53,16 @@ const tabs = topicTabs(snapshot.entries);
     {!footerInColumns && <SiteFooter isFixture={isFixture} active={activeNav} />}
     <!-- 全局状态播报区（Ticket 05）：主题/位置/复制等反馈；fixed 定位，不随 DOM 位置变化 -->
     <p class="live-status" role="status" aria-live="polite" data-status></p>
-    <button class="k-top" type="button" data-ktop data-cursor-soft aria-label="返回顶部">
-      <svg viewBox="0 0 60 60" aria-hidden="true">
-        <circle class="track" cx="30" cy="30" r="26"></circle>
-        <circle class="prog" data-ring cx="30" cy="30" r="26"></circle>
-      </svg>
-      <span class="arr" aria-hidden="true">↑</span>
+    <button class="k-top" type="button" data-ktop data-cursor-soft aria-label="返回顶部" tabindex="-1" aria-hidden="true">
+      <span class="k-top-face" aria-hidden="true">
+        <svg class="k-top-ring" viewBox="0 0 60 60">
+          <circle class="track" cx="30" cy="30" r="26"></circle>
+          <circle class="prog" data-ring cx="30" cy="30" r="26"></circle>
+        </svg>
+        <svg class="k-top-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 3h14M12 21V7m-6 6 6-6 6 6"></path>
+        </svg>
+      </span>
     </button>
     <KMenu
       activeTopic={activeTopic}

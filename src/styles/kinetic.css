@@ -399,14 +399,18 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 }
 
 /* 圆形进度返回顶部（显示/进度由 JS 驱动，属 Ticket 06；无 JS 时保持隐藏不遮挡内容） */
-.k-top { position: fixed; right: 24px; bottom: 88px; z-index: var(--z-float); width: 64px; height: 64px; border-radius: 50%; background: var(--surface); border: 1px solid var(--rule); display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity var(--motion-fast) ease-out; cursor: pointer }
-.k-top.show { opacity: 1; pointer-events: auto }
-.k-top:hover { border-color: var(--accent) }
-.k-top svg { position: absolute; inset: 3px; width: 56px; height: 56px; transform: rotate(-90deg) }
+.k-top { position: fixed; right: 24px; bottom: 88px; z-index: var(--z-float); width: 64px; height: 64px; padding: 0; border-radius: 50%; background: transparent; border: 0; color: var(--ink); display: grid; place-items: center; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--motion-fast) var(--ease-out), visibility 0s linear var(--motion-fast); cursor: pointer }
+.k-top.show { opacity: 1; visibility: visible; pointer-events: auto; transition-duration: var(--motion-normal), 0s; transition-delay: 0s }
+/* 本体保留磁吸坐标；表面承载显隐位移，避免两段动效争用 transform。 */
+.k-top-face { --k-top-shadow-alpha: .08; position: relative; width: 100%; height: 100%; border-radius: inherit; background: var(--surface); border: 1px solid var(--rule); display: grid; place-items: center; box-shadow: 0 2px 5px rgb(0 0 0 / var(--k-top-shadow-alpha)); pointer-events: none }
+html[data-theme="dark"] .k-top-face { --k-top-shadow-alpha: .22 }
+@media (prefers-color-scheme: dark) { html[data-theme="auto"] .k-top-face { --k-top-shadow-alpha: .22 } }
+@media (hover: hover) and (pointer: fine) { .k-top:hover .k-top-face { border-color: var(--accent) } }
+.k-top .k-top-ring { position: absolute; inset: 3px; width: 56px; height: 56px; transform: rotate(-90deg) }
+.k-top .k-top-icon { width: 20px; height: 20px }
 .k-top .track { fill: none; stroke: var(--rule); stroke-width: 2 }
 .k-top .prog { fill: none; stroke: var(--accent); stroke-width: 3; stroke-dasharray: 163.4; stroke-dashoffset: 163.4; stroke-linecap: round }
-.k-top .arr { font-size: 15px; line-height: 1 }
-@media (prefers-reduced-motion: reduce) { .k-top { transition: none } }
+@media (prefers-reduced-motion: reduce) { .k-top { transition: none } .k-top-face { transform: none !important } }
 
 /* 全屏导航：同主题底色轻微分层，下沿投影随面板进退，不改变全屏覆盖尺寸。 */
 dialog.k-menu { border: 0; padding: 0; margin: 0; width: 100vw; max-width: 100vw; height: 100dvh; max-height: none; background: transparent; color: var(--ink); overflow: hidden }
@@ -590,7 +594,7 @@ html[data-oct-toc-pending] .k-toccol { opacity: 0 }
   .layout-a .k-media, .layout-b .k-media, .k-detail .k-media { max-width: none; aspect-ratio: auto; height: clamp(180px, 52vw, 240px) }
   .k-detail .k-media { margin-top: 16px }
   .k-top { right: 16px; bottom: 88px; width: 58px; height: 58px }
-  .k-top svg { width: 50px; height: 50px }
+  .k-top .k-top-ring { width: 50px; height: 50px }
   /* UI 票 #10：滚动到底时给返回顶部按钮（fixed bottom:88px right:16px）让位，不遮页脚文字 */
   footer p { padding-right: 72px }
 }

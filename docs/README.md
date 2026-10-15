@@ -22,6 +22,7 @@
 - [自绘覆盖式纵向滚动条与全屏MENU](ui-scrollbars.md)
 - [显示切换中的光标修复](ui-theme-cursor.md)
 - [有界单行分页与页码跳转](ui-pagination.md)
+- [返回顶部按钮视觉与显隐动效（2026-10-15 本地实现验收）](ui-back-to-top.md)
 - [设计样本](design/brief-preview.html)
 
 ## 状态报告
