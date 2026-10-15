@@ -42,6 +42,13 @@
 - 隐藏按钮退出Tab序，reduced-motion取消空间运动；反向/缺库/无JS/停钟收尾均已覆盖。GSAP祖先时钟暂停时普通set不渲染，终态使用显式progress推进。详情与边界见 `docs/ui-back-to-top.md`：本地 `pnpm test`（check0错误、Node304、Chromium182）通过，专项五配置28通过＋2触屏磁吸不适用跳过，独立Standards/Spec均0问题；用户已确认效果并授权提交推送，线上证据单独归档，未作新真机验收。
 - 功能提交`157052c`已按用户授权推送main并上线；`build-deploy`运行`38670422989`的build/deploy均成功。线上SVG与明暗阴影实看、CSS/客户端脚本与本地逐字节一致、真实线上Chromium平滑回顶回归1/1通过；启动器及其README/记忆未纳入本次提交。详情见 `docs/ui-back-to-top.md` 发布记录。
 
+## 2026-10-15 文字链接统一
+
+- Issue #32 已按两轮确认规则本地实现：全部文字链接常态无下划线并继承颜色，hover 1px 同色线用700ms平滑展开／反向收回，多行逐行绘制、MENU仅文字标签；键盘焦点即时完整线，减弱动态即时显隐，触屏无残留hover。
+- 静态及动态文字锚点统一LINK，标题VIEW已替换，版画OPEN及按钮轻量态保持；取消HUD旧4px位移与独立线，保留正文揭幕、主题／分页状态标记及目录进度。维护链接时先读 `docs/ui-links.md`，它覆盖历史靛色外链和相关光标／HUD裁定。
+- 集成分支 `codex/link-interactions`，完整 `pnpm test`：check0错误/0警告、build66页、Node304/304、Chromium188通过+1触屏专用跳过；专项五配置26通过+9指针类型不适用跳过；独立Standards/Spec均0问题。独立浏览器实看320px拆字双行标题的中间帧／终态、LINK、明暗及无溢出；未宣称新真机/FPS/线上验证。
+- 用户已确认本项提交推送与Issue闭环，发布证据另行记录；启动器与其README/记忆为无关既有改动。初轮测试前提差异、误删邻接CSS的恢复及最终验证证据见 `docs/ui-links.md`。
+
 ## 项目记忆与技能目录
 
 - `.agents/memories/` 为**项目记忆目录**（已入 git 跟踪，不得加入 `.gitignore`）：`memory.md` 为统领索引，登记全部记忆条目与摘要；单条记忆文件名 `YYYYMMDDHHMM.md`（本地时间，精确到分）。会话需要既往项目经验时，先读 `memory.md` 索引再打开对应条目；记忆是经验与过程沉淀，**当前状态以本文件状态段与 Git 现状为权威**，冲突时以现状为准。

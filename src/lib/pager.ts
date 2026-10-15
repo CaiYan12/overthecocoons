@@ -37,7 +37,7 @@ export function pagerHtml(page: number, total: number, hrefFor: (page: number) =
     }
   }
   const link = (target: number, text: string, label: string, attrs = "") =>
-    `<a class="page-btn" data-page="${target}" data-cursor-soft href="${escapeAttribute(hrefFor(target))}" aria-label="${label}"${attrs}>${text}</a>`;
+    `<a class="page-btn" data-page="${target}" data-cursor="LINK" href="${escapeAttribute(hrefFor(target))}" aria-label="${label}"${attrs}><span class="k-link-label">${text}</span></a>`;
   const previous = page > 1 ? link(page - 1, "‹", "上一页", ' rel="prev"') : '<span class="page-btn" aria-disabled="true">‹</span>';
   const next = page < total ? link(page + 1, "›", "下一页", ' rel="next"') : '<span class="page-btn" aria-disabled="true">›</span>';
   const numbers = [...items.values()].sort((a, b) => a.order - b.order).map((item) => {

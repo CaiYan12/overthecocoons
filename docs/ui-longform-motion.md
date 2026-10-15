@@ -11,9 +11,9 @@
 | 段落与导语 | 下方18px升起、纵向裁剪揭开、淡入 | 标题入场开始后180ms起，550ms |
 | 列表、定义列表、来源表格 | 保持原语义结构，第一层条目/行分层显现 | 按60ms错峰，总错峰上限280ms |
 | 右栏 | 分隔线横向展开，随后标签、内容顺次揭幕 | 线280ms，内容550ms，各区块与内容错峰60ms |
-| 右栏链接 | 静止命中盒内文字位移4px、下划线展开；同一时间线反向收回 | 160ms，仅精细且可悬停指针 |
+| 右栏链接 | #32 统一继承色与逐行下划线，文字和命中盒固定；旧4px位移及重复规则线已移除 | CSS 700ms ease，仅精细且可悬停指针；焦点／减弱动态即时 |
 
-时长复用 `--motion-slow` / `--motion-normal` / `--motion-fast`，统一 `power3.out`。新增运行时仍使用项目自托管 GSAP Core / ScrollTrigger 3.13.0，未新增依赖或插件。运动属性限定 transform、opacity、clip-path；临时 will-change 在收尾时清理。
+除链接遵循[链接统一规则](ui-links.md)的 `--motion-link: 700ms` 外，揭幕时长复用 `--motion-slow` / `--motion-normal` / `--motion-fast`，统一 `power3.out`。新增运行时仍使用项目自托管 GSAP Core / ScrollTrigger 3.13.0，未新增依赖或插件。运动属性限定 transform、opacity、clip-path；临时 will-change 在收尾时清理。
 
 ## 行为约束
 

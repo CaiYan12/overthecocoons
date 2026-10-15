@@ -245,7 +245,7 @@ test("两档版式与数据版画结构正确（有摘要奇偶交替、无摘�
   );
   assert.ok(!first.includes('class="lab"'), "竖排英文主题词已移除（T9：单一主题下逐条重复零信息量）");
   assert.ok(!first.includes('class="num"'), "出血大序号已移除（T9：位置计数由 HUD NOW READING 承担）");
-  assert.ok(first.includes('data-cursor="VIEW"'), "T06 光标挂点保留");
+  assert.ok(first.includes('data-cursor="LINK"'), "T06 光标挂点保留");
 
   const compact = chunks[3]!;
   assert.ok(!compact.includes('class="k-media"'), "紧凑行无版画（无摘要条目不假装有图）");
@@ -665,14 +665,14 @@ test("自定义光标语义标记覆盖（UI 票 #14）：可点击元素都带�
   const marked = (tag: string) => tag.includes("data-cursor");
 
   // 首页应同时出现两档标记（断言前置：覆盖不成立时下面的「全带」是空真）
-  assert.ok(anchors.some((t) => t.includes('data-cursor="VIEW"')), "应存在完整语义态锚点");
-  assert.ok(anchors.some((t) => t.includes("data-cursor-soft")), "应存在轻量可点击态锚点");
+  assert.ok(anchors.length > 0 && anchors.every((t) => t.includes('data-cursor="LINK"')), "所有文字锚点统一LINK");
+  assert.ok(buttons.some((t) => t.includes("data-cursor-soft")), "按钮保留轻量可点击态");
 
   // 完整语义态：内容入口三类的数量（每页 20 条）
   assert.equal(
-    anchors.filter((t) => t.includes('data-cursor="VIEW"')).length,
+    anchors.filter((t) => t.includes("data-detail") && t.includes('data-cursor="LINK"')).length,
     20,
-    "每页 20 条条目标题链接都应带 VIEW",
+    "每页 20 条条目标题链接都应带 LINK",
   );
   assert.equal(
     [...html.matchAll(/data-cursor="OPEN"/g)].length,
@@ -682,12 +682,12 @@ test("自定义光标语义标记覆盖（UI 票 #14）：可点击元素都带�
   assert.ok(anchors.some((t) => t.includes('data-cursor="LINK"')), "条目外链应带 LINK");
 
   // 轻量可点击态：次级控件（品牌 / 主题 tab / 模式按钮 / 菜单入口 / 返回顶部 / 分页 / 页脚导航 / 左栏导航 / 菜单项 / HUD）
-  assert.match(html, /<a class="k-brand"[^>]*data-cursor-soft/, "品牌标识带轻量态");
+  assert.match(html, /<a class="k-brand"[^>]*data-cursor="LINK"/, "品牌标识带LINK");
   assert.match(html, /<button class="mode-btn"[^>]*data-cursor-soft/, "显示模式按钮带轻量态");
   assert.match(html, /<button class="k-menu-open"[^>]*data-cursor-soft/, "菜单入口带轻量态");
   assert.match(html, /<button class="k-top"[^>]*data-cursor-soft/, "返回顶部带轻量态");
   assert.match(html, /<button class="k-menu-close"[^>]*data-cursor-soft/, "菜单关闭带轻量态");
-  assert.match(html, /<a class="k-mi"[^>]*data-cursor-soft/, "菜单导航项带轻量态");
+  assert.match(html, /<a class="k-mi"[^>]*data-cursor="LINK"/, "菜单导航项带LINK");
 
   // 全站契约：所有锚点与按钮都必须带某一档标记（新增可点击元素漏标即失败）
   const unmarkedAnchors = anchors.filter((t) => !marked(t));
@@ -709,19 +709,19 @@ test("自定义光标语义标记覆盖（UI 票 #14）：可点击元素都带�
   const detailRel = htmlFiles.find((rel) => /^items\/[0-9a-f]{64}\/index\.html$/.test(rel));
   assert.ok(detailRel, "产物中应存在详情页（断言前置）");
   const detail = readDist(detailRel!);
-  assert.match(detail, /<a href="[^"]*topics\/[^"]*" data-cursor-soft>← 返回时间线<\/a>/, "详情页返回链接带轻量态");
+  assert.match(detail, /<a href="[^"]*topics\/[^"]*" data-cursor="LINK">← 返回时间线<\/a>/, "详情页返回链接带LINK");
   assert.match(detail, /<button class="ext" type="button" data-copy-link data-cursor-soft/, "复制链接按钮带轻量态");
 
   // 空态与 404 的出口按钮同样带轻量态
   assert.match(
     readDist("topics/philosophy/index.html"),
-    /<a class="page-btn" data-all data-cursor-soft/,
-    "空态「查看全部」带轻量态",
+    /<a class="page-btn" data-all data-cursor="LINK"/,
+    "空态「查看全部」带LINK",
   );
   assert.match(
     readDist("404.html"),
-    /<a class="page-btn" href="[^"]*" data-cursor-soft>返回公共时间线<\/a>/,
-    "404 出口带轻量态",
+    /<a class="page-btn" href="[^"]*" data-cursor="LINK"><span class="k-link-label">返回公共时间线<\/span><\/a>/,
+    "404 出口带LINK",
   );
 });
 
@@ -781,12 +781,12 @@ test("样式经基路径加载且含 v4 设计 token（暖纸白/墨黑/暗红�
 test("无 JS 导航兜底：左栏功能导航、页脚导航与页脚主题导航均渲染为真实链接", () => {
   const html = readDist("index.html");
   for (const label of ["时间线", "来源", "关于", "原则", "隐私"]) {
-    assert.ok(html.includes(`>${label}</a>`), `导航应包含 ${label} 链接`);
+    assert.ok(html.includes(`>${label}</span></a>`), `导航应包含 ${label} 链接`);
   }
   // 页脚主题导航（T04 收尾项）：≤767px 时 header 主题 Tab 隐藏，无 JS 用户经页脚进入主题页
   for (const topic of TOPICS) {
     assert.ok(
-      html.includes(`>${topic}</a>`),
+      html.includes(`>${topic}</span></a>`),
       `页脚主题导航应包含「${topic}」链接（无 JS 主题筛选入口）`,
     );
   }
@@ -897,12 +897,12 @@ test("丝线 B 版 rail 静态呈现（T13，#30；T14 追改灰线）与逐日�
   assert.ok(js.includes("k-progress"), "客户端 dayGroups 模板带进度线（T14 恢复，同构）");
 });
 
-test("靛色站外信号（T13，#30）：token 两主题入 CSS，外链全染 ext、站内链接零染色（全产物逐锚点判定）", () => {
+test("站外身份（#32）：ext保留确定性分类与安全属性，链接统一继承色", () => {
   const css = cssFiles.map(readDist).join("\n").toLowerCase();
   assert.ok(css.includes("--indigo:#2f5168"), "浅色靛 token");
   assert.ok(css.includes("--indigo:#8db3c9"), "深色靛 token");
-  assert.match(css, /a\.ext\{color:var\(--indigo\)/, "外链规则用靛 token（全局 a.ext）");
-  assert.match(css, /\.k-hud \.k-link\.ext\{color:var\(--indigo\)/, "HUD 站外链接靛色覆盖（票面优先于原型，ADR 0005）");
+  assert.match(css, /a\{color:inherit;text-decoration:none/, "所有锚点继承色且默认无下划线");
+  assert.ok(!/a\.ext\{color:var\(--indigo/.test(css), "不再染靛");
   // 全产物逐锚点：class 含 ext ⇔ href 为跨源绝对 http(s)（确定性规则 links.isExternalUrl 的产物级对照）
   const SITE_ORIGIN = "https://caiyan12.github.io";
   let externalCount = 0;

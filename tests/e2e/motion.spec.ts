@@ -1456,7 +1456,7 @@ test.describe("桌面限定动效（pointer:fine）", () => {
     await waitClientReady(page);
     await waitMotionOn(page);
 
-    // 光标：移动后显示，悬停标题链接显示 VIEW
+    // 光标：移动后显示，悬停标题链接显示 LINK
     await page.mouse.move(400, 300);
     await page.waitForFunction(() => {
       const cursor = document.querySelector<HTMLElement>("[data-kcursor]");
@@ -1471,7 +1471,7 @@ test.describe("桌面限定动效（pointer:fine）", () => {
     ).toBe(true);
     const headline = page.locator(".k-entry .k-headline a").first();
     await headline.hover();
-    await expect(page.locator("[data-kcursor-label]")).toHaveText("VIEW");
+    await expect(page.locator("[data-kcursor-label]")).toHaveText("LINK");
     // ring 放大有 0.3s 补间：轮询到放大终态（2.3）再断言
     await page.waitForFunction(
       () => {
@@ -1814,7 +1814,7 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
 
     // 完整语义态（内容入口三类）：圆环放大 + 语义标签
     const fullTargets = [
-      ["条目标题链接", ".k-entry .k-headline a", "VIEW"],
+      ["条目标题链接", ".k-entry .k-headline a", "LINK"],
       ["占位版画", ".k-entry.layout-a .k-media", "OPEN"],
       ["条目外链", ".k-meta a.ext", "LINK"],
     ] as const;
@@ -1827,9 +1827,13 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
 
     // 轻量可点击态（次级控件）：圆环轻微放大、不显示标签
     await showHeader(page);
+    for (const selector of [".k-brand", "[data-ktabs] .tab"]) {
+      const link = await hoverState(selector);
+      expect(link.scale, "文字导航统一完整LINK态").toBeGreaterThan(2);
+      expect(link.label).toBeGreaterThan(0.9);
+      expect(link.text).toBe("LINK");
+    }
     const softTargets = [
-      ["品牌标识", ".k-brand"],
-      ["主题筛选 Tab", '[data-ktabs] .tab'],
       ["显示模式按钮", "[data-mode]"],
       ["菜单入口", "[data-kmenu-open]"],
     ] as const;
@@ -1850,9 +1854,9 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
     );
     await page.waitForTimeout(400);
     const pager = await hoverState('.pager .page-btn[data-page="2"]');
-    expect(pager.scale, "分页按钮应给出轻量可点击态").toBeGreaterThan(1.15);
-    expect(pager.scale, "分页按钮不应放大到完整语义态").toBeLessThan(2);
-    expect(pager.label, "分页按钮不应显示语义标签").toBe(0);
+    expect(pager.scale, "分页链接为完整LINK态").toBeGreaterThan(2);
+    expect(pager.label, "分页显示LINK").toBeGreaterThan(0.9);
+    expect(pager.text).toBe("LINK");
 
     // 未启用的分页边界项：不给任何可点击态
     const disabled = await hoverState('.pager .page-btn[aria-disabled="true"]');
@@ -1861,9 +1865,9 @@ test.describe("自定义光标：可见性与语义分档（UI 票 #14）", () =
 
     // 页脚导航
     const foot = await hoverState(".k-foot-nav a");
-    expect(foot.scale, "页脚导航应给出轻量可点击态").toBeGreaterThan(1.15);
-    expect(foot.scale, "页脚导航不应放大到完整语义态").toBeLessThan(2);
-    expect(foot.label, "页脚导航不应显示语义标签").toBe(0);
+    expect(foot.scale, "页脚导航为完整LINK态").toBeGreaterThan(2);
+    expect(foot.label, "页脚显示LINK").toBeGreaterThan(0.9);
+    expect(foot.text).toBe("LINK");
 
     // 返回顶部：滚到底才出现（.show），同属次级控件
     await page.mouse.move(200, 300);

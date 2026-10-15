@@ -27,14 +27,14 @@ const links = [
       links.map((link, index) => (
         <a
           data-nav={index}
-          data-cursor-soft
+          data-cursor="LINK"
           tabindex="0"
           href={link.href}
           rel={link.key === "main" ? "noopener" : undefined}
           aria-current={active === link.key ? "page" : undefined}
         >
           {active === link.key && <span class="k-marker" aria-hidden="true" data-kmarker></span>}
-          {link.label}
+          <span class="k-link-label">{link.label}</span>
         </a>
       ))
     }

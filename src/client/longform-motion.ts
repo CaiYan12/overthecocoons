@@ -224,22 +224,7 @@ export function initLongformMotion(): void {
             group.timeline.to(rule, { scaleX: 1, duration: normal }, beat)
               .to(children, { y: 0, opacity: 1, clipPath: "inset(0% 0% 0% 0%)", stagger: 0.06 }, beat + 0.08);
           });
-          // 锚点命中盒保持静止，仅内部文字与下划线跟随可逆时间线。
-          if (matchMedia("(hover: hover) and (pointer: fine)").matches) {
-            hud.querySelectorAll<HTMLAnchorElement>(".k-link").forEach((link) => {
-              const children = [...link.childNodes];
-              const text = document.createElement("span");
-              text.className = "k-hud-link-text";
-              text.append(...children);
-              const rule = ruleFor(link, "k-hud-link-rule");
-              link.prepend(text);
-              restores.push(() => link.replaceChildren(...children));
-              const hover = g.timeline({ paused: true, defaults: { duration: fast, ease: "power3.out" } })
-                .to(text, { x: 4 }, 0).to(rule, { scaleX: 1 }, 0);
-              listen(link, "pointerenter", () => hover.play());
-              listen(link, "pointerleave", () => hover.reverse());
-            });
-          }
+
         }
         // 每个组只有一条 timeline；快速越过整章时直接收尾，回读不重播。
         groups.forEach((group, index) => {

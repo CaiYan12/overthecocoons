@@ -102,7 +102,7 @@ function entryHtml(entry: PublicEntry, gi: number, di: number, omitTime: boolean
   const time = omitTime
     ? ""
     : `<div class="k-time"><time datetime="${entry.firstSeenAt}">${formatClock(entry.firstSeenAt)}</time></div>`;
-  const headline = `<h3 class="k-headline"><a href="${base}/items/${entry.id}/" data-detail data-cursor="VIEW">${esc(entry.title)}</a></h3>`;
+  const headline = `<h3 class="k-headline"><a href="${base}/items/${entry.id}/" data-detail data-cursor="LINK">${esc(entry.title)}</a></h3>`;
   const meta = metaHtml(entry);
   let inner: string;
   if (layout === "layout-compact") {
@@ -148,7 +148,7 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
 
 function emptyHtml(emptyTopic: string): string {
   // UI 票 #10：与 KEmpty.astro 保持同文（用户视角，不用规格用语）
-  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>首源为百度热点线索，收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p><a class="page-btn" data-all data-cursor-soft href="${base}/">查看全部</a></div>`;
+  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>首源为百度热点线索，收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p><a class="page-btn" data-all data-cursor="LINK" href="${base}/"><span class="k-link-label">查看全部</span></a></div>`;
 }
 
 function renderPager(page: number, totalPages: number, renderTopic: string): void {

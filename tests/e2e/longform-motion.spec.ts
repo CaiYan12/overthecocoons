@@ -208,7 +208,7 @@ test("快速跳章与焦点接管保持可读，页面生命周期收尾不留�
   await hudLink.focus();
   await expect(hudLink).toBeFocused();
   await expect(page.locator("[data-longform-hud] .sec").last()).toHaveAttribute("data-doc-reveal", "done");
-  await visibleContent(page, "[data-longform-hud] .sec:last-child p, [data-longform-hud] .sec:last-child .k-hud-link-text");
+  await visibleContent(page, "[data-longform-hud] .sec:last-child p, [data-longform-hud] .sec:last-child .k-link-label");
   await page.evaluate(() => {
     (window as unknown as { gsap: { globalTimeline: { resume(): void } } }).gsap.globalTimeline.resume();
     scrollTo({ top: 0, behavior: "instant" });

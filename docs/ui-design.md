@@ -5,6 +5,8 @@
 按用户选择定制报刊、暖纸白/墨黑/暗红与三栏布局；design-brief 的预设 token 表未覆盖这套组合，本规范优先遵守用户选择。
 产品、来源、排序和保留基线见 [product-alignment.md](product-alignment.md)，领域术语见 [GLOSSARY.md](../GLOSSARY.md)；本轮新增 UI 范围见 [ui-alignment.md](ui-alignment.md)。
 
+2026-10-15 补充：全站文字链接已按用户确认的[链接统一规则](ui-links.md)实施：继承色、常态无线、700ms 左入右收、统一 `LINK` 指针。该规则覆盖早期外链靛色及各局部 hover 裁定；主题／分页选中标记与目录进度线继续保留。
+
 ## 1. Visual Theme & Atmosphere
 
 - 报刊编辑型：强标题对比、细边框、较紧凑资讯排版。

@@ -25,10 +25,10 @@ const links = [
       links.map((link) => (
         <a
           href={link.href}
-          data-cursor-soft
+          data-cursor="LINK"
           aria-current={active === link.key ? "page" : undefined}
         >
-          {link.label}
+          <span class="k-link-label">{link.label}</span>
         </a>
       ))
     }
@@ -36,8 +36,8 @@ const links = [
   <nav class="k-foot-topics" aria-label="主题导航">
     {
       TOPICS.map((topic) => (
-        <a href={siteUrl(topicPagePath(topic, 1))} data-cursor-soft>
-          {topic}
+        <a href={siteUrl(topicPagePath(topic, 1))} data-cursor="LINK">
+          <span class="k-link-label">{topic}</span>
         </a>
       ))
     }

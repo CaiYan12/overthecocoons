@@ -40,7 +40,7 @@ const links = [
             <a
               class="k-mi"
               data-nav={index}
-              data-cursor-soft
+              data-cursor="LINK"
               href={link.href}
               aria-current={activeNav === link.key ? "page" : undefined}
             >
@@ -64,10 +64,10 @@ const links = [
             role="tab"
             aria-current={topic === activeTopic ? "true" : "false"}
             data-topic={topic}
-            data-cursor-soft
+            data-cursor="LINK"
             href={siteUrl(topicPagePath(topic, 1))}
           >
-            {topic}
+            <span class="k-link-label">{topic}</span>
           </a>
         ))
       }

@@ -190,9 +190,12 @@ export function initNavigationMotion(): void {
         const li = document.createElement("li");
         const link = document.createElement("a");
         link.href = `#${day.id}`;
-        link.setAttribute("data-cursor-soft", "");
+        link.setAttribute("data-cursor", "LINK");
         link.tabIndex = 0;
-        link.textContent = `${day.dataset.day} · ${day.querySelectorAll(".k-entry").length} 条`;
+        const label = document.createElement("span");
+        label.className = "k-link-label";
+        label.textContent = `${day.dataset.day} · ${day.querySelectorAll(".k-entry").length} 条`;
+        link.append(label);
         const meter = document.createElement("span");
         meter.className = "k-toc-meter";
         meter.setAttribute("aria-hidden", "true");

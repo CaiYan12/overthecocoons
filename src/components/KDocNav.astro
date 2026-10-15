@@ -24,7 +24,7 @@ const { active, toc, timeline = false } = Astro.props;
         <span class="k-toc-marker" aria-hidden="true" data-toc-marker></span>
         <ol>
           {toc.map((item) => (
-            <li><a href={`#${item.id}`} data-cursor-soft tabindex="0">{item.label}<span class="k-toc-meter" aria-hidden="true"></span></a></li>
+            <li><a href={`#${item.id}`} data-cursor="LINK" tabindex="0"><span class="k-link-label">{item.label}</span><span class="k-toc-meter" aria-hidden="true"></span></a></li>
           ))}
         </ol>
       </nav>

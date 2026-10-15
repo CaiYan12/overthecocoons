@@ -23,6 +23,8 @@
 - [显示切换中的光标修复](ui-theme-cursor.md)
 - [有界单行分页与页码跳转](ui-pagination.md)
 - [返回顶部按钮视觉与显隐动效（2026-10-15 已发布验收）](ui-back-to-top.md)
+- [链接视觉与指针统一（本地验收完成，已授权发布）](ui-links.md)
+- [链接统一交互实施任务（Issue #32）](ui-links-tickets.md)
 - [设计样本](design/brief-preview.html)
 
 ## 状态报告

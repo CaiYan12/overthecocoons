@@ -48,12 +48,12 @@ const totalText = String(total).padStart(2, "0");
   }
   <div class="sec">
     <p class="h">PROJECT</p>
-    <p><a class="k-link" href={siteUrl("/principles/")} data-cursor-soft tabindex="0">阅读收录原则</a></p>
+    <p><a class="k-link" href={siteUrl("/principles/")} data-cursor="LINK" tabindex="0"><span class="k-link-label">阅读收录原则</span></a></p>
     <p>
-      {/* T13（UI 票 #30）：站外链接（GitHub）带 ext 类走靛色站外信号；「阅读收录原则」为站内保持红 */}
+      {/* #32：站内外文字链接共用继承色与下划线；ext 保留站外身份。 */}
       {/* 站外链接着色双轨约定：数据驱动链接走 isExternalUrl（links.ts），构建期已知的外链直接标 ext——本站属后者 */}
-      <a class="k-link ext" href="https://github.com/CaiYan12/overthecocoons/issues/new?template=source-submission.yml" target="_blank" rel="noopener" data-cursor-soft tabindex="0">
-        提交新来源（GitHub Issue）↗
+      <a class="k-link ext" href="https://github.com/CaiYan12/overthecocoons/issues/new?template=source-submission.yml" target="_blank" rel="noopener" data-cursor="LINK" tabindex="0">
+        <span class="k-link-label">提交新来源（GitHub Issue）↗</span>
       </a>
     </p>
   </div>

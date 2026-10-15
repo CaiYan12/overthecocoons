@@ -45,7 +45,7 @@ interface Anchor {
 
 /** 锚定提取：每条对应一个大字槽位在源码中的真实字符串形态。 */
 const ANCHORS: Anchor[] = [
-  { slot: "站名（.k-brand）", file: "src/components/KHeader.astro", re: /class="k-brand"[^>]*>([^<]+)</g },
+  { slot: "站名（.k-brand）", file: "src/components/KHeader.astro", re: /class="k-brand"[^>]*><span class="k-link-label">([^<]+)</g },
   { slot: "Hero 标题两行（.k-hero-title .line）", file: "src/components/KHero.astro", re: /<span class="line(?: l2)?">([^<]+)<\/span>/g },
   { slot: "Hero ghost 英文（.k-hero-en）", file: "src/components/KHero.astro", re: /data-heroen>([^<]+)</g },
   { slot: "菜单大字项（.k-mi .lb 的 links label）", file: "src/components/KMenu.astro", re: /label: "([^"]+)"/g },

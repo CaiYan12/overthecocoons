@@ -15,7 +15,7 @@ const { activeTopic = "全部", topicTabs } = Astro.props;
 ---
 
 <header class="k-header" data-kheader>
-  <a class="k-brand" href={siteUrl("/")} data-cursor-soft>跳出茧房</a>
+  <a class="k-brand" href={siteUrl("/")} data-cursor="LINK"><span class="k-link-label">跳出茧房</span></a>
   <nav class="k-tabs" role="tablist" aria-label="主题筛选" data-ktabs>
     <span class="k-indicator" aria-hidden="true" data-indicator></span>
     {
@@ -25,10 +25,10 @@ const { activeTopic = "全部", topicTabs } = Astro.props;
           role="tab"
           aria-current={topic === activeTopic ? "true" : "false"}
           data-topic={topic}
-          data-cursor-soft
+          data-cursor="LINK"
           href={siteUrl(topicPagePath(topic, 1))}
         >
-          {topic}
+          <span class="k-link-label">{topic}</span>
         </a>
       ))
     }

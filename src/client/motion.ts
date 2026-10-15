@@ -870,7 +870,8 @@ function killMenuTl(): void {
    降级路径（reduced-motion / GSAP 失败 / 触屏）不加类，系统指针照常。
    UI 票 #14：反相混合已移到 .k-cursor 容器（写在子元素上会被容器自身的隔离组屏蔽），
    语义标签移出容器独立跟随以保住 accent 原色；语义分两档——
-   内容入口 [data-cursor] 走完整态（圆环放大 + 语义标签），次级控件 [data-cursor-soft] 走轻量态
+   文字链接统一 [data-cursor=LINK]，版画保留 OPEN，均走完整态（圆环放大 + 语义标签）；
+   按钮与滚动条 [data-cursor-soft] 继续走轻量态
    （圆环轻微放大、不显示标签），未标记元素回到静止态。 */
 
 function initCursor(root: HTMLElement): void {

@@ -61,7 +61,7 @@ test("组件源码锚定再提取：站名/Hero/菜单大字逐字符 ⊆ 字集
   const hero = readFileSync(join(ROOT, "src/components/KHero.astro"), "utf-8");
   const menu = readFileSync(join(ROOT, "src/components/KMenu.astro"), "utf-8");
 
-  const brand = header.match(/class="k-brand"[^>]*>([^<]+)</)?.[1];
+  const brand = header.match(/class="k-brand"[^>]*><span class="k-link-label">([^<]+)</)?.[1];
   assert.equal(brand, "跳出茧房", "KHeader 站名锚点应命中");
   const heroEn = hero.match(/data-heroen>([^<]+)</)?.[1];
   assert.equal(heroEn, "OVER THE COCOONS", "KHero ghost 英文锚点应命中");

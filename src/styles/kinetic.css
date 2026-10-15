@@ -60,13 +60,30 @@ html[data-oct-scrollbars]::-webkit-scrollbar,
 html[data-oct-scrollbars] .k-menu-inner::-webkit-scrollbar { display: none }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto } }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--sans) }
-/* 原型依赖 UA 默认下划线；Tailwind 预检将其置为 inherit，此处显式恢复 */
-a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px }
-/* T13（UI 票 #30）：靛色站外信号——站外链接用 --indigo，「↗」保留为非色彩线索；
-   站内链接不加 .ext、颜色零变化。ext 类由确定性规则（src/lib/links.ts isExternalUrl：
-   绝对 http(s) 且 origin ≠ 站点 origin）在构建期/客户端统一判定后附加。 */
-a.ext { color: var(--indigo) }
-a.ext:hover { text-decoration-thickness: 1px }
+/* #32：文字链接继承所在上下文颜色，默认不带下划线。 */
+a { color: inherit; text-decoration: none }
+/* ext 仍记录跨源 http(s) 链接身份；颜色与普通链接一致。 */
+/* #32: clone gives each wrapped inline fragment the same left-to-right line.
+   Keep the text/hit box fixed; CSS transitions reverse from their current paint. */
+a[href]:not(:has(> .k-link-label)):not(.k-mi), .k-link-label, .k-mi .lb {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 0% 1px;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  transition: background-size var(--motion-link) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  a[href]:not(:has(> .k-link-label)):not(.k-mi):hover,
+  a[href]:hover > .k-link-label, .k-mi:hover .lb { background-size: 100% 1px }
+}
+a[href]:not(:has(> .k-link-label)):not(.k-mi):focus-visible,
+a[href]:focus-visible > .k-link-label, .k-mi:focus-visible .lb {
+  background-size: 100% 1px; transition-duration: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  a[href]:not(:has(> .k-link-label)):not(.k-mi), .k-link-label, .k-mi .lb { transition-duration: 0s }
+}
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0 }
 
@@ -77,7 +94,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .pager[hidden] { display: none }
 .page-btn { min-width: 44px; min-height: 44px; border: 1px solid var(--rule); background: var(--surface); padding: 0 12px; font-size: 15px }
 .page-btn:hover { border-color: var(--accent) }
-.page-btn[aria-current=page] { border-color: var(--accent); color: var(--accent); font-weight: 600 }
+.page-btn[aria-current=page] { border-color: var(--accent); color: inherit; font-weight: 600 }
 /* T04 遗留修正（Ticket 06）：分页器边界项是 <span aria-disabled="true">（非 disabled 属性），规则改配 aria-disabled */
 .page-btn[aria-disabled="true"] { opacity: .4; cursor: default }
 .page-btn[aria-disabled="true"]:hover { border-color: var(--rule) }
@@ -99,6 +116,7 @@ footer p { margin: 0 0 8px }
   --content-max: 1440px;
   --space-1: 4px; --space-2: 8px; --space-3: 16px; --space-4: 24px; --space-5: 40px; --space-6: 64px;
   --motion-fast: 160ms; --motion-normal: 280ms; --motion-slow: 550ms;
+  --motion-link: 700ms; /* #32 用户明确指定的文字链接完整行程 */
   --header-height: 68px;
   --pad-x: clamp(20px, 4vw, 72px);
   --z-bg: 0; --z-content: 10; --z-sticky: 20; --z-header: 50; --z-float: 100;
@@ -122,31 +140,20 @@ footer p { margin: 0 0 8px }
   background: color-mix(in srgb, var(--paper) 84%, transparent);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--rule) }
-.k-brand { font: 700 20px/1 var(--font-display); color: var(--ink); text-decoration: none; white-space: nowrap }
-.k-brand:hover { color: var(--accent) }
+.k-brand { font: 700 20px/1 var(--font-display); color: inherit; text-decoration: none; white-space: nowrap }
 .k-head-actions { margin-left: auto; display: flex; align-items: center; gap: 10px }
 .k-menu-open { font-size: 12px; letter-spacing: .28em; border: 1px solid var(--rule); padding: 8px 14px; min-height: 36px; background: var(--surface); cursor: pointer }
 .k-menu-open:hover { border-color: var(--accent); color: var(--accent) }
 /* 吸顶主题导航 + 共享 indicator */
 .k-tabs { position: relative; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0 }
 .k-tabs::-webkit-scrollbar { display: none }
-.tab { white-space: nowrap; font-size: 15px; color: var(--muted); position: relative; text-decoration: none; transition: color .22s ease-out, border-color .22s ease-out }
-.tab:hover { color: var(--ink) }
-.tab[aria-current=true] { color: var(--accent); font-weight: 600 }
+.tab { white-space: nowrap; font-size: 15px; color: inherit; position: relative; text-decoration: none; transition: border-color .22s ease-out }
+.tab[aria-current=true] { font-weight: 600 }
 .tab[aria-current=true]::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; background: var(--accent) }
 .k-tabs .tab { padding: 22px 12px 18px; font-size: 14px }
-/* T14 追改（用户裁定）：页首分类标签 hover 效果——accent 下划线滑入（.22s），与 .k-indicator
-   同基线（bottom 12px）；当前态伪元素已由下方 display:none 隐藏，避免与滑动 indicator 双条叠影；
-   hover 态透明度 .55 弱于当前态 indicator（区分悬停与所在）。 */
-.k-tabs .tab::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 12px; height: 2px; background: var(--accent); opacity: .55; transform: scaleX(0); transform-origin: left center; transition: transform .22s ease-out }
-.k-tabs .tab:hover::after { transform: scaleX(1) }
-.k-tabs .tab[aria-current=true] { color: var(--accent) }
 .k-tabs .tab[aria-current=true]::after { display: none }
-/* T9（UI 票 #26）：空主题 tab 降权——更弱字色 + 缩一号字，排序置于非空之后（tab 顺序由
-   构建期 topicTabs 规则驱动）。降权幅度以实测对比度定界（WCAG AA 正文 4.5:1）：
-   muted@90% 对纸面 = 4.63:1（浅色）/ 7.31:1（深色），85% 已跌破 4.5 故取 90%；
-   字号 14px→13px。入口保留为真实链接，键盘可达性不降（focus-visible outline 不变）。 */
-.k-tabs .tab.tab-empty { color: color-mix(in srgb, var(--muted) 90%, transparent); font-size: 13px }
+/* 空主题仍保留13px字级与排序；#32覆盖原颜色降权，链接统一继承色。 */
+.k-tabs .tab.tab-empty { font-size: 13px }
 .k-indicator { position: absolute; left: 0; bottom: 12px; height: 2px; width: 0; background: var(--accent); will-change: transform }
 
 /* Hero */
@@ -216,9 +223,9 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 .k-marker::before, .k-toc-marker::before { content: ""; position: absolute; inset: 0; background: var(--accent); clip-path: circle(50%); pointer-events: none }
 .k-nav-progress { position: absolute; left: -3px; top: 0; width: 8px; height: 100%; background: var(--accent); clip-path: inset(0 3px); transform: scaleY(0); transform-origin: top; opacity: 0; pointer-events: none }
 /* 原型为 <button> 桩；真实站点为链接，选择器补 <a> 并去下划线 */
-.k-nav nav button, .k-nav nav a { position: relative; text-align: left; font-size: 14.5px; padding: 7px 0; color: var(--ink); text-decoration: none; display: block }
-.k-nav nav button:hover, .k-nav nav a:hover { color: var(--accent) }
-.k-nav nav [aria-current=page] { color: var(--accent); font-weight: 600 }
+.k-nav nav button, .k-nav nav a { position: relative; text-align: left; font-size: 14.5px; padding: 7px 0; color: inherit; text-decoration: none; display: block }
+.k-nav nav button:hover { color: var(--accent) }
+.k-nav nav [aria-current=page] { font-weight: 600 }
 /* 右侧 Editorial HUD */
 .k-hud-boundary { align-self: stretch; min-width: 0 }
 .k-hud { position: static; top: 100px; margin-top: 100px; display: flex; flex-direction: column; gap: 22px; font-size: 13px }
@@ -242,13 +249,7 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 .k-hud .k-pct { font: 600 28px/1.1 var(--serif); font-variant-numeric: tabular-nums; margin: 0 0 8px }
 .k-readbar { height: 4px; background: var(--rule); margin: 0 0 6px; overflow: hidden }
 .k-readbar i { display: block; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left center }
-/* 原型为 <button> 桩；真实站点为链接（去下划线，悬停下划线） */
-.k-hud .k-link { color: var(--accent); text-align: left; padding: 2px 0; text-decoration: none; display: inline-block }
-.k-hud .k-link:hover { text-decoration: underline }
-/* T13（UI 票 #30）：HUD「提交新来源（GitHub Issue）↗」为站外链接（票面明确点名的靛色应用点；
-   原型此处仍为 accent 红，票面「全站外链靛色」优先——有意偏离，留档 ADR 0005）。
-   .k-hud .k-link (0,2,0) 压过全局 a.ext (0,1,1)，须同级加权覆盖。 */
-.k-hud .k-link.ext { color: var(--indigo) }
+.k-hud .k-link { text-align: left; padding: 2px 0; display: inline-block }
 /* P0-5：系统播报移出文档流（语义保留给屏幕阅读器，视觉不再占据版面）。
    UI 打磨票 #10：加纸面 chip 底——播报出现时不再裸字叠压页面内容；空状态不显示空盒。 */
 .v-kinetic .live-status { position: fixed; left: var(--pad-x); bottom: 16px; z-index: var(--z-float); margin: 0; min-height: 0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; color: var(--muted); pointer-events: none; max-width: 60vw; background: var(--surface); border: 1px solid var(--rule); padding: 6px 12px }
@@ -300,8 +301,7 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 .k-headline { margin: 0 0 14px; font: 700 clamp(22px, 2vw, 30px)/1.12 var(--serif); letter-spacing: .01em }
 .layout-compact .k-headline { font-size: clamp(18px, 1.5vw, 22px); margin: 0 0 8px }
 .k-detail .k-headline { max-width: 22em }
-.k-headline a { color: var(--ink); text-decoration: none }
-.k-headline a:hover { color: var(--accent) }
+.k-headline a { color: inherit; text-decoration: none }
 /* 字符遮罩（分层揭示）：原型把 .kw/.ch 限定在 .k-headline，导致 Hero 标题字符是普通内联
    span——CSS transform 对内联元素无效，原型 Hero「标题字符升起」实为静默空操作（原型潜在缺陷）。
    此处扩展到 .k-hero-title（设计意图与本票参数一致：字符自遮罩下升起），缺陷已在报告记录。
@@ -314,7 +314,7 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 /* UI 票 #10：sep 并入后段 .seg 内（行首分隔符），margin-right 代替原 HTML 空格，使段内间距与段间 gap 一致 */
 .k-meta .sep { color: var(--rule); margin-right: 6px }
 /* T13：条目「查看百度搜索结果 ↗」为站外链接，ext 类由 links.isExternalUrl 判定后附加，
-   颜色走全局 a.ext（--indigo）；原 .k-meta a.ext 局部红规则移除（站外信号统一靛色） */
+   #32：ext 只保留站外身份；颜色继承元信息上下文。 */
 /* 数据版画占位图（三层：clip → tilt → art；T14 恢复 tilt 层与其 perspective——T11 移除撤销，
    clip 揭示仍作用于 .k-media；tilt 包裹整个 art 层，丝纹 SVG 在 art 内随动） */
 .k-media { position: relative; perspective: 900px; align-self: start; will-change: clip-path }
@@ -355,9 +355,9 @@ html[data-oct-motion="on"] .silk-static { transform-origin: 50% 0; animation: si
 
 /* P2-10：分页器编辑风化 —— Serif 数字、无框、右对齐到内容列 */
 .v-kinetic .pager { justify-content: flex-end }
-.v-kinetic .page-btn { border: 0; background: none; min-width: 44px; min-height: 44px; padding: 0 10px; font: 600 17px/1 var(--serif); font-variant-numeric: tabular-nums; color: var(--muted); text-decoration: none }
-.v-kinetic .page-btn:hover { border-color: transparent; color: var(--ink) }
-.v-kinetic .page-btn[aria-current=page] { color: var(--accent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px }
+.v-kinetic .page-btn { border: 0; background: none; min-width: 44px; min-height: 44px; padding: 0 10px; font: 600 17px/1 var(--serif); font-variant-numeric: tabular-nums; color: inherit; text-decoration: none }
+.v-kinetic .page-btn:hover { border-color: transparent }
+.v-kinetic .page-btn[aria-current=page] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px }
 .v-kinetic .page-btn[aria-disabled="true"] { opacity: .35 }
 .v-kinetic .pager .of { display: none }
 /* 页码像报刊页签：按内容列宽度收拢，页数增长也不换行、不产生局部滚动。 */
@@ -425,10 +425,9 @@ dialog.k-menu::backdrop { background: transparent }
 .k-menu-close:hover { color: var(--accent); border-color: var(--accent) }
 .k-menu-grid { flex: 1; display: grid; grid-template-columns: 1fr auto; column-gap: 6vw; align-items: center; align-content: space-evenly }
 .k-mi { display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; text-align: left; color: var(--ink); text-decoration: none }
-.k-mi:hover .lb { color: var(--accent) }
 .k-mi .no { font: 700 clamp(20px, 3vw, 34px)/1 var(--font-display); color: var(--ink); opacity: .35; min-width: 2.4em; font-variant-numeric: tabular-nums }
-.k-mi .lb { font: 600 clamp(44px, 6vw, 76px)/1.15 var(--font-display); color: var(--ink); transition: color var(--motion-fast) ease-out }
-.k-mi[aria-current=page] .lb { color: var(--accent) }
+.k-mi .lb { font: 600 clamp(44px, 6vw, 76px)/1.15 var(--font-display); color: inherit }
+.k-mi[aria-current=page] .lb { color: inherit }
 /* P0-3：菜单右半 —— 编辑部数据列 */
 .k-menu-data { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; text-align: right }
 .k-menu-data .ghost { font: 700 96px/1 var(--font-display); color: var(--ink); opacity: .08; letter-spacing: .04em }
@@ -436,11 +435,11 @@ dialog.k-menu::backdrop { background: transparent }
 @media (max-width: 1199px) { .k-menu-data { display: none } .k-menu-grid { grid-template-columns: 1fr } }
 .k-menu-list { display: flex; flex-direction: column; gap: 6px }
 .k-menu-topics { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 28px; border-top: 1px solid var(--rule) }
-.k-menu-topics .tab { color: var(--muted); border: 1px solid var(--rule); padding: 8px 14px; min-height: 40px }
-.k-menu-topics .tab:hover { color: var(--ink); border-color: var(--ink) }
-.k-menu-topics .tab[aria-current=true] { color: var(--accent); border-color: var(--accent) }
+.k-menu-topics .tab { border: 1px solid var(--rule); padding: 8px 14px; min-height: 40px }
+.k-menu-topics .tab:hover { border-color: var(--ink) }
+.k-menu-topics .tab[aria-current=true] { border-color: var(--accent) }
 /* 菜单跟随页面主题：空主题沿用可读的次要文字色，触控目标仍为40px。 */
-.k-menu-topics .tab.tab-empty { color: var(--muted) }
+.k-menu-topics .tab.tab-empty { color: inherit }
 
 /* 页面与MENU共用自绘覆盖式轨道。原生wheel/touch/键盘滚动容器不变。 */
 .k-scrollbar { position: fixed; top: 6px; bottom: 6px; right: 2px; width: 14px; z-index: var(--z-float); touch-action: none; cursor: pointer; outline-offset: -2px }
@@ -605,14 +604,12 @@ html[data-oct-toc-pending] .k-toccol { opacity: 0 }
    ============================================================ */
 /* 页脚页面导航（移动端无 JS 时唯一的站内页面链接入口） */
 .k-foot-nav { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px }
-.k-foot-nav a { color: var(--muted) }
-.k-foot-nav a:hover { color: var(--accent) }
+.k-foot-nav a { color: inherit }
 
 /* 页脚主题导航（T04 收尾项）：≤767px 时 header 主题 Tab 隐藏（.k-tabs display:none），
    无 JS 用户在移动端经此处进入主题页；桌面端 header Tab 可用，本导航隐藏不改桌面构图 */
 .k-foot-topics { display: none; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px }
-.k-foot-topics a { color: var(--muted) }
-.k-foot-topics a:hover { color: var(--accent) }
+.k-foot-topics a { color: inherit }
 @media (max-width: 767px) {
   .k-foot-topics { display: flex }
 }
@@ -637,12 +634,11 @@ html[data-oct-toc-pending] .k-toccol { opacity: 0 }
 .k-toccol { position: sticky; top: 100px; padding-top: 8px }
 .k-toc-empty { font-size: 13px; color: var(--muted); margin: 0 }
 .k-toc ol { list-style: none; margin: 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 2px }
-.k-toc a { display: block; font-size: 14.5px; padding: 7px 0; color: var(--ink); text-decoration: none }
-.k-toc a:hover { color: var(--accent) }
+.k-toc a { display: block; font-size: 14.5px; padding: 7px 0; color: inherit; text-decoration: none }
 .k-toc { position: relative }
 .k-toc-progress { position: absolute; left: -3px; top: 0; width: 8px; height: 100%; background: var(--accent); clip-path: inset(0 3px); transform: scaleY(0); transform-origin: top; opacity: 0; pointer-events: none }
 .k-toc a { position: relative }
-.k-toc a[aria-current=location] { color: var(--accent); font-weight: 600 }
+.k-toc a[aria-current=location] { color: inherit; font-weight: 600 }
 .k-toc-marker { position: absolute; left: -3px; top: 1px; width: 8px; height: 8px; transform: translateY(-50%); opacity: 0; pointer-events: none }
 .k-toc-meter { position: absolute; left: 0; right: 0; bottom: 3px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; opacity: 0; pointer-events: none }
 .k-toc a[aria-current=location] .k-toc-meter { opacity: .65 }
@@ -685,10 +681,6 @@ html[data-oct-doc-pending] .k-cols:has([data-longform-motion]) [data-khud] .sec 
 .k-doc-rule { position: absolute; left: 0; bottom: -5px; width: 48px; height: 2px; background: var(--accent); pointer-events: none }
 [data-longform-hud] .sec { position: relative; border-top-color: transparent }
 .k-hud-rule { position: absolute; top: -1px; left: 0; width: 100%; height: 1px; background: var(--rule); pointer-events: none }
-[data-longform-hud] .k-link { position: relative }
-[data-longform-hud] .k-link:has(.k-hud-link-text):hover { text-decoration: none }
-.k-hud-link-text { display: inline-block; pointer-events: none }
-.k-hud-link-rule { position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left center; pointer-events: none }
 @media (max-width: 767px) { .k-hud-rule { display: none } }
 
 /* 详情页（版画取原时间线大图尺度；返回行与外链行） */
@@ -696,9 +688,7 @@ html[data-oct-doc-pending] .k-cols:has([data-longform-motion]) [data-khud] .sec 
 .k-detail-back { margin: 0 0 28px; font-size: 14px }
 .k-detail-ext { margin: 20px 0 0; font-size: 15px }
 .k-detail .k-summary-empty { color: var(--muted) }
-/* 复制链接按钮（Ticket 05 渐进增强）：静态层 hidden 不占位。T13 勘误：相邻 .ext 链接已是
-   靛色站外信号，而本按钮复制的是本站详情页 URL（站内动作）——保持 color:inherit（墨色），
-   不随 .ext 染靛，避免伪造站外信号 */
+/* 复制链接保持原按钮语义与继承色，不参与锚点下划线。 */
 button.ext { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer }
 .k-detail-ext .ext + .ext { margin-left: 18px }
 
@@ -721,3 +711,6 @@ button.ext { background: none; border: 0; padding: 0; font: inherit; color: inhe
   .k-main:has(> .k-doc) { padding-top: 0 }
   .k-toccol { display: block; position: static; order: -1; margin-bottom: 8px }
 }
+
+/* 当前主题／分页保留既有状态标记，避免 hover 重画第二条线。 */
+.tab[aria-current=true] > .k-link-label, .pager a[aria-current=page] > .k-link-label { background-image: none }

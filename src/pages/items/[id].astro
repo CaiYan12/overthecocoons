@@ -56,7 +56,7 @@ const isExt = entry.url !== "" && isExternalUrl(entry.url, Astro.site?.origin ??
 
   <article class="k-detail" data-detail-page>
     <p class="k-detail-back">
-      <a href={siteUrl(topicPagePath(entry.topic, 1))} data-cursor-soft>← 返回时间线</a>
+      <a href={siteUrl(topicPagePath(entry.topic, 1))} data-cursor="LINK">← 返回时间线</a>
     </p>
     <h1 class="k-headline">{entry.title}</h1>
     {/* T7：详情页单一条目无快照内位置语境，不渲染序号；T9：竖排主题词移除；T13：版画注入稳定 ID 丝纹 */}
