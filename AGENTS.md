@@ -40,6 +40,7 @@
 
 - `button.k-top` 已按用户确认方案本地实现：20px细线SVG箭头＋顶横线，2px/5px轻投影，280ms轻抬一次微回弹／160ms原路退场；进度环、400px门槛及原磁吸保持。显隐由 `.k-top-face` 承载，磁吸仍操作button本体，禁止混写transform；进度环SVG使用专门选择器，避免误伤中心图标。
 - 隐藏按钮退出Tab序，reduced-motion取消空间运动；反向/缺库/无JS/停钟收尾均已覆盖。GSAP祖先时钟暂停时普通set不渲染，终态使用显式progress推进。详情与边界见 `docs/ui-back-to-top.md`：本地 `pnpm test`（check0错误、Node304、Chromium182）通过，专项五配置28通过＋2触屏磁吸不适用跳过，独立Standards/Spec均0问题；用户已确认效果并授权提交推送，线上证据单独归档，未作新真机验收。
+- 功能提交`157052c`已按用户授权推送main并上线；`build-deploy`运行`38670422989`的build/deploy均成功。线上SVG与明暗阴影实看、CSS/客户端脚本与本地逐字节一致、真实线上Chromium平滑回顶回归1/1通过；启动器及其README/记忆未纳入本次提交。详情见 `docs/ui-back-to-top.md` 发布记录。
 
 ## 项目记忆与技能目录
 
