@@ -1,6 +1,6 @@
 # 链接视觉与指针统一
 
-日期：2026-10-15。状态：两轮对齐后按 implement-spec 完成本地实现与验收；用户已确认提交推送及票据闭环，正在从集成分支 `codex/link-interactions` 发布，线上结果另行记录。
+日期：2026-10-15。状态：已发布验收。功能提交 `7508fba` 已推送 main，CI/CD 构建与部署成功，Issue #32 已关闭；线上链接专项通过。集成分支为 `codex/link-interactions`，当前工作区已回到 main。
 
 ## 用户明确目标
 
@@ -42,7 +42,7 @@
 - 核查键盘焦点与 Enter 导航、触屏、减弱动态和无 JS 时的链接可用性；避免与 HUD 旧规则线及其文字位移动画叠加。
 - 同步修订旧外链颜色／光标语义文档与相关测试，使新裁定和历史依据的覆盖关系明确；本项不新增领域术语或 ADR。
 
-实施票为 [Issue #32](https://github.com/CaiYan12/overthecocoons/issues/32)，无前置依赖；票据归档见 [实施任务](ui-links-tickets.md)。本地已实现并验收，用户已确认提交推送与闭环。
+实施票 [Issue #32](https://github.com/CaiYan12/overthecocoons/issues/32) 已随功能提交推送 main 自动关闭；票据归档见 [实施任务](ui-links-tickets.md)。
 
 ## 本地实现与验收（2026-10-15）
 
@@ -51,7 +51,7 @@
 - 键盘焦点显示完整线和原焦点轮廓；触屏不触发 hover 线；减弱动态即时显隐。无 JS／动效库缺失保留原生导航。展示字体字符提取同步兼容品牌文字标签。
 - 集成工作区 `pnpm test` 一次完整通过：check 99 文件 0 错误／0 警告，保留两条既有 `execCommand` 弃用提示；build 66 页；Node 304/304；Chromium 188 passed、1 skipped（触屏专用用例），3.7 分钟。日志保存在本地忽略目录 `.superpowers/links32-full.log`。
 - 工作树最终链接专项五配置完整运行：26 passed、9 skipped，55.0s。跳过均为精细／触屏指针不适用；不代表全站五配置完整矩阵重跑。
-- 独立 Standards 与 Spec 只读复审各 0 项问题，固定点为 `d93971468ae087f7364f185ae820a65eb61664dc`，审查本轮工作区差异及新增测试；无已授权 Git 提交。
+- 独立 Standards 与 Spec 只读复审各 0 项问题，固定点为 `d93971468ae087f7364f185ae820a65eb61664dc`，审查本轮工作区差异及新增测试；复审当时尚未执行 Git 提交。
 - 主代理用独立 Codex 浏览器核查最终生产构建，320px 双行拆字标题实看明暗画线，观察到 14.7%／48.5% 中间状态及 `100% 1px` 终态，指针为 `LINK`；页面无横向溢出，全部 `a[href]` 挂点均为 `LINK`。专项截图另覆盖完整 MENU 标签线和真实长 URL 的逐行线。
 - 最终实绘截图保存在本地忽略目录 `audit/links-chromium-light.png`、`audit/links-chromium-dark.png`、`audit/links-mobile-chrome-multiline.png`。本地演示快照用于验收，不表述为真实数据线上验证；未做新手机真机、FPS 或部署验证。
 
@@ -64,3 +64,13 @@
 ## 提交边界
 
 用户已在本地验收后明确答复「确认。提交推送」，授权本项提交、推送及 Issue #32 闭环。只提交链接统一交互及其规格、任务与验收文档；启动器及其 README／记忆改动不属于本票。发布结果以下续实测记录为准，不将本地验证表述为线上证据。
+
+## 发布与线上验收（2026-10-15）
+
+- 功能提交：`7508fbab8962fd405293438889add7f337c6c0b0`，`feat(ui): unify text link motion and cursor semantics`；main 已快进并推送，`Closes #32` 自动关闭票据。
+- [build-deploy 38676012434](https://github.com/CaiYan12/overthecocoons/actions/runs/38676012434) 对应上述 SHA：build 成功27s、deploy 成功15s。该工作流验证快照并构建部署，不表述为远端执行了本地完整测试套件。Ubuntu 26 迁移提示为信息性 annotation。
+- 真实线上 Chromium 复用现有链接测试，三项全部通过（11.0s）：常态继承色／无下划线与700ms终态；进退真实帧、快速反向和HUD不位移；多行URL、MENU标签范围及明暗无溢出。日志 `.superpowers/links32-live.log`；未修改测试断言来适配线上。
+- 独立 Codex 浏览器核查线上关于页：全部真实锚点挂点为LINK；品牌常态背景线0%，hover采到3.48%中间状态，终态100%；深色 `rgb(244,239,229)`、浅色 `rgb(33,30,27)` 与父级相同，生产时长为0.7s。
+- 线上关于页引用的CSS／客户端脚本与本地已验收产物逐字节一致：`KNav.BGx41EH4.css`（44,629 B，SHA256 `5761f5e71873ccd17610bd1c06edbedc9715b327772bf41791d9c1af1d83dfb2`）；`KSite.astro_astro_type_script_index_0_lang.Dk2n1YOz.js`（51,496 B，SHA256 `baf0aeec5e7bc9109c1c52e364e729304b1deec7816809b9f9fc96550f4f6292`）。本地报告 `audit/links-live-assets.json`。
+- 线上实际截图另存 `audit/links-live-chromium-light.png`、`audit/links-live-chromium-dark.png`、`audit/links-live-chromium-multiline.png`，与本地演示产物截图分开。所有截图及运行日志为本地忽略产物；不宣称新真机/FPS验收。
+- 临时实施工作树已请求app可恢复归档，但回读仍列出该路径，不宣称归档完成；其代码已精确汇入主工作区并提交，截图及交接记录已另存。原主站与项目开发服务保持不变。

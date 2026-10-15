@@ -47,7 +47,7 @@
 - Issue #32 已按两轮确认规则本地实现：全部文字链接常态无下划线并继承颜色，hover 1px 同色线用700ms平滑展开／反向收回，多行逐行绘制、MENU仅文字标签；键盘焦点即时完整线，减弱动态即时显隐，触屏无残留hover。
 - 静态及动态文字锚点统一LINK，标题VIEW已替换，版画OPEN及按钮轻量态保持；取消HUD旧4px位移与独立线，保留正文揭幕、主题／分页状态标记及目录进度。维护链接时先读 `docs/ui-links.md`，它覆盖历史靛色外链和相关光标／HUD裁定。
 - 集成分支 `codex/link-interactions`，完整 `pnpm test`：check0错误/0警告、build66页、Node304/304、Chromium188通过+1触屏专用跳过；专项五配置26通过+9指针类型不适用跳过；独立Standards/Spec均0问题。独立浏览器实看320px拆字双行标题的中间帧／终态、LINK、明暗及无溢出；未宣称新真机/FPS/线上验证。
-- 用户已确认本项提交推送与Issue闭环，发布证据另行记录；启动器与其README/记忆为无关既有改动。初轮测试前提差异、误删邻接CSS的恢复及最终验证证据见 `docs/ui-links.md`。
+- 功能`7508fba`已按授权推送main，Issue32自动关闭；build-deploy38676012434的build/deploy均成功。真实线上Chromium链接专项3/3、独立浏览器明暗/真实hover中间帧/LINK及CSS/JS逐字节一致验证通过。启动器与其README/记忆仍为无关未提交改动；过程修复、验证与临时worktree归档状态见 `docs/ui-links.md`。
 
 ## 项目记忆与技能目录
 

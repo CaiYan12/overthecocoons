@@ -1,6 +1,6 @@
 # 链接统一交互：实施任务
 
-日期：2026-10-15。状态：[Issue #32](https://github.com/CaiYan12/overthecocoons/issues/32) 已完成本地实现与验收，用户已确认提交推送及票据闭环，正在从集成分支 `codex/link-interactions` 发布。
+日期：2026-10-15。状态：[Issue #32](https://github.com/CaiYan12/overthecocoons/issues/32) 已由功能提交 `7508fba` 推送 main 自动关闭；本地与线上验收完成，CI/CD 构建／部署均成功。发布证据见 [链接视觉与指针统一](ui-links.md)。
 
 依据：两轮已确认的链接视觉与指针约定。目标仓库已从 Git remote 核实为 `CaiYan12/overthecocoons`；现有标签 `ready-for-agent` 可复用。未提供父 Issue，不新建规格父票，不修改其他 Issue。
 
