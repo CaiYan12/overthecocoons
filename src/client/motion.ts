@@ -405,7 +405,7 @@ function scheduleIntro(root: HTMLElement, parts: IntroParts): void {
 
 /* ---- 时间线列表动效（原型 initListMotion；listCtx 随重渲染整体回收） ---- */
 
-export function onListRendered(deferred: boolean): void {
+export function onListRendered(deferred: boolean, instantReveal = false): void {
   for (const cleanup of tiltCleanups.splice(0)) cleanup();
   enteringMedia.clear();
   if (listCtx) {
@@ -441,34 +441,38 @@ export function onListRendered(deferred: boolean): void {
         const sum = entry.querySelector<HTMLElement>(".k-summary");
         const meta = entry.querySelector<HTMLElement>(".k-meta");
         const media = entry.querySelector<HTMLElement>(".k-media");
-        // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入，其余上入兜底；
-        // T7 紧凑行无媒体，media 为空时 clip 分支整体跳过——拆字升起/摘要/meta 照常）
-        const clipFrom = entry.classList.contains("layout-a")
-          ? "inset(0 100% 0 0)"
-          : entry.classList.contains("layout-b")
-            ? "inset(0 0 0 100%)"
-            : "inset(0 0 100% 0)";
-        // T14：列表标题拆字升起恢复（T11 撤销）；splitChars 为 T13 递归版（T5 aria 语义保留：
-        // 链接 a 命名点 + 字符 aria-hidden）
-        const chs = headlineLink ? splitChars(headlineLink) : [];
-        if (chs.length) g.set(chs, { yPercent: 110, rotate: 2 });
-        if (sum) g.set(sum, { clipPath: "inset(0 0 100% 0)" });
-        if (meta) g.set(meta, { autoAlpha: 0, letterSpacing: ".2em" });
-        const tl = g.timeline({ paused: true, defaults: { ease: "power3.out" } });
-        if (chs.length) tl.to(chs, { yPercent: 0, rotate: 0, duration: 0.5, stagger: 0.02 }, 0);
-        if (sum) tl.to(sum, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power2.out" }, 0.08);
-        if (meta) tl.to(meta, { autoAlpha: 1, letterSpacing: ".04em", duration: 0.3, ease: "power2.out" }, 0.14);
-        if (media) addMediaEntrance(g, tl, media, 0.1, clipFrom);
+        // 详情返回恢复（Issue #35）：条目直显，不重播拆字/摘要/媒体入场。
+        // 进度线 scrub、节点激活与媒体高光/投影照常重建（规格：原媒体尺寸、揭示/高光保持）。
         const gi = Number(entry.dataset.gi ?? 0);
-        stl.create({
-          trigger: entry,
-          start: "top 85%",
-          once: true,
-          onEnter: () => {
-            if (delay) g.delayedCall(delay, () => tl.play());
-            else tl.play();
-          },
-        });
+        if (!instantReveal) {
+          // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入，其余上入兜底；
+          // T7 紧凑行无媒体，media 为空时 clip 分支整体跳过——拆字升起/摘要/meta 照常）
+          const clipFrom = entry.classList.contains("layout-a")
+            ? "inset(0 100% 0 0)"
+            : entry.classList.contains("layout-b")
+              ? "inset(0 0 0 100%)"
+              : "inset(0 0 100% 0)";
+          // T14：列表标题拆字升起恢复（T11 撤销）；splitChars 为 T13 递归版（T5 aria 语义保留：
+          // 链接 a 命名点 + 字符 aria-hidden）
+          const chs = headlineLink ? splitChars(headlineLink) : [];
+          if (chs.length) g.set(chs, { yPercent: 110, rotate: 2 });
+          if (sum) g.set(sum, { clipPath: "inset(0 0 100% 0)" });
+          if (meta) g.set(meta, { autoAlpha: 0, letterSpacing: ".2em" });
+          const tl = g.timeline({ paused: true, defaults: { ease: "power3.out" } });
+          if (chs.length) tl.to(chs, { yPercent: 0, rotate: 0, duration: 0.5, stagger: 0.02 }, 0);
+          if (sum) tl.to(sum, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power2.out" }, 0.08);
+          if (meta) tl.to(meta, { autoAlpha: 1, letterSpacing: ".04em", duration: 0.3, ease: "power2.out" }, 0.14);
+          if (media) addMediaEntrance(g, tl, media, 0.1, clipFrom);
+          stl.create({
+            trigger: entry,
+            start: "top 85%",
+            once: true,
+            onEnter: () => {
+              if (delay) g.delayedCall(delay, () => tl.play());
+              else tl.play();
+            },
+          });
+        }
         stl.create({
           trigger: entry,
           start: "top 62%",
