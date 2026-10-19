@@ -8,7 +8,7 @@
  * 3. 运行时钟单调闸门——【carry 裁定】失败运行的 attemptedAt 早于上次 succeededAt
  *    会触发未来时间停写：编排只用运行时刻的实际时钟（可注入，不信任 feed 时间），
  *    实际时钟早于可信状态时间即在此之前终止。
- * 4. 抓取首源（复用 T03 获取层：http/https + host 安全校验 + 超时重试编排；
+ * 4. 依次抓取已配置来源（复用 T03 获取层：http/https + host 安全校验 + 超时重试编排；
  *    永不抛错，失败以 ok:false 结果返回）。
  * 5. ingest 合并（T02 管线：身份复核、隔离、7 天窗口、失败降级）。
  * 6. 写入前自检：产物三文件必须通过同一摘要校验才允许落盘。
@@ -38,6 +38,8 @@ import {
   type SourceFetchResult,
 } from "../domain/ingestion.ts";
 import { fetchSourceEntries, SOURCE_ID } from "./baidu-source.ts";
+import { fetchNewsSource } from "./news-source.ts";
+import { NEWS_SOURCES } from "./sources.ts";
 import { EMPTY_DATA_BRANCH_SHA, type DataStore, type StoredFiles } from "./data-store.ts";
 
 /** 无权威状态：data 分支为空。更新路径显式拒绝，不自动初始化（MVP-Q13）。 */
@@ -85,10 +87,12 @@ export interface DataUpdateDeps {
    */
   now?: () => Date;
   /**
-   * 来源获取缝（测试与演练注入）；缺省为真实首源适配器 fetchSourceEntries——
+   * 单源测试与演练注入缝；未注入时执行百度及五个网站订阅——
    * 复用 T03 获取层（http/https + host 校验、超时、2 次尝试短退避），永不抛错。
    */
   fetchSource?: () => Promise<SourceFetchResult>;
+  /** 多源演练缝；串行获取并合并，防止并发结果的时钟基准交错。 */
+  fetchers?: readonly (() => Promise<SourceFetchResult>)[];
 }
 
 export interface DataUpdateResult {
@@ -167,7 +171,12 @@ function assertRunClockMonotonic(state: StateFile, runNow: Date): void {
  */
 export async function runDataUpdate(deps: DataUpdateDeps): Promise<DataUpdateResult> {
   const now = deps.now ?? (() => new Date());
-  const fetchSource = deps.fetchSource ?? (() => fetchSourceEntries({ now }));
+  if (deps.fetchSource && deps.fetchers) throw new Error("fetchSource 与 fetchers 不可同时指定");
+  const fetchers = deps.fetchers ?? (deps.fetchSource ? [deps.fetchSource] : [
+    () => fetchSourceEntries({ now }),
+    ...NEWS_SOURCES.map(source => () => fetchNewsSource(source, { now })),
+  ]);
+  if (fetchers.length === 0) throw new Error("来源列表不可为空");
 
   // 1. 读取当前权威状态与 HEAD SHA。
   const read = await deps.store.read();
@@ -197,10 +206,18 @@ export async function runDataUpdate(deps: DataUpdateDeps): Promise<DataUpdateRes
   assertRunClockMonotonic(state, now());
 
   // 4. 抓取（永不抛错；失败以 ok:false 返回，按 Q9 降级）。
-  const result = await fetchSource();
-
-  // 5. ingest 合并（T02 管线：身份/隔离/窗口/来源状态；内部含未来时间停写兜底）。
-  const outcome = ingest({ state, items }, result);
+  let previous = { state, items };
+  let outcome: IngestOutcome | undefined;
+  let degraded = false;
+  // Fetch and merge each source in sequence: later attemptedAt cannot precede an earlier
+  // succeededAt. Still write the complete, verified batch only once at the original HEAD.
+  for (const fetchSource of fetchers) {
+    const result = await fetchSource();
+    degraded ||= !result.ok;
+    outcome = ingest(previous, result);
+    previous = { state: outcome.state, items: outcome.items };
+  }
+  if (!outcome) throw new Error("没有来源结果");
 
   // 6. 写入前自检：产物三文件自洽才允许落盘。
   verifyManifest(outcome.state, outcome.items, outcome.manifest);
@@ -210,7 +227,7 @@ export async function runDataUpdate(deps: DataUpdateDeps): Promise<DataUpdateRes
   const { newHeadSha } = await deps.store.write(written, read.headSha);
 
   return {
-    kind: result.ok ? "updated" : "degraded",
+    kind: degraded ? "degraded" : "updated",
     previousHeadSha: read.headSha,
     newHeadSha,
     state: outcome.state,

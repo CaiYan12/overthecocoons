@@ -5,6 +5,7 @@ import KDocNav from "../components/KDocNav.astro";
 import KHud from "../components/KHud.astro";
 import { loadSnapshot } from "../lib/snapshot.ts";
 import { formatDateTime } from "../lib/timeline.ts";
+import { NEWS_SOURCES, sourcePresentation } from "../lib/sources.ts";
 
 const snapshot = loadSnapshot();
 const snapTime = formatDateTime(snapshot.generatedAt);
@@ -19,7 +20,7 @@ const toc = [
 
 <KSite
   title="来源 — 跳出茧房 Over the cocoons"
-  description="跳出茧房当前唯一来源：原始平台、Feed 服务提供者、数据状态与隔离条目列表。"
+  description="跳出茧房的热点与新闻来源：原始平台、Feed 服务提供者、数据状态与隔离条目列表。"
   isFixture={snapshot.isFixture}
   activeTopic="全部"
   activeNav="sources"
@@ -39,9 +40,10 @@ const toc = [
 
   <article class="k-doc" data-longform-motion>
     <h1>来源</h1>
-    <p class="k-doc-lede">首版仅一个来源。本页只记录已核实信息，未核实事项如实标注。</p>
+    <p class="k-doc-lede">公共时间线汇集热点线索与来源文章。本页列出已配置订阅，实际获取结果见数据状态，未核实事项如实标注。</p>
 
     <h2 id="providers">原始平台与 Feed 服务提供者</h2>
+    <h3>百度热点</h3>
     <dl>
       <dt>原始平台</dt>
       <dd>百度。本站展示的是百度热点线索，条目外链指向百度搜索结果页，不是已取得原文正文的新闻文章。</dd>
@@ -60,9 +62,23 @@ const toc = [
         data-cursor="LINK">top.baidu.com/board?page=rule ↗</a>）载明：上榜热点事件基于各事件在百度平台上的热度排序得出，热点榜每 5 分钟更新一次。
     </p>
 
+    {NEWS_SOURCES.map(source => (
+      <section>
+        <h3>{source.name}</h3>
+        <dl>
+          <dt>原始平台与 Feed 服务提供者</dt>
+          <dd><a class="ext" href={source.website} target="_blank" rel="noopener" data-cursor="LINK">{source.name} ↗</a>。订阅由来源网站直接提供，条目外链指向来源文章。</dd>
+          <dt>订阅地址</dt>
+          <dd><a class="ext" href={source.feedUrl} target="_blank" rel="noopener" data-cursor="LINK">{source.feedUrl} ↗</a></dd>
+          <dt>来源默认主题</dt>
+          <dd>{source.topic}。这是来源级映射，不是对每篇文章作出的内容分类判断。</dd>
+        </dl>
+      </section>
+    ))}
+
     <h2 id="license">使用许可与署名</h2>
     <p>
-      维护者于 2026-10-04 核查裁定：本站为非商业、以获取信息为目的，展示来源标题与摘要，可按下列依据使用并保留版权声明。
+      百度热点：维护者于 2026-10-04 核查裁定，本站为非商业、以获取信息为目的，展示其标题与摘要，可按下列依据使用并保留版权声明。该裁定不延伸至其他来源。
     </p>
     <ul>
       <li>
@@ -83,8 +99,15 @@ const toc = [
       </li>
       <li>署名：百度热搜内容版权归百度所有（©2021 Baidu）；feed 经 aishort.top 订阅转换服务获取。</li>
     </ul>
+    <p>新增来源的内容版权归各来源及相关权利人所有，不适用本站 MIT 代码许可。提供 RSS 不等于授予转载许可；新增来源公开展示标题与摘要的使用依据尚待逐源核实，本地接入与抓取验证不构成公开使用许可。</p>
 
     <h2 id="unverified">尚未核实的事项与已核实的限制</h2>
+    <ul>
+      <li>新增五个订阅在 2026-10-19 核查时均未提供 GUID，也未提供条目分类。其身份固定采用来源 ID 与源提供的完整文章 URL；即使以后出现 GUID，也不改变已建立的身份。百度继续采用原 GUID 规则，缺 GUID 仍隔离。</li>
+      <li>新增来源的订阅日期语义尚未逐源核实，当前全部按本站首次收录时间排序，不将订阅日期称为原始发布时间。</li>
+      <li>每日更新仅收录当次订阅返回的内容。订阅条数有限，可能漏掉两次采集之间已移出订阅的文章，不承诺收录来源全部内容。</li>
+      <li>只使用订阅内提供的内容，摘要最多 300 字；极客公园使用 RSS 正文中的第一张有效文章图片，缺图或加载失败保留本站占位图，不额外抓取网页补全文或图片。部分来源可能含商业内容，缺少可靠标记时无法承诺自动排除。</li>
+    </ul>
     <ul>
       <li>
         feed 日期语义已于 2026-10-05 实测核实：item 的 <code>pubDate</code> 是上游聚合器（aishort）的抓取/入库时间，不是百度发布时间——同批条目的 pubDate 挤在数秒内、与上游入库串号严格同序、且恒早于本站首次收录时间 2–16 小时。故本站不将其作为新闻发布时间使用，排序一律采用本站首次收录时间。
@@ -97,6 +120,8 @@ const toc = [
     {
       snapshot.sources.map((source) => (
         <dl>
+          <dt>来源</dt>
+          <dd>{sourcePresentation(source.sourceId).name}</dd>
           <dt>来源 ID</dt>
           <dd><code>{source.sourceId}</code></dd>
           <dt>尝试时间</dt>

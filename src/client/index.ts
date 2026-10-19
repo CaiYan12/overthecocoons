@@ -17,13 +17,15 @@ import { initTheme } from "./theme.ts";
 import { initTimeline } from "./timeline-view.ts";
 import { initTopButton } from "./top.ts";
 import { initScrollbars } from "./scrollbars.ts";
+import { initArticleImages } from "./article-images.ts";
+import { initDetailMotion } from "./detail-motion.ts";
 
 function boot(): void {
   // 阅读位置仅在本次访问内存中：关闭浏览器跨加载滚动恢复，使「刷新重置」语义成立
   if ("scrollRestoration" in history) {
     history.scrollRestoration = "manual";
   }
-  for (const init of [initMotion, initLongformMotion, initDocNavigation, initNavigationMotion, initTheme, initScrollbars, initMenu, initTopButton, initCopyLink, initTimeline]) {
+  for (const init of [initArticleImages, initMotion, initDetailMotion, initLongformMotion, initDocNavigation, initNavigationMotion, initTheme, initScrollbars, initMenu, initTopButton, initCopyLink, initTimeline]) {
     try {
       init();
     } catch {

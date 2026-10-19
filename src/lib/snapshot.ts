@@ -12,6 +12,7 @@
  */
 import { readFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
+import { isArticleImageUrl } from "./article-image.ts";
 import {
   HEX64,
   parseIsoTime,
@@ -114,6 +115,12 @@ function assertSnapshot(value: unknown, source: string): Snapshot {
     }
     // firstSeenAt 是排序与按日分组的时间基准，必须可解析。
     parseIsoTime(entry.firstSeenAt as string, `entries[${index}].firstSeenAt`);
+    if (entry.sourceId !== undefined && (typeof entry.sourceId !== "string" || entry.sourceId.length === 0)) {
+      throw new Error(`entries[${index}].sourceId 必须是非空字符串：${source}`);
+    }
+    if (entry.imageUrl !== undefined && !isArticleImageUrl(entry.imageUrl, entry.sourceId)) {
+      throw new Error(`entries[${index}].imageUrl 必须是已准入来源的 HTTPS 图片地址：${source}`);
+    }
   }
   const quarantineFields: Array<keyof PublicQuarantineRecord> = [
     "originalTitle",

@@ -17,6 +17,7 @@
     "test:e2e": "playwright test --project=chromium",
     "test:e2e:matrix": "playwright test",
     "smoke:source": "node scripts/smoke-source.ts",
+    "smoke:sources": "node scripts/smoke-sources.ts",
     "test": "pnpm run check && pnpm run build && pnpm run test:node && pnpm run test:e2e"
   },
   "dependencies": {

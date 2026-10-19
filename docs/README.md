@@ -8,6 +8,7 @@
 4. [初版实现计划](mvp-implementation-plan.md)
 5. [运行时/依赖/源数据证据](mvp-dependency-evidence.md)
 6. [领域术语](../GLOSSARY.md)
+7. [五个网站订阅的本地接入与身份扩展](multi-source-ingestion.md)
 
 架构和计划中的“建议/待定”不等同于已批准或已验证。上轮停止讨论并归档后，用户于 2026-10-03 明确要求继续未决对齐；MVP-Q13–Q22 已全部确认并记入 [决定记录](mvp-decisions.md)。仍开放：lockfile 与依赖脚本许可待实际安装后确定；实际应用开发和发布未执行。来源内容公开使用许可已于 2026-10-04 由维护者核查裁定，见 [初版实现计划](mvp-implementation-plan.md) 发布闸门。
 
@@ -25,6 +26,9 @@
 - [返回顶部按钮视觉与显隐动效（2026-10-15 已发布验收）](ui-back-to-top.md)
 - [链接视觉与指针统一（2026-10-15 已发布验收）](ui-links.md)
 - [链接统一交互实施任务（Issue #32）](ui-links-tickets.md)
+- [条目详情页顶部留空与内容宽度对齐](ui-detail-layout.md)
+- [条目详情页逐项入场与图片适配](ui-detail-motion.md)
+- [时间线及详情图片局部高光与纸面投影](ui-media-surface.md)
 - [设计样本](design/brief-preview.html)
 
 ## 状态报告

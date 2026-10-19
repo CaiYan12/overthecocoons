@@ -80,9 +80,11 @@ const fontFaceCss = `@font-face{font-family:"Source Han Serif SC Heavy Subset";s
         if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
           document.documentElement.setAttribute("data-oct-pending", "");
           document.documentElement.setAttribute("data-oct-toc-pending", "");
+          document.documentElement.setAttribute("data-oct-detail-pending", "");
           setTimeout(function () {
             document.documentElement.removeAttribute("data-oct-pending");
             document.documentElement.removeAttribute("data-oct-toc-pending");
+            document.documentElement.removeAttribute("data-oct-detail-pending");
           }, 1500);
         }
         // 主题二态化（维护者裁定）：按钮标签按「已存储或系统」在解析完成后尽早矫正——

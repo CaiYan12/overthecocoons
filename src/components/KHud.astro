@@ -3,6 +3,8 @@
 // NOW READING 与 READING PROGRESS 的动态行为属 Ticket 06，静态层输出初始值。
 import { formatDateTime } from "../lib/timeline.ts";
 import { siteUrl } from "../lib/paths.ts";
+import { loadSnapshot } from "../lib/snapshot.ts";
+import { sourcePresentation } from "../lib/sources.ts";
 
 interface Props {
   /** timeline=时间线页（含阅读进度）；content=长文/详情页（省略阅读区）。 */
@@ -15,14 +17,16 @@ interface Props {
 const { variant = "timeline", snapshotGeneratedAt, isFixture, total = 0 } = Astro.props;
 const snapTime = formatDateTime(snapshotGeneratedAt);
 const totalText = String(total).padStart(2, "0");
+const sourceIds = [...new Set(loadSnapshot().sources.map(source => source.sourceId))];
+const sourceTitle = sourceIds.length === 1 ? sourcePresentation(sourceIds[0]).name : "多源聚合";
 ---
 
 <div class="k-hud-boundary">
 <aside class="k-hud" aria-label="来源与数据状态" data-khud data-hud-timeline={variant === "timeline" ? "" : undefined}>
   <div class="sec">
     <p class="h">SOURCE</p>
-    <p class="big">百度热点</p>
-    <p class="dim">BAIDU HOT · 热点线索</p>
+    <p class="big">{sourceTitle}</p>
+    <p class="dim">{sourceIds.length === 1 && sourceIds[0] === "baidu-aishort" ? "BAIDU HOT · 热点线索" : `${sourceIds.length} 个订阅源 · 热点与文章`}</p>
   </div>
   <div class="sec">
     <p class="h">STATUS</p>

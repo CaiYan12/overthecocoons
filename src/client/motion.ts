@@ -7,9 +7,9 @@
  *
  * 结构对齐原型：
  * - kineticCtx：Hero Intro / Hero Parallax / Header Morph / 全局进度（进度条/圆环/百分比）/
- *   自定义光标 / 磁性 / tilt，页面生命周期内一次性建立；
+ *   自定义光标 / 磁性，页面生命周期内一次性建立；
  * - listCtx：时间线列表动效（进度线 scaleY scrub、节点激活 toggleClass、分层揭示），
- *   每次客户端重渲染整体 revert 重建（ScrollTrigger 无泄漏）；
+ *   图片 tilt / 局部高光，每次客户端重渲染整体 revert 重建（ScrollTrigger 无泄漏）；
  * - cleanups：事件监听器登记，运行时异常时统一回收并退化为无动效路径。
  *
  * 动效参数（duration/ease/阈值/延迟）逐项取自原型 JS；性能约束：只动 transform/opacity/
@@ -99,6 +99,9 @@ let enabled = false;
 let kineticCtx: GsapContext | null = null;
 let listCtx: GsapContext | null = null;
 const cleanups: Array<() => void> = [];
+const tiltCleanups: Array<() => void> = [];
+const enteringMedia = new Set<HTMLElement>();
+const mediaHoverTakeovers = new WeakMap<HTMLElement, () => void>();
 let heroEn: HTMLElement | null = null;
 let menuTl: { kill(): void } | null = null;
 
@@ -236,7 +239,6 @@ function initMotionOn(root: HTMLElement): void {
     introScheduled = initHeroAndHeader(root);
     initCursor(root);
     initMagnetic(root);
-    initTilt(root);
   }, root);
   initResize(root);
   onListRendered(false);
@@ -404,6 +406,8 @@ function scheduleIntro(root: HTMLElement, parts: IntroParts): void {
 /* ---- 时间线列表动效（原型 initListMotion；listCtx 随重渲染整体回收） ---- */
 
 export function onListRendered(deferred: boolean): void {
+  for (const cleanup of tiltCleanups.splice(0)) cleanup();
+  enteringMedia.clear();
   if (listCtx) {
     listCtx.revert();
     listCtx = null;
@@ -419,6 +423,8 @@ export function onListRendered(deferred: boolean): void {
     // context 对象在回调首行登记：任一初始化抛错时 catch 仍能 revert 全部隐藏初态
     g.context((self) => {
       listCtx = self;
+      // 列表替换后重建图片反馈，旧节点的监听器与补间一并回收；详情图共用相同反馈。
+      initTilt(root);
       // T14（UI 票 #31）：逐日进度线 scaleY scrub 恢复（a1ce4d5 参数直取）——
       // 叠合于 rail 灰线（T14 追改：silk-rail 红线让位，进度线 accent 在灰线上可见）
       root.querySelectorAll<HTMLElement>(".k-day").forEach((day) => {
@@ -435,7 +441,6 @@ export function onListRendered(deferred: boolean): void {
         const sum = entry.querySelector<HTMLElement>(".k-summary");
         const meta = entry.querySelector<HTMLElement>(".k-meta");
         const media = entry.querySelector<HTMLElement>(".k-media");
-        const art = entry.querySelector<HTMLElement>(".k-media-art");
         // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入，其余上入兜底；
         // T7 紧凑行无媒体，media 为空时 clip 分支整体跳过——拆字升起/摘要/meta 照常）
         const clipFrom = entry.classList.contains("layout-a")
@@ -449,19 +454,11 @@ export function onListRendered(deferred: boolean): void {
         if (chs.length) g.set(chs, { yPercent: 110, rotate: 2 });
         if (sum) g.set(sum, { clipPath: "inset(0 0 100% 0)" });
         if (meta) g.set(meta, { autoAlpha: 0, letterSpacing: ".2em" });
-        if (media) {
-          g.set(media, { clipPath: clipFrom });
-          if (art) g.set(art, { scale: 1.08 });
-        }
         const tl = g.timeline({ paused: true, defaults: { ease: "power3.out" } });
         if (chs.length) tl.to(chs, { yPercent: 0, rotate: 0, duration: 0.5, stagger: 0.02 }, 0);
         if (sum) tl.to(sum, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power2.out" }, 0.08);
         if (meta) tl.to(meta, { autoAlpha: 1, letterSpacing: ".04em", duration: 0.3, ease: "power2.out" }, 0.14);
-        if (media) {
-          // 四边终值均用 %：左图的 left 100% 不能补间到无单位 0，否则中间值无效、终态才显现。
-          tl.to(media, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.9, ease: "power4.out" }, 0.1);
-          if (art) tl.to(art, { scale: 1, duration: 0.9, ease: "power4.out" }, 0.1);
-        }
+        if (media) addMediaEntrance(g, tl, media, 0.1, clipFrom);
         const gi = Number(entry.dataset.gi ?? 0);
         stl.create({
           trigger: entry,
@@ -495,6 +492,29 @@ export function onListRendered(deferred: boolean): void {
       listCtx = null;
     }
   }
+}
+
+/** 列表与详情共用图片/投影入场及 hover 所有权；返回仅清除等待状态的回收函数。 */
+export function addMediaEntrance(
+  g: Gsap, timeline: GsapTimeline, media: HTMLElement, position = 0,
+  clipFrom = "inset(0% 0% 100% 0%)",
+): () => void {
+  const art = media.querySelector<HTMLElement>(".k-media-art");
+  enteringMedia.add(media);
+  g.set(media, { clipPath: clipFrom, autoAlpha: 0 });
+  if (art) g.set(art, { scale: 1.08 });
+  const finish = () => {
+    media.style.clipPath = "none";
+    enteringMedia.delete(media);
+    mediaHoverTakeovers.get(media)?.();
+  };
+  timeline.to(media, {
+    // 百分比单位保持一致；负边界让阴影随图片渐显，而非最后一帧才露出。
+    clipPath: "inset(-20% -20% -20% -20%)", autoAlpha: 1,
+    duration: 0.9, ease: "power4.out", onComplete: art ? undefined : finish,
+  }, position);
+  if (art) timeline.to(art, { scale: 1, duration: 0.9, ease: "power4.out", onComplete: finish }, position);
+  return () => { enteringMedia.delete(media); };
 }
 
 /* ---- HUD NOW READING 序号滚动（原型 setHudIndex） ---- */
@@ -1045,33 +1065,79 @@ function initMagnetic(root: HTMLElement): void {
 /* ---- 图片 3D Tilt（原型 initTilt，rotateX ≤±4° / rotateY ≤±5°；仅 pointer:fine；T14 恢复） ---- */
 
 function initTilt(root: HTMLElement): void {
-  if (!window.matchMedia(FINE_POINTER_QUERY).matches) return;
+  const hoverQuery = window.matchMedia("(hover: hover)");
+  const fineQuery = window.matchMedia(FINE_POINTER_QUERY);
+  const reducedQuery = window.matchMedia(REDUCED_QUERY);
+  if (!hoverQuery.matches || !fineQuery.matches) return;
   root.querySelectorAll<HTMLElement>(".k-media").forEach((media) => {
     const inner = media.querySelector<HTMLElement>(".k-media-tilt");
     const art = media.querySelector<HTMLElement>(".k-media-art");
     if (!inner || !art) return;
+    // 时间线与详情共用光斑；直接移动独立装饰层，不重绘渐变或修改图片几何尺寸。
+    const glow = document.createElement("span");
+    glow.className = "k-media-glow";
+    art.append(glow);
     const rX = gsap!.quickTo(inner, "rotationX", { duration: 0.4, ease: "power3" });
     const rY = gsap!.quickTo(inner, "rotationY", { duration: 0.4, ease: "power3" });
-    const onMove = (event: MouseEvent) => {
+    let hovering = false;
+    let lastPointer: PointerEvent | null = null;
+    const onMove = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" || !hoverQuery.matches || !fineQuery.matches || reducedQuery.matches) return;
+      lastPointer = event;
+      if (enteringMedia.has(media)) return;
+      hovering = true;
       const rect = media.getBoundingClientRect();
       const px = (event.clientX - rect.left) / rect.width - 0.5;
       const py = (event.clientY - rect.top) / rect.height - 0.5;
       rX(py * -8);
       rY(px * 10);
+      const face = art.getBoundingClientRect();
+      const x = (event.clientX - face.left) * art.offsetWidth / face.width;
+      const y = (event.clientY - face.top) * art.offsetHeight / face.height;
+      glow.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+      media.classList.add("is-media-hover");
     };
-    const onEnter = () => gsap!.to(art, { scale: 1.05, duration: 0.45, ease: "power3.out" });
+    const onEnter = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" || !hoverQuery.matches || !fineQuery.matches || reducedQuery.matches) return;
+      onMove(event);
+      if (!hovering) return;
+      gsap!.to(art, { scale: 1.05, duration: 0.45, ease: "power3.out" });
+    };
     const onLeave = () => {
+      lastPointer = null;
+      if (!hovering) return;
+      hovering = false;
+      media.classList.remove("is-media-hover");
       rX(0);
       rY(0);
       gsap!.to(art, { scale: 1, duration: 0.5, ease: "power3.out" });
     };
-    media.addEventListener("mousemove", onMove, { passive: true });
-    media.addEventListener("mouseenter", onEnter);
-    media.addEventListener("mouseleave", onLeave);
-    cleanups.push(() => {
-      media.removeEventListener("mousemove", onMove);
-      media.removeEventListener("mouseenter", onEnter);
-      media.removeEventListener("mouseleave", onLeave);
+    mediaHoverTakeovers.set(media, () => {
+      // 入场期间指针可能已静止；重新命中实际画面后接管，避免要求用户再次移入。
+      if (lastPointer && media.contains(document.elementFromPoint(lastPointer.clientX, lastPointer.clientY))) {
+        onEnter(lastPointer);
+      }
+    });
+    media.addEventListener("pointermove", onMove, { passive: true });
+    media.addEventListener("pointerenter", onEnter);
+    media.addEventListener("pointerleave", onLeave);
+    media.addEventListener("pointercancel", onLeave);
+    window.addEventListener("blur", onLeave);
+    hoverQuery.addEventListener("change", onLeave);
+    fineQuery.addEventListener("change", onLeave);
+    reducedQuery.addEventListener("change", onLeave);
+    tiltCleanups.push(() => {
+      media.removeEventListener("pointermove", onMove);
+      media.removeEventListener("pointerenter", onEnter);
+      media.removeEventListener("pointerleave", onLeave);
+      media.removeEventListener("pointercancel", onLeave);
+      window.removeEventListener("blur", onLeave);
+      hoverQuery.removeEventListener("change", onLeave);
+      fineQuery.removeEventListener("change", onLeave);
+      reducedQuery.removeEventListener("change", onLeave);
+      media.classList.remove("is-media-hover");
+      mediaHoverTakeovers.delete(media);
+      glow.remove();
       gsap!.killTweensOf([inner, art]);
     });
   });
@@ -1113,6 +1179,8 @@ function startFallbackProgress(): void {
 
 /** 整体回收（运行时异常退化用）：revert 全部上下文 + 监听器 + 补间。 */
 function destroyMotion(): void {
+  for (const cleanup of tiltCleanups.splice(0)) cleanup();
+  enteringMedia.clear();
   if (listCtx) {
     listCtx.revert();
     listCtx = null;

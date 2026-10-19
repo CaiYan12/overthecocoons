@@ -34,6 +34,7 @@ import {
   type SourceStatus,
   type StateFile,
 } from "./contract.ts";
+import { isArticleImageUrl } from "../lib/article-image.ts";
 
 /** 公开保留窗口：7 天。 */
 export const WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
@@ -41,11 +42,12 @@ export const WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 /** 来源归一化后的条目输入（wd 为已解码的精确字符串；指纹提取逻辑属 Ticket 03）。 */
 export interface RawEntryInput {
   sourceId: string;
-  /** 原始 GUID；缺失为 null（照常校验并隔离，不兜底造身份）。 */
+  /** 来源身份键；百度为原始 GUID，新文章源为显式 url:<源文章URL>；缺失仍隔离。 */
   guid: string | null;
   title: string;
   /** 源摘要或正文纯文本；两者皆无为 null（不编造）。 */
   summary: string | null;
+  imageUrl?: string;
   url: string;
   topic: string;
   /** 原始时间：语义未核实前必须为 null（当前首源恒 null）。 */
@@ -138,8 +140,10 @@ export function buildPublicSnapshot(
     .filter((item) => Date.parse(item.firstSeenAt) >= windowStartMs)
     .map<PublicEntry>((item) => ({
       id: item.stableId,
+      sourceId: item.sourceId,
       title: item.title,
       summary: item.summary,
+      ...(item.imageUrl === undefined ? {} : { imageUrl: item.imageUrl }),
       topic: item.topic,
       firstSeenAt: item.firstSeenAt,
       url: item.url,
@@ -262,6 +266,10 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
       if (raw.sourceId !== result.sourceId) {
         throw new Error("管线输入错误：条目 sourceId 与来源结果不一致");
       }
+      if (raw.imageUrl !== undefined && !isArticleImageUrl(raw.imageUrl, raw.sourceId)) {
+        quarantine("字段校验失败", raw, null);
+        continue;
+      }
       // 缺 GUID：隔离，不兜底造身份（内容规则 2）。
       if (typeof raw.guid !== "string" || raw.guid.length === 0) {
         quarantine("缺 GUID", raw, null);
@@ -322,6 +330,7 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
           guid: raw.guid,
           title: raw.title,
           summary: raw.summary ?? "",
+          ...(raw.imageUrl === undefined ? {} : { imageUrl: raw.imageUrl }),
           topic: raw.topic,
           url: raw.url,
           firstSeenAt: result.succeededAt,
@@ -356,14 +365,17 @@ export function ingest(previous: IngestPrevious, result: SourceFetchResult): Ing
         if (
           item.title !== raw.title ||
           item.summary !== summary ||
+          item.imageUrl !== raw.imageUrl ||
           item.url !== raw.url ||
           item.topic !== raw.topic ||
           wdFilled
         ) {
+          const { imageUrl: _previousImage, ...previousContent } = item;
           itemsById.set(sid, {
-            ...item,
+            ...previousContent,
             title: raw.title,
             summary,
+            ...(raw.imageUrl === undefined ? {} : { imageUrl: raw.imageUrl }),
             url: raw.url,
             topic: raw.topic,
             wdFingerprint: wdFilled ? raw.wd! : item.wdFingerprint,

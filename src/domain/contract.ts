@@ -16,6 +16,7 @@
  */
 import { createHash } from "node:crypto";
 import { HEX64 } from "../lib/hex64.ts";
+import { isArticleImageUrl } from "../lib/article-image.ts";
 
 export const SCHEMA_VERSION = 1;
 
@@ -36,7 +37,7 @@ export interface LedgerIdentity {
   /** 稳定 ID：sha256(来源 ID + ID_SEPARATOR + 原始 GUID) 的完整 64 位小写十六进制（MVP-Q15）。 */
   stableId: string;
   sourceId: string;
-  /** 原始 GUID，保持字符串原样：不转数字、不改大小写。 */
+  /** 来源身份键：百度为原始 GUID；显式 URL 身份策略的新来源为 url:<源文章URL>。 */
   guid: string;
   /** 首次收录时间（ISO 8601）。重复抓取与内容修订均不刷新（内容规则 1/3）。 */
   firstSeenAt: string;
@@ -93,13 +94,15 @@ export interface ItemEntry {
   title: string;
   /** 纯文本摘要；来源未提供时为空串，不编造（内容规则 6）。 */
   summary: string;
+  /** Optional source-provided article image; old records without it remain valid. */
+  imageUrl?: string;
   topic: string;
   url: string;
   firstSeenAt: string;
   originalTime: string | null;
   wdFingerprint: string;
   wdMissing: boolean;
-  /** 条目内容版本：从 1 起，标题/摘要/链接/主题修订时递增。 */
+  /** 条目内容版本：从 1 起，标题/摘要/图片/链接/主题修订时递增。 */
   contentVersion: number;
 }
 
@@ -123,8 +126,11 @@ export interface ManifestFile {
 /** 公开条目（与 fixtures/snapshot.json 的 entries 字段一致）。 */
 export interface PublicEntry {
   id: string;
+  /** 新快照显式携带来源；旧百度快照缺省兼容为 baidu-aishort。 */
+  sourceId?: string;
   title: string;
   summary: string;
+  imageUrl?: string;
   topic: string;
   firstSeenAt: string;
   url: string;
@@ -353,6 +359,9 @@ export function assertItemsFile(value: unknown): ItemsFile {
     reqNonEmptyString(raw, "guid", itemPath);
     reqString(raw, "title", itemPath);
     reqString(raw, "summary", itemPath);
+    if (raw.imageUrl !== undefined && !isArticleImageUrl(raw.imageUrl, raw.sourceId)) {
+      fail(`${itemPath}.imageUrl 必须是已准入来源的 HTTPS 图片地址`);
+    }
     reqString(raw, "topic", itemPath);
     reqString(raw, "url", itemPath);
     reqIsoTime(raw, "firstSeenAt", itemPath);

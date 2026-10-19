@@ -16,7 +16,7 @@ export interface ClientData {
   entries: PublicEntry[];
 }
 
-/** 从公开快照构造客户端数据（只保留 PublicEntry 六字段，不携带隔离与来源状态）。 */
+/** 从公开快照构造客户端数据（不携带隔离与来源状态）。 */
 export function buildTimelineData(snapshot: PublicSnapshot, base: string): ClientData {
   if (typeof base !== "string" || !base.startsWith("/") || base.endsWith("/")) {
     throw new Error(`客户端数据岛基路径必须是以 / 开头、不以 / 结尾的字符串：${String(base)}`);
@@ -26,8 +26,10 @@ export function buildTimelineData(snapshot: PublicSnapshot, base: string): Clien
     isFixture: snapshot.isFixture,
     entries: snapshot.entries.map((entry) => ({
       id: entry.id,
+      ...(entry.sourceId === undefined ? {} : { sourceId: entry.sourceId }),
       title: entry.title,
       summary: entry.summary,
+      ...(entry.imageUrl === undefined ? {} : { imageUrl: entry.imageUrl }),
       topic: entry.topic,
       firstSeenAt: entry.firstSeenAt,
       url: entry.url,

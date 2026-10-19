@@ -171,6 +171,25 @@ describe("更新路径发现无权威状态（任务书：空状态显式拒绝�
 });
 
 describe("采集 → 校验 → 写 data 编排（本地演练目录模拟 data 分支）", () => {
+  it("多源一次写入，失败源保留旧内容且不阻止后续来源，重复获取不重计首次收录", async () => {
+    await seedWithEntries([makeEntry({ guid: "old-baidu" })]);
+    const sourceId = "chinanews-society";
+    const article = makeEntry({ sourceId, guid: "url:https://www.chinanews.com.cn/sh/example.shtml", wd: null });
+    let calls = 0;
+    const fetchers = [
+      async (): Promise<SourceFetchResult> => { calls++; return { ok: false, sourceId: SOURCE_ID, attemptedAt: iso(T2), error: "offline" }; },
+      async (): Promise<SourceFetchResult> => { calls++; return { ok: true, sourceId, attemptedAt: iso(T2), succeededAt: iso(T2), entries: [article] }; },
+    ];
+    const first = await runDataUpdate({ store, now: clockAt(T2), fetchers });
+    assert.equal(calls, 2, "all sources must run even after a source failure");
+    assert.equal(first.kind, "degraded");
+    assert.equal(first.items.items.length, 2, "keep failed source's old entries");
+    assert.equal(first.snapshot.entries.find(e => e.sourceId === sourceId)?.title, article.title);
+    verifyManifest(first.state, first.items, first.manifest);
+    const second = await runDataUpdate({ store, now: clockAt(T2), fetchers });
+    assert.equal(second.state.identities.length, 2);
+    assert.equal(second.items.items.find(e => e.sourceId === sourceId)?.firstSeenAt, iso(T2));
+  });
   it("初始化后首轮更新：三文件落盘自洽，条目与来源状态正确", async () => {
     await runDataInitialize({ store, now: clockAt(T0) });
     const result = await runDataUpdate({

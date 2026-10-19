@@ -35,6 +35,9 @@ import {
   topicPagePath,
 } from "../lib/timeline.ts";
 import { isExternalUrl } from "../lib/links.ts";
+import { sourcePresentation } from "../lib/sources.ts";
+import { isArticleImageUrl } from "../lib/article-image.ts";
+import { settleArticleImages } from "./article-images.ts";
 import { pagerHtml } from "../lib/pager.ts";
 import { SILK_VIEWBOX, silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
 import { animateTopicSwitch, moveIndicator, onListRendered } from "./motion.ts";
@@ -83,18 +86,21 @@ function mediaHtml(entry: PublicEntry): string {
   const texture = silkTexturePaths(entry.id)
     .map((p) => `<path class="${p.cls}" d="${p.d}" stroke-width="${p.width}" opacity="${p.opacity}"></path>`)
     .join("");
-  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-tilt"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span><svg class="silk-texture" viewBox="${SILK_VIEWBOX}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${texture}</svg><span class="sid">${silkSidLabel(entry.id)}</span></div></div></div>`;
+  const image = isArticleImageUrl(entry.imageUrl, entry.sourceId)
+    ? `<img class="k-source-image" data-source-image src="${esc(entry.imageUrl)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : "";
+  return `<div class="k-media" data-cursor="OPEN"><div class="k-media-tilt"><div class="k-media-art" aria-hidden="true"><span class="tag"><i></i><span class="tm">${clock}</span></span><svg class="silk-texture" viewBox="${SILK_VIEWBOX}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${texture}</svg><span class="sid">${silkSidLabel(entry.id)}</span>${image}</div></div></div>`;
 }
 
 function metaHtml(entry: PublicEntry): string {
   const collected = formatDateTime(entry.firstSeenAt);
+  const source = sourcePresentation(entry.sourceId);
   // UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂（与 KEntryMeta.astro 同构）
   // T13：ext 类由确定性规则判定（与构建期同一函数；客户端 origin 即当前站点 origin，与
   // Astro.site 的部署 origin 一致），站外才染靛
   const ext = entry.url
-    ? `<span class="seg"><span class="sep">·</span><a class="${isExternalUrl(entry.url, location.origin) ? "ext" : ""}" href="${esc(entry.url)}" target="_blank" rel="noopener" data-cursor="LINK">查看百度搜索结果 ↗</a></span>`
+    ? `<span class="seg"><span class="sep">·</span><a class="${isExternalUrl(entry.url, location.origin) ? "ext" : ""}" href="${esc(entry.url)}" target="_blank" rel="noopener" data-cursor="LINK">${esc(source.linkLabel)} ↗</a></span>`
     : "";
-  return `<p class="k-meta"><span>百度热点</span><span class="seg"><span class="sep">·</span><span class="tpc">${esc(entry.topic)}</span></span><span class="seg"><span class="sep">·</span>收录 ${collected}</span>${ext}</p>`;
+  return `<p class="k-meta"><span>${esc(source.name)}</span><span class="seg"><span class="sep">·</span><span class="tpc">${esc(entry.topic)}</span></span><span class="seg"><span class="sep">·</span>收录 ${collected}</span>${ext}</p>`;
 }
 
 function entryHtml(entry: PublicEntry, gi: number, di: number, omitTime: boolean): string {
@@ -148,7 +154,7 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
 
 function emptyHtml(emptyTopic: string): string {
   // UI 票 #10：与 KEmpty.astro 保持同文（用户视角，不用规格用语）
-  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>首源为百度热点线索，收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p><a class="page-btn" data-all data-cursor="LINK" href="${base}/"><span class="k-link-label">查看全部</span></a></div>`;
+  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p><a class="page-btn" data-all data-cursor="LINK" href="${base}/"><span class="k-link-label">查看全部</span></a></div>`;
 }
 
 function renderPager(page: number, totalPages: number, renderTopic: string): void {
@@ -263,6 +269,7 @@ function renderView(nextTopic: string, requestedPage: number, options?: { deferr
   focusHeaderAllTab = false;
 
   list.innerHTML = filtered.length === 0 ? emptyHtml(nextTopic) : dayGroupsHtml(slice, start);
+  settleArticleImages(list);
   renderPager(page, totalPages, nextTopic);
   syncTopicUi(nextTopic, filtered.length);
   updatePageHead(nextTopic, page);

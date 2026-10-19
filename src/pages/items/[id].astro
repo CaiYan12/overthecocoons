@@ -10,6 +10,7 @@ import type { PublicEntry } from "../../domain/contract.ts";
 import { formatClock, formatDateTime, topicPagePath } from "../../lib/timeline.ts";
 import { isExternalUrl } from "../../lib/links.ts";
 import { siteUrl } from "../../lib/paths.ts";
+import { sourcePresentation } from "../../lib/sources.ts";
 
 export function getStaticPaths() {
   const snapshot = loadSnapshot();
@@ -23,6 +24,7 @@ interface Props {
   entry: PublicEntry;
 }
 const { entry } = Astro.props;
+const source = sourcePresentation(entry.sourceId);
 
 const snapshot = loadSnapshot();
 const isFixture = snapshot.isFixture;
@@ -60,11 +62,11 @@ const isExt = entry.url !== "" && isExternalUrl(entry.url, Astro.site?.origin ??
     </p>
     <h1 class="k-headline">{entry.title}</h1>
     {/* T7：详情页单一条目无快照内位置语境，不渲染序号；T9：竖排主题词移除；T13：版画注入稳定 ID 丝纹 */}
-    <KEntryMedia clock={clock} seedId={entry.id} />
+    <KEntryMedia clock={clock} seedId={entry.id} sourceId={entry.sourceId} imageUrl={entry.imageUrl} eager />
     <p class={`k-summary${entry.summary ? "" : " k-summary-empty"}`}>{summaryText}</p>
     <p class="k-meta">
       {/* UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂 */}
-      <span>百度热点</span>
+      <span>{source.name}</span>
       <span class="seg"><span class="sep">·</span><span class="tpc">{entry.topic}</span></span>
       <span class="seg">
         <span class="sep">·</span>收录{" "}
@@ -75,7 +77,7 @@ const isExt = entry.url !== "" && isExternalUrl(entry.url, Astro.site?.origin ??
       entry.url && (
         <p class="k-detail-ext">
           <a class={isExt ? "ext" : undefined} href={entry.url} target="_blank" rel="noopener" data-cursor="LINK">
-            查看百度搜索结果 ↗
+            {source.linkLabel} ↗
           </a>
           {/* 复制链接（Ticket 05）：静态层 hidden，脚本解除 hidden 后可用；无 JS 不出现死按钮 */}
           <button class="ext" type="button" data-copy-link data-cursor-soft hidden>复制链接</button>

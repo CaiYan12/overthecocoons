@@ -33,6 +33,8 @@ data 更新编排说明见 `docs/mvp-architecture.md`（工作流与失败控制
 
 ## 许可
 
+本地已扩展中新网社会／国际／东西问、极客公园、Solidot 五个网站订阅，仍保留百度热点。规则、真实烟测与发布边界见 [多源接入说明](docs/multi-source-ingestion.md)；`pnpm smoke:sources` 可只读检查全部六个订阅。尚未发布的本地接入不代表线上来源已改变。
+
 代码许可证 MIT（见 `LICENSE`）；来源内容不因本项目许可证而重新许可，来源内容的公开使用范围以核实记录为准。
 
 ## TODO

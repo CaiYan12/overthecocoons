@@ -33,7 +33,7 @@ import {
   GitCheckoutDataStore,
   LocalDirDataStore,
 } from "../src/lib/data-store.ts";
-import { BAIDU_FEED_URL, fetchSourceEntries } from "../src/lib/baidu-source.ts";
+import { fetchSourceEntries } from "../src/lib/baidu-source.ts";
 import type { SourceFetchResult } from "../src/domain/ingestion.ts";
 
 interface CliArgs {
@@ -152,18 +152,18 @@ async function main(): Promise<void> {
   }
 
   const result = await runDataUpdate({ store, now, fetchSource });
-  const feedUrl = args.fixture ? "合成演练源（fixture 注入）" : BAIDU_FEED_URL;
+  const feedUrl = args.fixture ? "合成演练源（fixture 注入）" : "6 个订阅源（百度及五个网站订阅）";
   console.log(`[update-data] 更新完成（kind=${result.kind}）：feed=${feedUrl}`);
   console.log(
     `[update-data] HEAD ${result.previousHeadSha.slice(0, 12)}… → ${result.newHeadSha.slice(0, 12)}…；` +
       `窗口条目 ${result.items.items.length} 条；隔离记录 ${result.state.quarantined.length} 条。`,
   );
-  const status = [...result.state.sources].sort(
+  const statuses = [...result.state.sources].sort(
     (a, b) => Date.parse(b.lastAttemptedAt) - Date.parse(a.lastAttemptedAt),
-  )[0];
-  if (status) {
+  );
+  for (const status of statuses) {
     console.log(
-      `[update-data] 来源状态：lastAttemptedAt=${status.lastAttemptedAt} lastSucceededAt=${status.lastSucceededAt ?? "—"} ` +
+      `[update-data] 来源 ${status.sourceId}：lastAttemptedAt=${status.lastAttemptedAt} lastSucceededAt=${status.lastSucceededAt ?? "—"} ` +
         `lastFailureAt=${status.lastFailureAt ?? "—"}${status.lastFailureReason ? `（${status.lastFailureReason}）` : ""}`,
     );
   }

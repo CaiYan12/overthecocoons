@@ -3,15 +3,18 @@
 // T13（UI 票 #30）：站外链接判定走确定性规则（src/lib/links.ts isExternalUrl——绝对 http(s)
 // 且 origin ≠ 站点 origin），判定为站外才附加 ext 类（全局 a.ext 靛色）；同源 URL 不染靛。
 import { isExternalUrl } from "../lib/links.ts";
+import { sourcePresentation } from "../lib/sources.ts";
 
 interface Props {
+  sourceId?: string;
   topic: string;
   /** 已格式化的收录时间（YYYY-MM-DD HH:mm）。 */
   collected: string;
   /** 条目目标链接；空串表示来源未提供。 */
   url: string;
 }
-const { topic, collected, url } = Astro.props;
+const { topic, collected, url, sourceId } = Astro.props;
+const source = sourcePresentation(sourceId);
 // 站点 origin 来自 astro.config site（https://caiyan12.github.io）；未配置时回退空串（安全默认：绝对 http(s) 一律按站外）
 const siteOrigin = Astro.site?.origin ?? "";
 const isExt = url !== "" && isExternalUrl(url, siteOrigin);
@@ -19,7 +22,7 @@ const isExt = url !== "" && isExternalUrl(url, siteOrigin);
 
 <p class="k-meta">
   {/* UI 票 #10：分隔符并入其后段（.seg），折行后「·」出现在行首而非行尾悬挂 */}
-  <span>百度热点</span>
+  <span>{source.name}</span>
   <span class="seg"><span class="sep">·</span><span class="tpc">{topic}</span></span>
   <span class="seg"><span class="sep">·</span>收录 {collected}</span>
   {
@@ -27,7 +30,7 @@ const isExt = url !== "" && isExternalUrl(url, siteOrigin);
       <span class="seg">
         <span class="sep">·</span>
         <a class={isExt ? "ext" : undefined} href={url} target="_blank" rel="noopener" data-cursor="LINK">
-          查看百度搜索结果 ↗
+          {source.linkLabel} ↗
         </a>
       </span>
     )

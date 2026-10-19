@@ -1,5 +1,5 @@
 ---
-// 数据版画占位图（无图条目的本站占位）：网格底纹 + 色块时间 + 丝纹（T13）。
+// RSS 文章图片覆盖原版画；缺图或加载失败时使用网格底纹 + 色块时间 + 丝纹（T13）。
 // 结构与原型 .k-media/.k-media-tilt/.k-media-art 三层一致（T14/UI 票 #31 恢复 tilt 中间层——
 // T11 移除撤销，tilt 包裹整个 art 层；版画 clip 揭示作用于 .k-media）。
 // T9 版面减负（UI 票 #26）：移除出血大序号与竖排英文主题词——线上真实数据主题恒为单一值，
@@ -9,14 +9,19 @@
 // 注入版画让每条版画携带独有信息（T9 的替代物）；客户端重渲染由 timeline-view 用同一函数
 // 注入同构标记。纯装饰 aria-hidden 语义不变（T9 语义重订），零运行时开销。
 import { SILK_VIEWBOX, silkSidLabel, silkTexturePaths } from "../lib/silk.ts";
+import { isArticleImageUrl } from "../lib/article-image.ts";
 
 interface Props {
   /** 色块时间（HH:mm）。 */
   clock: string;
   /** 丝纹种子＝条目稳定 ID（64hex）。 */
   seedId: string;
+  sourceId?: string;
+  imageUrl?: string;
+  eager?: boolean;
 }
-const { clock, seedId } = Astro.props;
+const { clock, seedId, sourceId, imageUrl, eager = false } = Astro.props;
+const sourceImage = isArticleImageUrl(imageUrl, sourceId) ? imageUrl : undefined;
 const paths = silkTexturePaths(seedId);
 const sid = silkSidLabel(seedId);
 ---
@@ -34,6 +39,7 @@ const sid = silkSidLabel(seedId);
         ))}
       </svg>
       <span class="sid">{sid}</span>
+      {sourceImage && <img class="k-source-image" data-source-image src={sourceImage} alt="" loading={eager ? "eager" : "lazy"} decoding="async" referrerpolicy="no-referrer" />}
     </div>
   </div>
 </div>
