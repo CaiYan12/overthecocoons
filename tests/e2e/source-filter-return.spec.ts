@@ -437,14 +437,13 @@ test.describe("BFCache 返回（headless 环境通常不命中，未命中即显
       await openFirstDetail(page);
       await page.goBack();
       await waitClientReady(page);
-      const persisted = await page.evaluate(
-        () => (performance.getEntriesByType("pageshow")[0] as PerformanceEntry | undefined) !== undefined,
+      // 只有真正命中 BFCache 才继续：pageshow.persisted 是本用例的前提判据，
+      // 拿不到就说明这条路径在本环境根本没被走到，断言「恢复成功」毫无意义。
+      const hit = await page.evaluate(() =>
+        performance
+          .getEntriesByType("pageshow")
+          .some((entry) => (entry as PerformanceEntry & { persisted?: boolean }).persisted === true),
       );
-      void persisted;
-      const hit = await page.evaluate(() => {
-        const entry = performance.getEntriesByType("pageshow")[0];
-        return Boolean((entry as PerformanceEntry & { persisted?: boolean })?.persisted);
-      });
       test.skip(
         !hit,
         "本环境（headless Chromium）未命中 BFCache：pageshow.persisted 恒 false，" +
