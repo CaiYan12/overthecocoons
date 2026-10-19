@@ -36,6 +36,14 @@ import {
 } from "../lib/timeline.ts";
 import { isExternalUrl } from "../lib/links.ts";
 import { sourcePresentation } from "../lib/sources.ts";
+import {
+  SUBSCRIPTIONS,
+  filterTimeline,
+  normalizeSources,
+  selectionSummary,
+  selectionTitle,
+} from "../lib/source-filter.ts";
+import type { SourceFilterHost } from "./source-filter.ts";
 import { isArticleImageUrl } from "../lib/article-image.ts";
 import { settleArticleImages } from "./article-images.ts";
 import { pagerHtml } from "../lib/pager.ts";
@@ -58,6 +66,8 @@ let pager: HTMLElement;
 let lastReadId: string | null = null;
 let rafScheduled = false;
 let focusHeaderAllTab = false;
+/** 已应用的来源集合（默认全部六源；本票只在本次页面内保留，不写 history/存储）。 */
+let appliedSources: string[] = SUBSCRIPTIONS.map((item) => item.id);
 
 function pad2(value: number): string {
   return String(value).padStart(2, "0");
@@ -73,7 +83,7 @@ function esc(value: string): string {
 }
 
 function currentFiltered(): PublicEntry[] {
-  return topic === "全部" ? sorted : sorted.filter((entry) => entry.topic === topic);
+  return filterTimeline(sorted, topic, appliedSources);
 }
 
 /* ---- 客户端渲染（与 T04 静态输出同构） ---- */
@@ -154,7 +164,27 @@ function dayGroupsHtml(slice: PublicEntry[], start: number): string {
 
 function emptyHtml(emptyTopic: string): string {
   // UI 票 #10：与 KEmpty.astro 保持同文（用户视角，不用规格用语）
-  return `<div class="empty"><h3>「${esc(emptyTopic)}」暂无内容</h3><p>收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。</p><a class="page-btn" data-all data-cursor="LINK" href="${base}/"><span class="k-link-label">查看全部</span></a></div>`;
+  // Issue #34：空态区分「来源是否被限制」——两个维度分别放宽，不静默清空另一维。
+  // 未限制来源时沿用原空态文案（既有语义不变）；限制后明确说明组合无匹配。
+  const sourceLimited = appliedSources.length < SUBSCRIPTIONS.length;
+  const heading = sourceLimited
+    ? emptyTopic === "全部"
+      ? "已选来源暂无内容"
+      : `「${esc(emptyTopic)}」在已选来源中暂无内容`
+    : `「${esc(emptyTopic)}」暂无内容`;
+  const note = sourceLimited
+    ? "当前来源与主题的组合没有可展示的内容；可分别放宽其中一个条件。"
+    : "收录与主题映射规则见「来源」页；该主题当前没有可展示的内容。";
+  const relax = [
+    sourceLimited
+      ? `<button type="button" class="page-btn" data-all-sources data-cursor-soft><span class="k-link-label">全部来源</span></button>`
+      : "",
+    emptyTopic !== "全部"
+      ? `<button type="button" class="page-btn" data-all-topic data-cursor-soft><span class="k-link-label">全部主题</span></button>`
+      : "",
+    `<a class="page-btn" data-all data-cursor="LINK" href="${base}/"><span class="k-link-label">查看全部</span></a>`,
+  ].join("");
+  return `<div class="empty"><h3>${heading}</h3><p>${note}</p><div class="k-empty-actions">${relax}</div></div>`;
 }
 
 function renderPager(page: number, totalPages: number, renderTopic: string): void {
@@ -260,9 +290,31 @@ function scrollToEntry(index: number): void {
   element.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
 }
 
-function renderView(nextTopic: string, requestedPage: number, options?: { deferredListMotion?: boolean }): void {
-  const filtered = nextTopic === "全部" ? sorted : sorted.filter((entry) => entry.topic === nextTopic);
-  const decision = resolveRestore(filtered, lastReadId, requestedPage, PAGE_SIZE);
+/** 来源入口文案同步（Issue #34）：标题随已应用集合（单源名/多源聚合），辅文为已选数量。 */
+function syncSourceUi(): void {
+  const title = document.querySelector<HTMLElement>("[data-source-title]");
+  const dim = document.querySelector<HTMLElement>("[data-source-dim]");
+  if (title) title.textContent = selectionTitle(appliedSources);
+  if (dim) dim.textContent = selectionSummary(appliedSources);
+}
+
+function renderView(
+  nextTopic: string,
+  requestedPage: number,
+  options?: {
+    deferredListMotion?: boolean;
+    /** 显式更改筛选（来源/空态放宽）：定位到时间线开头，不走阅读位恢复。 */
+    resetPosition?: boolean;
+    /** 来源筛选专用播报前缀（应用/放宽来源时统一口径）。 */
+    sourceAnnouncement?: string;
+    /** 渲染后把焦点放回来源入口（空态放宽来源后原按钮已被替换）。 */
+    focusSourceEntry?: boolean;
+  },
+): void {
+  const filtered = filterTimeline(sorted, nextTopic, appliedSources);
+  const decision = options?.resetPosition
+    ? ({ mode: "none", index: -1 } as const)
+    : resolveRestore(filtered, lastReadId, requestedPage, PAGE_SIZE);
   const { page, totalPages, start, slice } = paginate(filtered, requestedPage);
   const hadFocusInPager = pager.contains(document.activeElement);
   const focusAllTab = focusHeaderAllTab;
@@ -280,7 +332,9 @@ function renderView(nextTopic: string, requestedPage: number, options?: { deferr
   topic = nextTopic;
 
   let message: string;
-  if (filtered.length === 0) {
+  if (options?.sourceAnnouncement) {
+    message = `${options.sourceAnnouncement}，第 ${page} 页，共 ${totalPages} 页`;
+  } else if (filtered.length === 0) {
     message = `已切换主题：${nextTopic}（暂无内容）`;
   } else if (nextTopic !== previousTopic) {
     message = `已切换主题：${nextTopic}，第 ${page} 页，共 ${totalPages} 页`;
@@ -307,6 +361,13 @@ function renderView(nextTopic: string, requestedPage: number, options?: { deferr
     pager.querySelector<HTMLElement>('[aria-current="page"]')?.focus();
   } else if (focusAllTab) {
     document.querySelector<HTMLElement>(`[data-ktabs] .tab[data-topic="全部"]`)?.focus();
+  } else if (options?.focusSourceEntry) {
+    const entryEl = document.querySelector<HTMLElement>("[data-source-open]");
+    entryEl?.focus({ preventScroll: true });
+    // 焦点必须可见（规格：应用后焦点可见，不被重渲染留在不可见位置）。
+    // renderView 已先把页面定位到时间线开头；短视口（如 iPhone 13 的 664px）下 HUD 仍在
+    // 首屏之下，因此这里再按最近边对齐一次——桌面右栏本就可见，实际不产生滚动。
+    entryEl?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 }
 
@@ -316,6 +377,54 @@ function switchTopic(next: string, focusAllTab: boolean): void {
   // 两段式主题切换（GSAP 可用）：出 260ms → 渲染 → 日期组头先行、条目 +120ms 揭示；
   // 无动效路径直接渲染（render 始终被调用恰好一次）
   animateTopicSwitch(() => renderView(next, 1, { deferredListMotion: true }));
+}
+
+/* ---- 来源筛选（Issue #34） ---- */
+
+/** 已选来源的可读名称列表（播报口径，顺序固定）。 */
+function sourceNames(sources: string[]): string {
+  return SUBSCRIPTIONS.filter((item) => sources.includes(item.id))
+    .map((item) => item.name)
+    .join("、");
+}
+
+/**
+ * 应用来源集合：先更新入口文案，再走既有两段式列表切换（应用已在面板退场完成后调用）。
+ * 显式更改筛选 → 回到第 1 页并定位到时间线开头；主题保持不变。
+ */
+function applySources(next: string[], options?: { relaxTopic?: boolean }): void {
+  const normalized = normalizeSources(next) ?? SUBSCRIPTIONS.map((item) => item.id);
+  const changed =
+    normalized.length !== appliedSources.length ||
+    normalized.some((id, index) => id !== appliedSources[index]);
+  if (!changed) {
+    syncSourceUi();
+    return;
+  }
+  appliedSources = normalized;
+  syncSourceUi();
+  const relax = normalized.length === SUBSCRIPTIONS.length;
+  const announcement = relax ? "已恢复全部来源" : `已应用来源筛选：${sourceNames(normalized)}`;
+  const topicNext = options?.relaxTopic ? "全部" : topic;
+  animateTopicSwitch(() =>
+    renderView(topicNext, 1, {
+      deferredListMotion: true,
+      resetPosition: true,
+      sourceAnnouncement: announcement,
+      focusSourceEntry: true,
+    }),
+  );
+}
+
+/** 来源面板宿主（单一事实源）：面板只读已应用集合、只提交草稿。 */
+export function sourceFilterHost(): SourceFilterHost {
+  return {
+    appliedSources: () => [...appliedSources],
+    applySources: (next: string[]) => {
+      if (!list) return;
+      applySources(next);
+    },
+  };
 }
 
 /* ---- 初始化 ---- */
@@ -396,9 +505,25 @@ export function initTimeline(): void {
     renderView(topic, Number(anchor.dataset.page));
   });
 
-  // 空态「查看全部」委托
+  // 空态放宽操作委托（Issue #34）：来源与主题两个维度分别放宽，互不静默清空；
+  // 「查看全部」保留既有语义（切到全部主题）。
   list.addEventListener("click", (event) => {
-    const all = (event.target as Element | null)?.closest<HTMLAnchorElement>("[data-all]");
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+    const allSources = target.closest<HTMLElement>("[data-all-sources]");
+    if (allSources) {
+      event.preventDefault();
+      applySources(SUBSCRIPTIONS.map((item) => item.id), { relaxTopic: false });
+      return;
+    }
+    const allTopic = target.closest<HTMLElement>("[data-all-topic]");
+    if (allTopic) {
+      event.preventDefault();
+      // 只放宽主题：保留已应用来源，回到第 1 页
+      animateTopicSwitch(() => renderView("全部", 1, { deferredListMotion: true, resetPosition: true }));
+      return;
+    }
+    const all = target.closest<HTMLAnchorElement>("[data-all]");
     if (!all) return;
     event.preventDefault();
     switchTopic("全部", true);
