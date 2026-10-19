@@ -516,21 +516,26 @@ dialog.k-source::backdrop { background: color-mix(in srgb, var(--ink) 38%, trans
 /* 真实 checkbox：视觉隐藏但保持可聚焦（不用 display:none / visibility:hidden）。 */
 .k-source-all input, .k-source-option input { position: absolute; left: 10px; top: 50%; width: 18px; height: 18px; margin: 0; transform: translateY(-50%); opacity: 0; pointer-events: none }
 .k-source-box { flex: 0 0 auto; position: relative; width: 16px; height: 16px; border: 1px solid var(--rule); background: transparent; transition: border-color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out) }
-/* 勾号用纯 CSS 绘制：选中不只靠颜色（边框 + 底色 + 勾号三重表达）。
-   几何：方框 16×16（border-box），勾号 5×9、笔画 1px（Blink 会把 1.5px 取整为 1px，
-   写 1.5px 只是让意图失真）。定位必须让「旋转中心 = 方框中心」：
-   方框中心 (8,8)，勾号中心 (left+2.5, top+4.5) → left:5.5px、top:3.5px。
-   用户实测旧值 left:4px/top:0 使勾号偏左上 1.5px/3.5px 并溢出框外。 */
-.k-source-box::after { content: ""; position: absolute; left: 5.5px; top: 3.5px; width: 5px; height: 9px; border: solid var(--paper); border-width: 0 1px 1px 0; transform: rotate(45deg) scale(0); transform-origin: center; transition: transform var(--motion-fast) var(--ease-out) }
+/* 勾号/横条用内联 SVG 描边绘制（见 KHud.astro .k-source-mark）。选中不只靠颜色
+   （边框 + 底色 + 勾号三重表达）。
+   为什么不再用 border 拼：border 折角旋转后布局盒中心 ≠ 视觉重心，按「布局盒居中」
+   定位两次都得到肉眼可见的偏移（用户两次实看指出）。现采用 Lucide v1.59.0（ISC）的
+   官方几何：24×24 viewBox、stroke-width 2、round cap/join；path 本身在 viewBox 内
+   对称，等比缩放后几何中心与视觉重心一致。 */
+.k-source-mark { position: absolute; inset: 2px; width: auto; height: auto; display: block;
+  color: var(--paper); opacity: 0; transition: opacity var(--motion-fast) var(--ease-out) }
+.k-source-mark-dash { display: none }
 .k-source-option input:checked ~ .k-source-box,
 .k-source-all input:checked ~ .k-source-box { border-color: var(--accent); background: var(--accent) }
-.k-source-option input:checked ~ .k-source-box::after,
-.k-source-all input:checked ~ .k-source-box::after { transform: rotate(45deg) scale(1) }
+.k-source-option input:checked ~ .k-source-box .k-source-mark-check,
+.k-source-all input:checked ~ .k-source-box .k-source-mark-check { opacity: 1 }
 .k-source-option input:indeterminate ~ .k-source-box,
 .k-source-all input:indeterminate ~ .k-source-box { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, transparent) }
-/* 部分选中：横条居中（方框中心 y=8，减去 1px 笔画的一半 → top:7.5px；宽度 8 居中 → left:4px）。 */
-.k-source-option input:indeterminate ~ .k-source-box::after,
-.k-source-all input:indeterminate ~ .k-source-box::after { left: 4px; top: 7.5px; width: 8px; height: 0; border-width: 0 0 1px 0; transform: none; border-color: var(--accent) }
+/* 部分选中：换成同一套 Lucide 「minus」横线（几何居中，无需另行定位）。 */
+.k-source-option input:indeterminate ~ .k-source-box .k-source-mark-check,
+.k-source-all input:indeterminate ~ .k-source-box .k-source-mark-check { display: none }
+.k-source-option input:indeterminate ~ .k-source-box .k-source-mark-dash,
+.k-source-all input:indeterminate ~ .k-source-box .k-source-mark-dash { display: block; opacity: 1; color: var(--accent) }
 .k-source-label { flex: 1 1 auto; min-width: 0; font-size: 14.5px; line-height: 1.35; overflow-wrap: anywhere }
 .k-source-option:has(input:checked), .k-source-all:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)) }
 @media (hover: hover) and (pointer: fine) {
@@ -583,8 +588,8 @@ dialog.k-source::backdrop { background: color-mix(in srgb, var(--ink) 38%, trans
   [data-ksource][data-source-fade="out"] .k-source-actions {
     animation: k-source-fade-out var(--motion-fast) var(--ease-out) both
   }
-  /* 勾号的缩放属空间反馈，减弱动态下即时到位（面板淡入淡出不受影响）。 */
-  .k-source-box, .k-source-box::after { transition-duration: 0s }
+  /* 勾号淡入属轻反馈，减弱动态下即时到位（面板淡入淡出不受影响）。 */
+  .k-source-box, .k-source-mark { transition-duration: 0s }
 }
 @keyframes k-source-fade-in { from { opacity: 0 } to { opacity: 1 } }
 @keyframes k-source-fade-out { from { opacity: 1 } to { opacity: 0 } }

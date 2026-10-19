@@ -97,14 +97,22 @@ const allSourceIds = SUBSCRIPTION_IDS;
         <div class="k-source-body">
           <label class="k-source-all">
             <input type="checkbox" data-ksource-all-input>
-            <span class="k-source-box" aria-hidden="true"></span>
+            <span class="k-source-box" aria-hidden="true">
+              {/* 图标几何取自 Lucide v1.59.0（ISC）：check = "M20 6 9 17l-5-5"、minus = "M5 12h14"，
+                  24×24 viewBox / stroke-width 2 / round cap+join。由 CSS 按 checked / indeterminate 切换。 */}
+              <svg class="k-source-mark k-source-mark-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5" /></svg>
+              <svg class="k-source-mark k-source-mark-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14" /></svg>
+            </span>
             <span class="k-source-label">全部来源</span>
           </label>
           <div class="k-source-options" data-ksource-options>
             {SUBSCRIPTIONS.map((item) => (
               <label class="k-source-option">
                 <input type="checkbox" class="k-source-input" value={item.id} checked />
-                <span class="k-source-box" aria-hidden="true"></span>
+                <span class="k-source-box" aria-hidden="true">
+                  <svg class="k-source-mark k-source-mark-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5" /></svg>
+                  <svg class="k-source-mark k-source-mark-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14" /></svg>
+                </span>
                 <span class="k-source-label">{item.name}</span>
               </label>
             ))}

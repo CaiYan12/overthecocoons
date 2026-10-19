@@ -100,47 +100,112 @@ test.describe("入口与面板结构", () => {
     }
   });
 
-  test("勾号几何居中且不越出方框（防止定位漂移）", async ({ page }, info) => {
-    // 实测取值：方框 16×16、勾号 5×9、笔画 1px。用户实测过旧值 left:4px/top:0
-    // 使勾号偏左上 1.5px/3.5px 并溢出框外，这里把「旋转中心 = 方框中心」钉死。
-    test.skip(Boolean(info.project.use.isMobile), "桌面精细布局下量取，移动端方块尺寸相同但取样精度受 DPR 影响");
+  test("勾号几何居中、不越界，且为 Lucide 官方图标几何", async ({ page }) => {
+    // 历史教训：曾用 border 折角 + rotate 画勾号，按「布局盒居中」定位两次都得到
+    // 肉眼可见偏移（用户两次实看指出，实测墨迹中心偏 1.31px / 2.38px）。
+    // 现改用 Lucide v1.59.0（ISC）官方几何：24×24 viewBox、stroke-width 2、round cap/join。
+    // 本用例同时钉住「用的是真图标几何」和「墨迹真的居中」两件事。
     await ready(page);
     await openPanel(page);
-    const geometry = await dialog(page)
+
+    const info = await dialog(page)
       .locator(".k-source-option .k-source-box")
       .first()
       .evaluate((box) => {
-        const after = getComputedStyle(box, "::after");
-        const rect = box.getBoundingClientRect();
-        const num = (v: string) => Number.parseFloat(v);
-        const w = num(after.width);
-        const h = num(after.height);
+        const svg = box.querySelector<SVGSVGElement>(".k-source-mark-check");
+        const path = svg?.querySelector("path");
+        const boxRect = box.getBoundingClientRect();
+        const svgRect = svg!.getBoundingClientRect();
         return {
-          boxW: rect.width,
-          boxH: rect.height,
-          // 勾号自身中心（未旋转前的布局盒中心）
-          markCx: num(after.left) + w / 2,
-          markCy: num(after.top) + h / 2,
-          boxCx: rect.width / 2,
-          boxCy: rect.height / 2,
-          markW: w,
-          markH: h,
-          transformOrigin: after.transformOrigin,
-          borderRight: num(after.borderRightWidth),
-          borderBottom: num(after.borderBottomWidth),
+          boxW: boxRect.width,
+          boxH: boxRect.height,
+          viewBox: svg!.getAttribute("viewBox"),
+          d: path!.getAttribute("d"),
+          strokeWidth: svg!.getAttribute("stroke-width"),
+          linecap: svg!.getAttribute("stroke-linecap"),
+          linejoin: svg!.getAttribute("stroke-linejoin"),
+          fill: svg!.getAttribute("fill") ?? getComputedStyle(svg!).fill,
+          svgW: svgRect.width,
+          svgH: svgRect.height,
+          svgCx: svgRect.x - boxRect.x + svgRect.width / 2,
+          svgCy: svgRect.y - boxRect.y + svgRect.height / 2,
+          // 用 path 的几何中心判断：Lucide check 的两端点 y 对称于 11.5，
+          // 视口中心是 12，故 path 视觉重心略高于几何中心——这里只要求视口居中。
+          min: Math.min(...(path!.getAttribute("d") ?? "").match(/-?\d+(?:\.\d+)?/g)!.map(Number)),
         };
       });
-    // 旋转中心必须落在元素自身中心（transform-origin: center）
-    expect(geometry.transformOrigin).toBe(`${geometry.markW / 2}px ${geometry.markH / 2}px`);
-    // 勾号中心 = 方框中心（容差 0.5px 以内，覆盖亚像素取整）
-    expect(Math.abs(geometry.markCx - geometry.boxCx)).toBeLessThanOrEqual(0.5);
-    expect(Math.abs(geometry.markCy - geometry.boxCy)).toBeLessThanOrEqual(0.5);
-    // 旋转后可达的最大半径仍落在方框内（对角线半径 = sqrt((5/2)^2+(9/2)^2) ≈ 5.15 < 8）
-    const radius = Math.hypot(geometry.markW / 2, geometry.markH / 2);
-    expect(radius + geometry.borderRight).toBeLessThanOrEqual(geometry.boxW / 2);
-    // 笔画为整像素（Blink 会把 1.5px 取整为 1px，声明 1.5px 只会让意图失真）
-    expect(geometry.borderRight).toBe(1);
-    expect(geometry.borderBottom).toBe(1);
+
+    // 1) 确实是 Lucide 官方路径与描边规范（不是自己拼的 border 折角）
+    expect(info.viewBox).toBe("0 0 24 24");
+    expect(info.d).toBe("M20 6 9 17l-5-5");
+    expect(info.strokeWidth).toBe("2");
+    expect(info.linecap).toBe("round");
+    expect(info.linejoin).toBe("round");
+    expect(info.fill).toBe("none");
+
+    // 2) SVG 容器在方框内对称居中（inset 2px → 12×12，中心 = 方框中心）
+    expect(Math.abs(info.svgCx - info.boxW / 2)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(info.svgCy - info.boxH / 2)).toBeLessThanOrEqual(0.5);
+    expect(info.svgW).toBeGreaterThan(0);
+    expect(info.svgW).toBeLessThan(info.boxW);
+
+    // 3) 墨迹居中：截方框内部像素（内缩 2px 排除边框与外部背景），
+    //    统计亮色（勾号）包围盒中心，与方框中心偏差不超过 2 个设备像素。
+    //    容差按设备像素算的理由：DPR=1 时 16px 方框只有约 7 个墨迹像素（实测），
+    //    量化误差本身就有 ±0.5px，用固定 1px 会误报；实测各 DPR 真实偏移为 0～0.25px。
+    const box = await dialog(page).locator(".k-source-option .k-source-box").first().boundingBox();
+    const buf = await page.screenshot({ clip: box! });
+    const ink = await page.evaluate(async ({ b64, cssW, cssH }) => {
+      const img = new Image();
+      img.src = "data:image/png;base64," + b64;
+      await img.decode();
+      const c = document.createElement("canvas");
+      c.width = img.width;
+      c.height = img.height;
+      const g = c.getContext("2d")!;
+      g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, img.width, img.height).data;
+      const sx = img.width / cssW;
+      const sy = img.height / cssH;
+      const inset = Math.ceil(2 * sx);
+      let minX = 1e9, maxX = -1, minY = 1e9, maxY = -1, n = 0;
+      for (let y = inset; y < img.height - inset; y++) {
+        for (let x = inset; x < img.width - inset; x++) {
+          const i = (y * img.width + x) * 4;
+          const lum = 0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]!;
+          if (lum > 140) {
+            n++;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+      if (!n) return null;
+      return { cx: (minX + maxX + 1) / 2 / sx, cy: (minY + maxY + 1) / 2 / sy, n, deviceW: img.width };
+    }, { b64: buf.toString("base64"), cssW: box!.width, cssH: box!.height });
+    expect(ink, "勾号必须实际渲染出可见描边").not.toBeNull();
+    const tolerance = 2 / (ink!.deviceW / box!.width);
+    expect(Math.abs(ink!.cx - info.boxW / 2), `墨迹水平居中（容差 ${tolerance.toFixed(2)}px）`).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(ink!.cy - info.boxH / 2), `墨迹垂直居中（容差 ${tolerance.toFixed(2)}px）`).toBeLessThanOrEqual(tolerance);
+
+    // 4) 部分选中换成 Lucide「minus」横线（同一套几何）
+    await toggle(page, "solidot", false);
+    const dash = await dialog(page)
+      .locator(".k-source-all .k-source-box")
+      .evaluate((box) => {
+        const svg = box.querySelector<SVGSVGElement>(".k-source-mark-dash");
+        const check = box.querySelector<SVGSVGElement>(".k-source-mark-check");
+        return {
+          d: svg!.querySelector("path")!.getAttribute("d"),
+          dashVisible: getComputedStyle(svg!).display !== "none" && Number(getComputedStyle(svg!).opacity) > 0,
+          checkHidden: getComputedStyle(check!).display === "none",
+        };
+      });
+    expect(dash.d).toBe("M5 12h14");
+    expect(dash.dashVisible).toBe(true);
+    expect(dash.checkHidden).toBe(true);
   });
 });
 
@@ -686,13 +751,19 @@ test.describe("动效、降级与运行环境", () => {
     const samples = await samplePixels(page, surfaceBox, points);
     const best = Math.max(...samples.map((pixel) => contrastRatio(pixel, bg!)));
     expect(best, "深色下面板文字对比度").toBeGreaterThanOrEqual(4.5);
-    // 选中态不只靠颜色：勾号 + 边框 + 底色同时在
+    // 选中态不只靠颜色：勾号（Lucide SVG）+ 边框 + 底色同时在
     const checkedBox = await dialog(page).locator(".k-source-option").first().locator(".k-source-box").evaluate((el) => {
       const style = getComputedStyle(el);
-      return { background: style.backgroundColor, border: style.borderTopColor, mark: getComputedStyle(el, "::after").transform };
+      const mark = el.querySelector<SVGSVGElement>(".k-source-mark-check");
+      return {
+        background: style.backgroundColor,
+        border: style.borderTopColor,
+        markOpacity: mark ? Number(getComputedStyle(mark).opacity) : 0,
+        markColor: mark ? getComputedStyle(mark).color : "",
+      };
     });
     expect(checkedBox.background).not.toBe("rgba(0, 0, 0, 0)");
-    expect(checkedBox.mark).not.toBe("none");
+    expect(checkedBox.markOpacity).toBe(1);
   });
 
   test("面板与 MENU 互斥：任一打开时另一个入口不响应", async ({ page }) => {
