@@ -2,6 +2,10 @@
 
 日期：2026-10-19。状态：Q1–Q7已确认，用户调用 to-spec 推进规格阶段，并明确确认测试边界与发布。[完整规格](ui-source-filter-spec.md)已发布为[Issue #33](https://github.com/CaiYan12/overthecocoons/issues/33)，标签ready-for-agent；正文回读与本地一致。用户已确认两票拆分与依赖，实施票 [#34](https://github.com/CaiYan12/overthecocoons/issues/34) 与 [#35](https://github.com/CaiYan12/overthecocoons/issues/35) 已发布（#35 原生阻塞于 #34）；实施进度见集成分支 `codex/source-filter`。
 
+> **实施状态（2026-10-19 更新）**：第一票 #34 的功能、样式、动效与专项 e2e 已落地并本地全绿，
+> 见本文末「实施与验证证据」节。第二票 #35（跨文档返回恢复）**尚未开始**——本文档中
+> 「进入详情后浏览器返回恢复筛选与阅读位置」一条仍是**未实现**，不得按已完成引用。
+
 ## 用户目标
 
 将首页及各主题分类页右侧 SOURCE 下的「多源聚合」改为可点击入口，点击打开界面，选择已接入来源。样式与动画最大限度沿用现有页面。
@@ -55,3 +59,55 @@
 - 对来源集合/全选/零选防护、主题交集、排序和页码收敛做针对性测试；浏览器覆盖应用/取消、空态、入口名称/计数、键盘、移动布局、返回恢复、刷新重置、降级和真实动效中间帧。
 - 以真实六源快照验收，不仅使用旧单源fixture；检查320/390/768/1024/1440宽度与明暗主题，构建产物和独立浏览器验证。触屏模拟不等于新真机/FPS验收。
 - 用户指定to-spec并确认测试边界与发布，已完成规格Issue #33发布；本轮未修改功能、未运行本次实现测试或构建。未创建实施拆分票、Git提交、推送或部署。
+
+## 实施与验证证据（第一票 #34，2026-10-19）
+
+分支 `ticket/source-filter-panel`（worktree，基线 = 集成分支 `codex/source-filter` tip `c342c79`）。
+
+### 落地文件
+
+| 文件 | 内容 |
+| --- | --- |
+| `src/lib/source-filter.ts` | 纯规则：六订阅固定次序、`entrySourceId` 旧百度缺省、`filterTimeline`（来源并集×主题交集）、`selectionTitle`/`selectionSummary`、`allState` 三态、`normalizeSources` |
+| `src/client/source-filter.ts` | 面板状态机：草稿隔离、全选三态、零项禁用、取消族、应用先退场、焦点返回与可见、滚动锁与 pagehide、缺库/停钟兜底、入口 `<a>`→`<button>` 接管 |
+| `src/client/timeline-view.ts` | 已应用来源集合（单一事实源）、`syncSourceUi`、空态两维放宽、应用/放宽回第 1 页 |
+| `src/client/motion.ts` | `sourcePanelOpenMotion`/`sourcePanelCloseMotion`/`resetSourcePanelMotion` |
+| `src/components/KHud.astro` | 时间线 HUD 来源入口 + 面板静态结构（内容型 HUD 不变） |
+| `src/styles/kinetic.css` | `.k-source*` 与 `.k-empty-actions` |
+| `fixtures/snapshot-sources.json` + `astro.sources.config.ts` | 六源确定性夹具（56 条）与独立产物 `.snapshot/sources-dist` |
+| `tests/unit/source-filter.test.ts` | 纯规则单测 |
+| `tests/e2e/source-filter.spec.ts` | 23 个真实页面交互用例（4323 多源产物） |
+
+### 实测数字（本机，2026-10-19）
+
+- `pnpm run check`：**0 error / 0 warning / 2 hints**（既有 hints）。
+- `pnpm run build`：通过（演示夹具产物）。
+- `pnpm run test:node`：**325 passed / 0 failed / 0 skipped**。
+- `pnpm exec playwright test --project=chromium`：**226 passed / 2 skipped**（跳过项为既有触屏专项：
+  `links.spec.ts:195` 触屏页内导航 hover、`media-surface.spec.ts:169` 触屏鼠标光斑，均按引擎能力标注不适用）。
+- `pnpm exec playwright test --project=chromium --project=firefox --project=webkit --project=mobile-chrome --project=mobile-safari tests/e2e/source-filter.spec.ts`：**115 passed**（23 用例 × 5 配置，无跳过）。
+
+### 实施中确认的两处产品口径
+
+1. **HUD 总数恒为两位补零**（`KHud.astro` 的 `totalText` 与 `timeline-view.ts` 的 `pad2`）：
+   Solidot 5 条显示 `05`，不是 `5`。规格只要求辅文表达已选数量，未改变总数格式。
+2. **单页结果不渲染分页器**（既有分页口径，见 `tests/e2e/interactions.spec.ts` 单页断言）：
+   来源交集收敛到单页时，「回第 1 页」表现为分页器隐藏、条目从第 1 条开始。
+
+### 实施中修复的实现缺陷
+
+- **应用后焦点在短视口不可见**：`renderView` 先把页面定位到时间线开头，≤767px 时 HUD 仍在首屏之外
+  （实测 iPhone 13 的 664px 视口：入口 `top` 692）。规格要求「应用后焦点可见且不被重渲染留在
+  不可见位置」，因此在焦点落位后补一次 `scrollIntoView({ block: "nearest" })`；桌面右栏本就可见，
+  不产生滚动（由 e2e 断言 `scrollY === 0` 守住）。
+- **滚动条规则被误合并**：`.k-scrollbar` 与 `[data-scrollbar=page]` 两条规则曾被拼成一行，
+  后者成为无效选择器后缀，页面滚动条 `top` 偏移与 `z-index` 全部失效。已还原为两行。
+
+### 未验证 / 未覆盖（如实标注）
+
+- **第二票 #35 全部未实现**：跨文档返回恢复来源/主题/页码/阅读位置、BFCache 与非 BFCache 两条路径、
+  刷新与重开重置的来源断言，均无实现也无测试。
+- 未做**真实六源快照**（`.snapshot/multi-source-local-20261019/snapshot.json`）的独立浏览器视觉验收，
+  也未做 320/390/768/1024/1440 × 明暗的人工实看；本轮只有自动化断言（含深色对比度 ≥4.5:1 的像素实测）。
+- 未做**新真机**、**FPS** 与**线上**验证；移动配置为 Playwright 设备模拟，不等同真机。
+- 未推送、未建 PR、未部署。
