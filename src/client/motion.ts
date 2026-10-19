@@ -885,6 +885,111 @@ function killMenuTl(): void {
   menuTl = null;
 }
 
+/* ---- 来源选择面板（Issue #34）：桌面居中轻抬淡入 / 手机底部上拉，280ms 对称进退 ----
+   与 MENU 同族编排：外壳 dialog 不参与 transform（顶层定位稳定），位移只作用在
+   .k-source-surface；内容（头/选项/提示/操作）160ms 轻显现 + 短错峰。
+   关闭沿原路反向并可被打开中断（kill 旧 timeline）；减弱动态/缺库时返回 false，
+   调用方立即完成（不创建任何补间，键盘操作不等待逐项显现）。 */
+let sourceTl: { kill(): void } | null = null;
+
+function killSourceTl(): void {
+  if (sourceTl) {
+    try {
+      sourceTl.kill();
+    } catch {
+      // 已回收的 timeline 重复 kill 不阻断
+    }
+  }
+  sourceTl = null;
+}
+
+function sourceMotionParts(dialog: HTMLDialogElement): {
+  surface: HTMLElement;
+  items: Element[];
+} | null {
+  const surface = dialog.querySelector<HTMLElement>(".k-source-surface");
+  if (!surface) return null;
+  const items = [
+    ...dialog.querySelectorAll(".k-source-head, .k-source-all, .k-source-option, .k-source-note, .k-source-actions"),
+  ];
+  return { surface, items };
+}
+
+/** 打开动效：返回是否走了动画（false = 调用方立即完成）。 */
+export function sourcePanelOpenMotion(dialog: HTMLDialogElement, onOpened: () => void): boolean {
+  const g = (window as MotionWindow).gsap;
+  if (!g || !enabled) return false;
+  const parts = sourceMotionParts(dialog);
+  if (!parts) return false;
+  const { surface, items } = parts;
+  killSourceTl();
+  moveCursorIntoTopLayer(dialog);
+  const duration = motionDuration(dialog, "--motion-normal", 280);
+  const fast = motionDuration(dialog, "--motion-fast", 160);
+  const mobile = window.matchMedia("(max-width: 767px)").matches;
+  if (mobile) g.set(surface, { yPercent: 100, opacity: 1, willChange: "transform" });
+  else g.set(surface, { y: 12, scale: 0.985, autoAlpha: 0, willChange: "transform,opacity" });
+  g.set(items, { y: 8, opacity: 0 });
+  sourceTl = g
+    .timeline({ onComplete: onOpened })
+    .to(
+      surface,
+      mobile
+        ? { yPercent: 0, duration, ease: "power3.out" }
+        : { y: 0, scale: 1, autoAlpha: 1, duration, ease: "power3.out" },
+      0,
+    )
+    .to(items, {
+      y: 0,
+      opacity: 1,
+      duration: fast,
+      stagger: { amount: Math.min(0.08, Math.max(0, duration - fast)) },
+      ease: "power3.out",
+    }, 0.04);
+  return true;
+}
+
+/** 关闭动效：返回是否走了动画（false = 调用方立即关闭）。 */
+export function sourcePanelCloseMotion(dialog: HTMLDialogElement, onClosed: () => void): boolean {
+  const g = (window as MotionWindow).gsap;
+  if (!g || !enabled) return false;
+  const parts = sourceMotionParts(dialog);
+  if (!parts) return false;
+  const { surface, items } = parts;
+  killSourceTl();
+  const duration = motionDuration(dialog, "--motion-normal", 280);
+  const fast = motionDuration(dialog, "--motion-fast", 160);
+  const mobile = window.matchMedia("(max-width: 767px)").matches;
+  g.set(surface, { willChange: "transform" });
+  sourceTl = g
+    .timeline({ onComplete: onClosed })
+    .to(items, { y: 8, opacity: 0, duration: fast, ease: "power3.out" }, 0)
+    .to(
+      surface,
+      mobile
+        ? { yPercent: 100, duration, ease: "power3.out" }
+        : { y: 12, scale: 0.985, autoAlpha: 0, duration, ease: "power3.out" },
+      0,
+    );
+  return true;
+}
+
+/** 同步归位也适用于 GSAP 时钟暂停；回收不遗留隐藏样式或旧回调。 */
+export function resetSourcePanelMotion(dialog: HTMLDialogElement, restoreCursor = true): void {
+  killSourceTl();
+  const elements = [
+    ...dialog.querySelectorAll<HTMLElement>(".k-source-surface, .k-source-head, .k-source-all, .k-source-option, .k-source-note, .k-source-actions"),
+  ];
+  (window as MotionWindow).gsap?.killTweensOf(elements);
+  // clearProps 同时使 GSAP 的 transform 缓存失效；显式 progress(1) 不依赖父时钟（停钟场景）。
+  (window as MotionWindow).gsap?.timeline({ paused: true })
+    .to(elements, { clearProps: "transform,opacity,visibility,willChange", duration: 0.001 }).progress(1).kill();
+  elements.forEach((el) => {
+    for (const property of ["transform", "opacity", "visibility", "will-change"]) el.style.removeProperty(property);
+  });
+  if (restoreCursor) moveCursorBackFromTopLayer();
+}
+
 /* ---- 自定义光标（原型 initCursor，仅 pointer:fine） ----
    UI 票 #12（用户裁定）：光标就绪时给根加 k-cursor-on 隐藏系统指针——自定义指针成为唯一指针；
    降级路径（reduced-motion / GSAP 失败 / 触屏）不加类，系统指针照常。
