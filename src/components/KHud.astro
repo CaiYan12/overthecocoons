@@ -9,8 +9,8 @@
 import { formatDateTime } from "../lib/timeline.ts";
 import { siteUrl } from "../lib/paths.ts";
 import { loadSnapshot } from "../lib/snapshot.ts";
-import { sourcePresentation } from "../lib/sources.ts";
-import { SUBSCRIPTIONS, selectionSummary, selectionTitle } from "../lib/source-filter.ts";
+import { LEGACY_SOURCE_ID, sourcePresentation } from "../lib/sources.ts";
+import { SUBSCRIPTIONS, SUBSCRIPTION_IDS, selectionSummary, selectionTitle } from "../lib/source-filter.ts";
 
 interface Props {
   /** timeline=时间线页（含阅读进度）；content=长文/详情页（省略阅读区）。 */
@@ -26,7 +26,7 @@ const totalText = String(total).padStart(2, "0");
 const sourceIds = [...new Set(loadSnapshot().sources.map(source => source.sourceId))];
 const sourceTitle = sourceIds.length === 1 ? sourcePresentation(sourceIds[0]).name : "多源聚合";
 // 时间线变体静态默认 = 全部来源（六订阅全选），与客户端首次进入口径一致
-const allSourceIds = SUBSCRIPTIONS.map((item) => item.id);
+const allSourceIds = SUBSCRIPTION_IDS;
 ---
 
 <div class="k-hud-boundary">
@@ -46,7 +46,7 @@ const allSourceIds = SUBSCRIPTIONS.map((item) => item.id);
       <div class="sec">
         <p class="h">SOURCE</p>
         <p class="big">{sourceTitle}</p>
-        <p class="dim">{sourceIds.length === 1 && sourceIds[0] === "baidu-aishort" ? "BAIDU HOT · 热点线索" : `${sourceIds.length} 个订阅源 · 热点与文章`}</p>
+        <p class="dim">{sourceIds.length === 1 && sourceIds[0] === LEGACY_SOURCE_ID ? "BAIDU HOT · 热点线索" : `${sourceIds.length} 个订阅源 · 热点与文章`}</p>
       </div>
     )
   }

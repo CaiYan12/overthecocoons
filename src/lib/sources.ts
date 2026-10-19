@@ -8,6 +8,13 @@ export interface NewsSource {
   readonly articleHosts: readonly string[];
 }
 
+/**
+ * 历史首源 ID（冻结：参与 stableId，生成后不可变更）。
+ * 唯一事实源：采集侧（src/lib/baidu-source.ts 的 SOURCE_ID）、筛选侧（src/lib/source-filter.ts）
+ * 与展示侧（sourcePresentation）都引用本常量，不再各自写字面量。
+ */
+export const LEGACY_SOURCE_ID = "baidu-aishort";
+
 /** Frozen per-feed identities. URL identity is an explicit policy for these feeds, not a GUID fallback. */
 export const NEWS_SOURCES: readonly NewsSource[] = [
   { id: "chinanews-society", name: "中新网·社会", feedUrl: "https://www.chinanews.com.cn/rss/society.xml", website: "https://www.chinanews.com.cn/", topic: "社会", articleHosts: ["www.chinanews.com.cn"] },
@@ -19,7 +26,7 @@ export const NEWS_SOURCES: readonly NewsSource[] = [
 
 export function sourcePresentation(sourceId?: string): { name: string; linkLabel: string } {
   // Only legacy entries without sourceId use the historical Baidu attribution.
-  if (sourceId === undefined || sourceId === "baidu-aishort") {
+  if (sourceId === undefined || sourceId === LEGACY_SOURCE_ID) {
     return { name: "百度热点", linkLabel: "查看百度搜索结果" };
   }
   const source = NEWS_SOURCES.find(s => s.id === sourceId);

@@ -22,10 +22,14 @@
 import type { RawEntryInput } from "../domain/ingestion.ts";
 import type { SourceFetchResult } from "../domain/ingestion.ts";
 import { parseFeed } from "./feed-parse.ts";
+import { LEGACY_SOURCE_ID } from "./sources.ts";
 import { fetchTextOnce, type FetchTextOptions } from "./source-fetch.ts";
 
-/** 来源 ID（冻结：参与 stableId，生成后不可变更）。 */
-export const SOURCE_ID = "baidu-aishort";
+/**
+ * 来源 ID（冻结：参与 stableId，生成后不可变更）。
+ * 字面量只存在于 src/lib/sources.ts 的 LEGACY_SOURCE_ID——采集、筛选与展示三侧引用同一常量。
+ */
+export const SOURCE_ID = LEGACY_SOURCE_ID;
 
 /** 用户指定的首源 feed 地址。 */
 export const BAIDU_FEED_URL = "https://rss.aishort.top/?type=baidu";
