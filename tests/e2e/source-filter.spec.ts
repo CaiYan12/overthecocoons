@@ -99,6 +99,49 @@ test.describe("入口与面板结构", () => {
       await expect(page.locator(`.k-source-input[value="${id}"]`)).not.toBeChecked();
     }
   });
+
+  test("勾号几何居中且不越出方框（防止定位漂移）", async ({ page }, info) => {
+    // 实测取值：方框 16×16、勾号 5×9、笔画 1px。用户实测过旧值 left:4px/top:0
+    // 使勾号偏左上 1.5px/3.5px 并溢出框外，这里把「旋转中心 = 方框中心」钉死。
+    test.skip(Boolean(info.project.use.isMobile), "桌面精细布局下量取，移动端方块尺寸相同但取样精度受 DPR 影响");
+    await ready(page);
+    await openPanel(page);
+    const geometry = await dialog(page)
+      .locator(".k-source-option .k-source-box")
+      .first()
+      .evaluate((box) => {
+        const after = getComputedStyle(box, "::after");
+        const rect = box.getBoundingClientRect();
+        const num = (v: string) => Number.parseFloat(v);
+        const w = num(after.width);
+        const h = num(after.height);
+        return {
+          boxW: rect.width,
+          boxH: rect.height,
+          // 勾号自身中心（未旋转前的布局盒中心）
+          markCx: num(after.left) + w / 2,
+          markCy: num(after.top) + h / 2,
+          boxCx: rect.width / 2,
+          boxCy: rect.height / 2,
+          markW: w,
+          markH: h,
+          transformOrigin: after.transformOrigin,
+          borderRight: num(after.borderRightWidth),
+          borderBottom: num(after.borderBottomWidth),
+        };
+      });
+    // 旋转中心必须落在元素自身中心（transform-origin: center）
+    expect(geometry.transformOrigin).toBe(`${geometry.markW / 2}px ${geometry.markH / 2}px`);
+    // 勾号中心 = 方框中心（容差 0.5px 以内，覆盖亚像素取整）
+    expect(Math.abs(geometry.markCx - geometry.boxCx)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(geometry.markCy - geometry.boxCy)).toBeLessThanOrEqual(0.5);
+    // 旋转后可达的最大半径仍落在方框内（对角线半径 = sqrt((5/2)^2+(9/2)^2) ≈ 5.15 < 8）
+    const radius = Math.hypot(geometry.markW / 2, geometry.markH / 2);
+    expect(radius + geometry.borderRight).toBeLessThanOrEqual(geometry.boxW / 2);
+    // 笔画为整像素（Blink 会把 1.5px 取整为 1px，声明 1.5px 只会让意图失真）
+    expect(geometry.borderRight).toBe(1);
+    expect(geometry.borderBottom).toBe(1);
+  });
 });
 
 test.describe("草稿隔离与取消族", () => {
