@@ -35,7 +35,8 @@ function boot(): void {
       // 单个子系统失败不阻断其余增强；静态层始终可读
     }
   }
-  // 来源筛选面板：时间线视图就绪后再接管入口（失败保持静态链接降级）
+  // 来源筛选面板：时间线视图真正就绪后才接管入口（未就绪时 initSourceFilter 直接返回，
+  // 入口保持通往来源说明页的原生链接——规格要求渐进增强不得接管为死按钮）。
   try {
     initSourceFilter(sourceFilterHost());
   } catch {

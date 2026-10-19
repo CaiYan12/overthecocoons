@@ -490,7 +490,9 @@ html:has(dialog[data-kmenu][open]) [data-scrollbar=page] { visibility: hidden }
 .k-source-open { display: block; text-align: left; width: 100%; margin: 0; padding: 2px 0; min-height: 44px; color: inherit; cursor: pointer }
 .k-source-open .k-source-title { display: block; font: 600 22px/1.25 var(--serif); margin: 0 }
 .k-source-open .k-source-dim { display: block; color: var(--muted); margin: 2px 0 0; font-size: 13px }
-.k-source-open:hover .k-source-title, .k-source-open:focus-visible .k-source-title { color: var(--accent) }
+/* hover 只给精细指针（站点惯例）：触屏点击后不得遗留鼠标悬停视觉态。 */
+@media (hover: hover) and (pointer: fine) { .k-source-open:hover .k-source-title { color: var(--accent) } }
+.k-source-open:focus-visible .k-source-title { color: var(--accent) }
 
 /* 面板外壳：dialog 自身不参与 transform（顶层定位稳定），动效只作用在 .k-source-surface。 */
 dialog.k-source { border: 0; padding: 0; margin: 0; background: transparent; color: var(--ink); max-width: none; max-height: none; overflow: visible }
@@ -501,7 +503,11 @@ dialog.k-source::backdrop { background: color-mix(in srgb, var(--ink) 38%, trans
 .k-source-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--rule) }
 .k-source-heading { margin: 0; font: 600 20px/1.3 var(--serif); letter-spacing: .02em }
 .k-source-close { flex: 0 0 auto; font-size: 12px; letter-spacing: .18em; border: 1px solid var(--rule); padding: 8px 14px; min-height: 44px; color: var(--ink) }
-.k-source-close:hover { color: var(--accent); border-color: var(--accent) }
+/* 所有新增 hover 只对精细指针生效（站点惯例，见 .k-top / .k-scrollbar）：
+   触屏点击后不得遗留鼠标悬停视觉态（规格 Implementation Decisions）。 */
+@media (hover: hover) and (pointer: fine) {
+  .k-source-close:hover { color: var(--accent); border-color: var(--accent) }
+}
 /* 短屏只让面板内容滚动：头部、提示与操作区常驻可见。 */
 .k-source-body { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: auto; padding: 2px }
 .k-source-all, .k-source-option { position: relative; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px;
@@ -522,7 +528,9 @@ dialog.k-source::backdrop { background: color-mix(in srgb, var(--ink) 38%, trans
 .k-source-all input:indeterminate ~ .k-source-box::after { left: 3px; top: 6px; width: 8px; height: 0; border-width: 0 0 1.5px 0; transform: none; border-color: var(--accent) }
 .k-source-label { flex: 1 1 auto; min-width: 0; font-size: 14.5px; line-height: 1.35; overflow-wrap: anywhere }
 .k-source-option:has(input:checked), .k-source-all:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)) }
-.k-source-option:hover, .k-source-all:hover { border-color: var(--accent) }
+@media (hover: hover) and (pointer: fine) {
+  .k-source-option:hover, .k-source-all:hover { border-color: var(--accent) }
+}
 /* 键盘焦点环走 :has()：真实 input 不可见但可聚焦，焦点态必须落在整行上。 */
 .k-source-option:has(input:focus-visible), .k-source-all:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px }
 .k-source-options { display: flex; flex-wrap: wrap; gap: 8px }
@@ -531,9 +539,11 @@ dialog.k-source::backdrop { background: color-mix(in srgb, var(--ink) 38%, trans
 .k-source-note[data-invalid] { color: var(--accent) }
 .k-source-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px }
 .k-source-cancel, .k-source-apply { min-height: 44px; padding: 10px 20px; border: 1px solid var(--rule); font-size: 13px; letter-spacing: .12em; background: var(--surface); color: var(--ink) }
-.k-source-cancel:hover { border-color: var(--ink) }
 .k-source-apply { border-color: var(--accent); color: var(--accent); font-weight: 600 }
-.k-source-apply:hover { background: color-mix(in srgb, var(--accent) 8%, var(--surface)) }
+@media (hover: hover) and (pointer: fine) {
+  .k-source-cancel:hover { border-color: var(--ink) }
+  .k-source-apply:hover { background: color-mix(in srgb, var(--accent) 8%, var(--surface)) }
+}
 .k-source-apply:disabled { opacity: .42; border-color: var(--rule); color: var(--muted); cursor: not-allowed; background: var(--surface) }
 /* 桌面：居中纸面模态。 */
 @media (min-width: 768px) {
@@ -547,11 +557,39 @@ dialog.k-source::backdrop { background: color-mix(in srgb, var(--ink) 38%, trans
   .k-source-actions { flex-direction: column-reverse }
   .k-source-cancel, .k-source-apply { width: 100% }
 }
-/* 减弱动态：取消空间位移与错峰，只保留轻淡入淡出（动效函数侧同时不创建时间线）。 */
+/* 减弱动态：取消空间位移与错峰，保留 160ms 轻淡入淡出（只动 opacity，不得有 transform 过渡）。
+   动效函数侧不创建任何位移时间线（motion.ts 的 sourcePanelFadeMotion 只挂 data-source-fade）。
+   用 keyframes 而非 inline opacity + transition：dialog 在 showModal 前不参与渲染，
+   同帧改内联 opacity 拿不到可过渡的起点（实测 0 个中间帧）。 */
 @media (prefers-reduced-motion: reduce) {
-  .k-source-surface { transition: none }
-  .k-source-option, .k-source-all, .k-source-box, .k-source-box::after { transition-duration: 0s }
+  [data-ksource][data-source-fade="in"] .k-source-surface,
+  [data-ksource][data-source-fade="in"] .k-source-head,
+  [data-ksource][data-source-fade="in"] .k-source-all,
+  [data-ksource][data-source-fade="in"] .k-source-option,
+  [data-ksource][data-source-fade="in"] .k-source-note,
+  [data-ksource][data-source-fade="in"] .k-source-actions {
+    animation: k-source-fade-in var(--motion-fast) var(--ease-out) both
+  }
+  [data-ksource][data-source-fade="out"] .k-source-surface,
+  [data-ksource][data-source-fade="out"] .k-source-head,
+  [data-ksource][data-source-fade="out"] .k-source-all,
+  [data-ksource][data-source-fade="out"] .k-source-option,
+  [data-ksource][data-source-fade="out"] .k-source-note,
+  [data-ksource][data-source-fade="out"] .k-source-actions {
+    animation: k-source-fade-out var(--motion-fast) var(--ease-out) both
+  }
+  /* 勾号的缩放属空间反馈，减弱动态下即时到位（面板淡入淡出不受影响）。 */
+  .k-source-box, .k-source-box::after { transition-duration: 0s }
 }
+@keyframes k-source-fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes k-source-fade-out { from { opacity: 1 } to { opacity: 0 } }
+
+/* 面板光标可读性（复审 B9，与 MENU 的 data-menu-pointer 等价）：
+   面板是透明 dialog，位于 top layer，无法与面板外的纸面反相混合——指针落到面板之外时
+   改用当前主题墨色。属性由 source-filter.ts 按 surface 边界写入，关闭时回收。 */
+[data-ksource][data-source-pointer=exposed] .k-cursor { mix-blend-mode: normal }
+[data-ksource][data-source-pointer=exposed] .k-cursor-dot { background: var(--ink) }
+[data-ksource][data-source-pointer=exposed] .k-cursor-ring-shape { border-color: var(--ink) }
 
 /* 空态放宽操作（Issue #34）：来源/主题各自放宽，与「查看全部」并排换行。 */
 .k-empty-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center }

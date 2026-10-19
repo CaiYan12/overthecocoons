@@ -38,12 +38,16 @@ import { isExternalUrl } from "../lib/links.ts";
 import { sourcePresentation } from "../lib/sources.ts";
 import {
   SUBSCRIPTIONS,
+  SUBSCRIPTION_IDS,
   filterTimeline,
   normalizeSources,
+  sameSources,
   selectionSummary,
   selectionTitle,
 } from "../lib/source-filter.ts";
-import { FILTER_STATE_KEY, readFilterState, shouldRestore, type FilterState } from "./return-state.ts";
+import { restoreFilterHistory, writeFilterHistory } from "./filter-history.ts";
+import { focusEntryButton } from "./source-entry.ts";
+import type { FilterState } from "./return-state.ts";
 import type { SourceFilterHost } from "./source-filter.ts";
 import { isArticleImageUrl } from "../lib/article-image.ts";
 import { settleArticleImages } from "./article-images.ts";
@@ -68,8 +72,8 @@ let lastReadId: string | null = null;
 let rafScheduled = false;
 let focusHeaderAllTab = false;
 /** 已应用的来源集合（默认全部六源；本次访问内保留，快照只写 history.state）。 */
-let appliedSources: string[] = SUBSCRIPTIONS.map((item) => item.id);
-/** 当前已应用页码（写快照用；renderView 每次渲染后同步）。 */
+let appliedSources: string[] = [...SUBSCRIPTION_IDS];
+/** 当前已应用页码（写快照用；首次取静态层真实页码，renderView 每次渲染后同步）。 */
 let currentPage = 1;
 
 function pad2(value: number): string {
@@ -297,6 +301,21 @@ function scrollToEntry(index: number, instant = false): void {
   // 恢复就变成一次平滑滚动（规格要求恢复原阅读位置不重播无意义动效；实测 Firefox 上
   // 平滑滚动还会被 ScrollTrigger.refresh 打断，停在半途）。因此显式用 "instant"。
   element.scrollIntoView({ behavior: instant ? "instant" : reduced ? "auto" : "smooth", block: "start" });
+  if (!instant) return;
+  // 恢复后布局仍可能变化（图片解码/懒加载、展示字体替换、ScrollTrigger 首轮测量），
+  // 一次定位会被后续布局推走（实测 Firefox 并行负载下偏 263px）。因此按「同一目标条目」
+  // 在接下来的两帧与字体就绪后再各校准一次——只做幂等的再对齐，不引入可见动效。
+  const realign = (): void => {
+    const target = list.querySelector<HTMLElement>(`[data-gi="${index}"]`);
+    if (!target || Math.abs(target.getBoundingClientRect().top) <= 1) return;
+    target.scrollIntoView({ behavior: "instant", block: "start" });
+  };
+  requestAnimationFrame(() => {
+    realign();
+    requestAnimationFrame(realign);
+  });
+  const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
+  fonts?.ready.then(realign).catch(() => undefined);
 }
 
 /** 来源入口文案同步（Issue #34）：标题随已应用集合（单源名/多源聚合），辅文为已选数量。 */
@@ -307,7 +326,7 @@ function syncSourceUi(): void {
   if (dim) dim.textContent = selectionSummary(appliedSources);
 }
 
-/* ---- 返回快照（Issue #35）：只写当前历史条目的 history.state ---- */
+/* ---- 返回快照（Issue #35）：history 读写与恢复判定在 ./filter-history.ts ---- */
 
 /**
  * 把当前已应用条件与阅读位置写进 history.state（`replaceState`，不新增历史条目）。
@@ -316,19 +335,12 @@ function syncSourceUi(): void {
  */
 function writeFilterState(): void {
   if (!list) return;
-  const next: FilterState = {
+  writeFilterHistory({
     sources: [...appliedSources],
     topic,
     page: currentPage,
     readId: lastReadId,
-  };
-  try {
-    const previous =
-      typeof history.state === "object" && history.state !== null ? history.state : {};
-    history.replaceState({ ...previous, [FILTER_STATE_KEY]: next }, "");
-  } catch {
-    // 快照写入失败不阻断阅读；下一次状态变化会重试。
-  }
+  });
 }
 
 /**
@@ -343,23 +355,6 @@ function restoreFilterState(state: FilterState): void {
   // 复用既有渲染路径（含分页收敛、日期目录、HUD 总数、播报与焦点保持）；
   // 恢复不是「显式更改筛选」，因此不走 resetPosition——由 resolveRestore 决定定位。
   renderView(state.topic, state.page, { restoreAnnouncement: true, instantRestore: true });
-}
-
-/**
- * 启动时是否恢复：读导航类型与 history.state。
- * - `back_forward`：真实跨文档返回（BFCache 未命中时模块重跑，走这条）；
- * - `pageshow.persisted === true`：BFCache 命中（模块不重跑，由下方 pageshow 监听收尾）；
- * - `navigate`/`reload`/`prerender`：不恢复，来源保持全选（刷新/重开重置语义）。
- */
-function navType(): string | undefined {
-  try {
-    const entry = performance.getEntriesByType("navigation")[0] as
-      | PerformanceNavigationTiming
-      | undefined;
-    return entry?.type;
-  } catch {
-    return undefined;
-  }
 }
 
 function renderView(
@@ -442,12 +437,12 @@ function renderView(
   } else if (focusAllTab) {
     document.querySelector<HTMLElement>(`[data-ktabs] .tab[data-topic="全部"]`)?.focus();
   } else if (options?.focusSourceEntry) {
-    const entryEl = document.querySelector<HTMLElement>("[data-source-open]");
-    entryEl?.focus({ preventScroll: true });
-    // 焦点必须可见（规格：应用后焦点可见，不被重渲染留在不可见位置）。
-    // renderView 已先把页面定位到时间线开头；短视口（如 iPhone 13 的 664px）下 HUD 仍在
-    // 首屏之下，因此这里再按最近边对齐一次——桌面右栏本就可见，实际不产生滚动。
-    entryEl?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    // 焦点必须可见（规格：应用后焦点可见，不被重渲染留在不可见位置）。renderView 已先把
+    // 页面定位到时间线开头；短视口（如 iPhone 13 的 664px）下 HUD 仍在首屏之下，因此这里
+    // 再按最近边对齐一次——桌面右栏本就可见，实际不产生滚动。与面板取消路径共用实现。
+    focusEntryButton(document.querySelector<HTMLElement>("[data-source-open]"), {
+      ensureVisible: true,
+    });
   }
 }
 
@@ -472,22 +467,19 @@ function sourceNames(sources: string[]): string {
  * 应用来源集合：先更新入口文案，再走既有两段式列表切换（应用已在面板退场完成后调用）。
  * 显式更改筛选 → 回到第 1 页并定位到时间线开头；主题保持不变。
  */
-function applySources(next: string[], options?: { relaxTopic?: boolean }): void {
-  const normalized = normalizeSources(next) ?? SUBSCRIPTIONS.map((item) => item.id);
-  const changed =
-    normalized.length !== appliedSources.length ||
-    normalized.some((id, index) => id !== appliedSources[index]);
-  if (!changed) {
+function applySources(next: string[]): void {
+  const normalized = normalizeSources(next) ?? [...SUBSCRIPTION_IDS];
+  if (sameSources(normalized, appliedSources)) {
     syncSourceUi();
     return;
   }
   appliedSources = normalized;
   syncSourceUi();
-  const relax = normalized.length === SUBSCRIPTIONS.length;
-  const announcement = relax ? "已恢复全部来源" : `已应用来源筛选：${sourceNames(normalized)}`;
-  const topicNext = options?.relaxTopic ? "全部" : topic;
+  const announcement = sameSources(normalized, SUBSCRIPTION_IDS)
+    ? "已恢复全部来源"
+    : `已应用来源筛选：${sourceNames(normalized)}`;
   animateTopicSwitch(() =>
-    renderView(topicNext, 1, {
+    renderView(topic, 1, {
       deferredListMotion: true,
       resetPosition: true,
       sourceAnnouncement: announcement,
@@ -499,6 +491,8 @@ function applySources(next: string[], options?: { relaxTopic?: boolean }): void 
 /** 来源面板宿主（单一事实源）：面板只读已应用集合、只提交草稿。 */
 export function sourceFilterHost(): SourceFilterHost {
   return {
+    // 时间线视图真正就绪（数据岛已解析、列表挂点已接管）才允许接管静态入口（复审 A3）。
+    ready: () => Boolean(list),
     appliedSources: () => [...appliedSources],
     applySources: (next: string[]) => {
       if (!list) return;
@@ -517,6 +511,17 @@ function ensurePager(): HTMLElement {
   created.setAttribute("aria-label", "分页");
   list.insertAdjacentElement("afterend", created);
   return created;
+}
+
+/**
+ * 静态层真实页码（Issue #35 复审 A1）：首次进入时不渲染列表，页码只能来自静态 DOM 事实——
+ * 分页器 `[aria-current="page"]` 的 `data-page`（构建期与 paginate 同一口径）。单页结果不渲染
+ * 分页器，此时页码必为 1。不解析 URL：URL 只说明路由，DOM 才是这一页实际渲染的内容。
+ */
+function staticPageNumber(): number {
+  const current = document.querySelector<HTMLElement>('[data-pager] [aria-current="page"]');
+  const page = Number(current?.dataset.page);
+  return Number.isSafeInteger(page) && page > 0 ? page : 1;
 }
 
 export function initTimeline(): void {
@@ -541,6 +546,9 @@ export function initTimeline(): void {
   topic = (TOPICS as readonly string[]).includes(initialTopic) ? initialTopic : "全部";
   list = listElement;
   pager = ensurePager();
+  // 首次进入不渲染列表（静态层已是对的一页），页码必须取静态层的真实页码，
+  // 否则快照恒写第 1 页：从 /page/2/ 进详情再返回会被错误恢复成第 1 页（复审 A1）。
+  currentPage = staticPageNumber();
   const initialJump = pager.querySelector<HTMLFormElement>("[data-page-jump]");
   if (initialJump) initialJump.hidden = false;
   pager.addEventListener("submit", (event) => {
@@ -593,7 +601,7 @@ export function initTimeline(): void {
     const allSources = target.closest<HTMLElement>("[data-all-sources]");
     if (allSources) {
       event.preventDefault();
-      applySources(SUBSCRIPTIONS.map((item) => item.id), { relaxTopic: false });
+      applySources([...SUBSCRIPTION_IDS]);
       return;
     }
     const allTopic = target.closest<HTMLElement>("[data-all-topic]");
@@ -612,23 +620,9 @@ export function initTimeline(): void {
   bindScrollTracking();
   moveIndicator(topic, true);
 
-  // BFCache 命中时模块不重跑（页面从内存恢复，pageshow 在 boot 之后派发）：
-  // 按 history.state 重放恢复。首次导航的 pageshow 也派发但 persisted 为 false，不触发。
-  window.addEventListener("pageshow", (event) => {
-    if (!event.persisted) return;
-    const restored = readFilterState(history.state);
-    if (restored) restoreFilterState(restored);
-  });
-
-  // 详情返回恢复（Issue #35）：只在后退/前进时读 history.state 重放筛选。
+  // 详情返回恢复（Issue #35）：只在后退/前进（含 BFCache 命中）时按 history.state 重放筛选；
   // 刷新/重新打开是 navigate/reload → 忽略 state，来源保持全选（静态层已是全选口径）。
-  if (shouldRestore(navType(), false)) {
-    const restored = readFilterState(history.state);
-    if (restored) {
-      restoreFilterState(restored);
-      return;
-    }
-  }
+  if (restoreFilterHistory(restoreFilterState)) return;
   // 未恢复：把当前初始条件写进本历史条目，供下一次进入详情后返回时使用
   writeFilterState();
 }

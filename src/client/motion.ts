@@ -892,9 +892,15 @@ function killMenuTl(): void {
 /* ---- 来源选择面板（Issue #34）：桌面居中轻抬淡入 / 手机底部上拉，280ms 对称进退 ----
    与 MENU 同族编排：外壳 dialog 不参与 transform（顶层定位稳定），位移只作用在
    .k-source-surface；内容（头/选项/提示/操作）160ms 轻显现 + 短错峰。
-   关闭沿原路反向并可被打开中断（kill 旧 timeline）；减弱动态/缺库时返回 false，
-   调用方立即完成（不创建任何补间，键盘操作不等待逐项显现）。 */
+   关闭沿原路反向并可被打开中断（kill 旧 timeline）；缺库时返回 false，
+   调用方立即完成（不创建任何补间，键盘操作不等待逐项显现）。
+   减弱动态另走 sourcePanelFadeMotion：只做 opacity 轻淡入淡出（无位移、无错峰），
+   与「缺库立即完成」是两条不同路径（规格 Implementation Decisions）。 */
 let sourceTl: { kill(): void } | null = null;
+
+/** 面板内参与进退的部件（与 CSS 减弱动态段同一组选择器）。 */
+const SOURCE_PART_SELECTOR =
+  ".k-source-surface, .k-source-head, .k-source-all, .k-source-option, .k-source-note, .k-source-actions";
 
 function killSourceTl(): void {
   if (sourceTl) {
@@ -919,7 +925,42 @@ function sourceMotionParts(dialog: HTMLDialogElement): {
   return { surface, items };
 }
 
-/** 打开动效：返回是否走了动画（false = 调用方立即完成）。 */
+/**
+ * 减弱动态的轻淡入淡出（规格 Implementation Decisions）：不创建任何位移/错峰时间线，
+ * 只给面板加 `data-source-fade="in"|"out"`，由 CSS keyframes 对 opacity 做 160ms 过渡。
+ *
+ * 为什么用动画而不是 inline opacity + transition：dialog 在 showModal 之前不参与渲染，
+ * 同一帧里「先置 0 再移除」不会产生可过渡的起点（实测 0 个中间帧，computed 直接是 1）；
+ * keyframes 在元素首次渲染时就会从 from 值开始，中间帧稳定可见。
+ *
+ * 返回过渡时长 ms（0 = 不适用：非减弱动态，调用方走 GSAP 或立即完成）。
+ */
+export function sourcePanelFadeMotion(dialog: HTMLDialogElement, to: 0 | 1): number {
+  if (!window.matchMedia(REDUCED_QUERY).matches) return 0;
+  if (!dialog.querySelector(SOURCE_PART_SELECTOR)) return 0;
+  dialog.dataset.sourceFade = to === 1 ? "in" : "out";
+  return motionDuration(dialog, "--motion-fast", 160) * 1000 + 40;
+}
+
+/**
+ * 面板光标可读性（复审 B9，等价于 MENU 的 data-menu-pointer）：面板是透明 dialog，
+ * 顶层里无法与纸面反相混合，指针落到面板之外时改用当前主题墨色。返回 null 表示
+ * 光标未激活（系统指针），调用方不写属性。
+ */
+export function sourcePointerState(
+  dialog: HTMLDialogElement,
+  x: number,
+  y: number,
+): "exposed" | "covered" | null {
+  if (!rootElement()?.classList.contains("k-cursor-on")) return null;
+  const surface = dialog.querySelector<HTMLElement>(".k-source-surface");
+  if (!surface) return null;
+  const rect = surface.getBoundingClientRect();
+  const inside = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  return inside ? "covered" : "exposed";
+}
+
+/** 打开动效：返回是否走了动画（false = 调用方按减弱动态/缺库自行收尾）。 */
 export function sourcePanelOpenMotion(dialog: HTMLDialogElement, onOpened: () => void): boolean {
   const g = (window as MotionWindow).gsap;
   if (!g || !enabled) return false;
@@ -953,7 +994,7 @@ export function sourcePanelOpenMotion(dialog: HTMLDialogElement, onOpened: () =>
   return true;
 }
 
-/** 关闭动效：返回是否走了动画（false = 调用方立即关闭）。 */
+/** 关闭动效：返回是否走了动画（false = 调用方按减弱动态/缺库自行收尾）。 */
 export function sourcePanelCloseMotion(dialog: HTMLDialogElement, onClosed: () => void): boolean {
   const g = (window as MotionWindow).gsap;
   if (!g || !enabled) return false;
@@ -978,12 +1019,12 @@ export function sourcePanelCloseMotion(dialog: HTMLDialogElement, onClosed: () =
   return true;
 }
 
-/** 同步归位也适用于 GSAP 时钟暂停；回收不遗留隐藏样式或旧回调。 */
+/** 同步归位也适用于 GSAP 时钟暂停；回收不遗留隐藏样式、光标状态或旧回调。 */
 export function resetSourcePanelMotion(dialog: HTMLDialogElement, restoreCursor = true): void {
   killSourceTl();
-  const elements = [
-    ...dialog.querySelectorAll<HTMLElement>(".k-source-surface, .k-source-head, .k-source-all, .k-source-option, .k-source-note, .k-source-actions"),
-  ];
+  dialog.removeAttribute("data-source-pointer");
+  dialog.removeAttribute("data-source-fade");
+  const elements = [...dialog.querySelectorAll<HTMLElement>(SOURCE_PART_SELECTOR)];
   (window as MotionWindow).gsap?.killTweensOf(elements);
   // clearProps 同时使 GSAP 的 transform 缓存失效；显式 progress(1) 不依赖父时钟（停钟场景）。
   (window as MotionWindow).gsap?.timeline({ paused: true })
