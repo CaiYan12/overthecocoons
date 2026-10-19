@@ -13,12 +13,25 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:4321",
   },
-  webServer: {
-    command: "pnpm exec astro preview --host 127.0.0.1 --port 4321",
-    url: "http://127.0.0.1:4321/overthecocoons/",
-    timeout: 60_000,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: "pnpm exec astro preview --host 127.0.0.1 --port 4321",
+      url: "http://127.0.0.1:4321/overthecocoons/",
+      timeout: 60_000,
+      reuseExistingServer: !process.env.CI,
+    },
+    // 多源夹具产物（Issue #34）：独立配置把产物隔离到 .snapshot/sources-dist，
+    // 注入 fixtures/snapshot-sources.json；与主 dist / 4321 互不影响。
+    // 该服务只在 source-filter 专项使用（spec 内 test.use baseURL 指向 4323）。
+    {
+      command:
+        "pnpm exec astro build --config astro.sources.config.ts && pnpm exec astro preview --config astro.sources.config.ts --host 127.0.0.1 --port 4323",
+      url: "http://127.0.0.1:4323/overthecocoons/",
+      timeout: 180_000,
+      reuseExistingServer: !process.env.CI,
+      env: { SNAPSHOT_PATH: "fixtures/snapshot-sources.json" },
+    },
+  ],
   projects: [
     {
       name: "chromium",
