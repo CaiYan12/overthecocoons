@@ -51,6 +51,8 @@ export function initMenu(): void {
 
   openButton.addEventListener("click", () => {
     if (menu.open) return;
+    // 与来源选择面板互斥（Issue #34）：两者都是原生模态，不叠开
+    if (document.querySelector<HTMLDialogElement>("[data-ksource]")?.open) return;
     selected = null;
     bodyOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";

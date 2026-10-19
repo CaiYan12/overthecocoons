@@ -528,7 +528,9 @@ test.describe("全屏菜单（dialog）", () => {
     const closeBtn = page.locator("[data-kmenu-close]");
 
     await openBtn.click();
-    expect(await page.evaluate(() => document.querySelector("dialog")?.open)).toBe(true);
+    // 选择器限定为 MENU 自身：Issue #34 起时间线页还有来源选择面板 dialog，
+    // 裸 querySelector("dialog") 会命中 DOM 中更早的面板（未打开）。
+    expect(await page.evaluate(() => document.querySelector<HTMLDialogElement>("dialog[data-kmenu]")?.open)).toBe(true);
     await expect(openBtn).toHaveAttribute("aria-expanded", "true");
     expect(
       await page.evaluate(() => document.activeElement?.hasAttribute("data-kmenu-close")),
@@ -546,7 +548,7 @@ test.describe("全屏菜单（dialog）", () => {
     // 连续开合稳定（关闭动画结束后才能再次打开）
     for (let round = 0; round < 2; round++) {
       await openBtn.click();
-      expect(await page.evaluate(() => document.querySelector("dialog")?.open)).toBe(true);
+      expect(await page.evaluate(() => document.querySelector<HTMLDialogElement>("dialog[data-kmenu]")?.open)).toBe(true);
       await closeBtn.click();
       await waitMenuClosed(page);
     }

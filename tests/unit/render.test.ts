@@ -374,9 +374,25 @@ test("HUD：NOW READING 总数随主题口径变化，来源与快照时间呈�
   assert.match(readDist("index.html"), /<span data-total>45<\/span>/, "全部=45");
   assert.match(readDist("topics/news/index.html"), /<span data-total>23<\/span>/, "新闻=23");
   assert.match(readDist("topics/philosophy/index.html"), /<span data-total>00<\/span>/, "空主题=00");
+  // 时间线变体 SOURCE 段（Issue #34）：静态默认 = 全部来源（六订阅全选）
   const hud = readDist("index.html");
-  assert.ok(hud.includes("百度热点"), "SOURCE 名称");
-  assert.ok(hud.includes("BAIDU HOT · 热点线索"), "SOURCE 副标");
+  assert.match(hud, /<span class="k-source-title" data-source-title>多源聚合<\/span>/, "时间线 SOURCE 标题为多源聚合");
+  assert.match(hud, /<span class="k-source-dim" data-source-dim>已选 6 \/ 6 个订阅源<\/span>/, "时间线 SOURCE 辅文为已选数量");
+  assert.match(
+    hud,
+    /<a class="k-source-open" data-source-open data-cursor="LINK" href="\/overthecocoons\/sources\/">/,
+    "无 JS 降级：入口是通往来源说明页的真实链接（按 #32 统一 LINK 档）",
+  );
+  assert.ok(
+    !/<a class="k-source-open"[^>]*aria-haspopup/.test(hud),
+    "aria-haspopup 只在客户端把入口替换为按钮后添加（静态链接不是死按钮）",
+  );
+  // 内容型 HUD（详情页）保持原来源说明用途，不出现筛选入口与面板
+  const detail = readDist(`items/${firstEntry.id}/index.html`);
+  assert.ok(detail.includes("百度热点"), "内容型 HUD SOURCE 名称保持");
+  assert.ok(detail.includes("BAIDU HOT · 热点线索"), "内容型 HUD SOURCE 副标保持");
+  assert.ok(!detail.includes("data-source-open"), "内容型 HUD 不增加筛选入口");
+  assert.ok(!detail.includes("data-ksource"), "内容型 HUD 不渲染来源面板");
   assert.match(
     hud,
     /快照 · 每日更新 · \d{4}-\d{2}-\d{2} \d{2}:\d{2}（北京时间）/,
@@ -384,6 +400,41 @@ test("HUD：NOW READING 总数随主题口径变化，来源与快照时间呈�
   );
   assert.ok(!hud.includes("LIVE"), "LIVE 夸大实时性的文案已移除（UI 票 #15-10）");
   assert.ok(hud.includes('aria-live="polite"'), "aria-live 播报挂点");
+});
+
+test("来源面板静态结构（Issue #34）：仅时间线页渲染，六订阅固定次序、真实复选框与全选三态挂点", () => {
+  const TIMELINE_PAGE =
+    /^(index\.html|page\/\d+\/index\.html|topics\/[^/]+\/index\.html|topics\/[^/]+\/page\/\d+\/index\.html)$/;
+  for (const rel of htmlFiles) {
+    const html = readDist(rel);
+    const isTimeline = TIMELINE_PAGE.test(rel);
+    assert.equal(html.includes("data-ksource"), isTimeline, `${rel} 来源面板只应出现在时间线页`);
+    assert.equal(html.includes("data-source-open"), isTimeline, `${rel} 来源入口只应出现在时间线页`);
+    if (!isTimeline) continue;
+    assert.match(html, /<dialog class="k-source" data-ksource aria-labelledby="k-source-heading">/, `${rel} 面板为原生模态 dialog`);
+    assert.match(html, /<h2 class="k-source-heading" id="k-source-heading">选择来源<\/h2>/, `${rel} 面板标题`);
+    assert.match(html, /<button class="k-source-close" type="button" data-ksource-close data-cursor-soft>关闭 ✕<\/button>/, `${rel} 关闭入口`);
+    assert.match(html, /<input type="checkbox" data-ksource-all-input>/, `${rel} 全选控件为真实复选框`);
+    assert.match(html, /<p class="k-source-note" data-ksource-note role="status" aria-live="polite">已选 6 \/ 6 个订阅源<\/p>/, `${rel} 草稿计数/提示挂点`);
+    assert.match(html, /<button type="button" class="k-source-cancel" data-ksource-cancel data-cursor-soft>取消<\/button>/, `${rel} 取消`);
+    assert.match(html, /<button type="button" class="k-source-apply" data-ksource-apply data-cursor-soft>应用<\/button>/, `${rel} 应用`);
+    // 六订阅固定次序、名称准确、频道不合并（静态默认全选）
+    const options = [
+      ...html.matchAll(
+        /<label class="k-source-option">\s*<input type="checkbox" class="k-source-input" value="([^"]+)" checked>\s*<span class="k-source-box" aria-hidden="true"><\/span>\s*<span class="k-source-label">([^<]+)<\/span>/g,
+      ),
+    ];
+    assert.deepEqual(
+      options.map((m) => m[1]),
+      ["baidu-aishort", "chinanews-society", "chinanews-world", "chinanews-dxw", "geekpark", "solidot"],
+      `${rel} 六订阅固定次序（百度第一，中新网三频道分别列出）`,
+    );
+    assert.deepEqual(
+      options.map((m) => m[2]),
+      ["百度热点", "中新网·社会", "中新网·国际", "中新网·东西问", "极客公园", "Solidot"],
+      `${rel} 六订阅名称准确`,
+    );
+  }
 });
 
 test("时间呈现口径：可见文本为北京时间（同一换算函数），<time datetime> 保留 UTC 原值", () => {
