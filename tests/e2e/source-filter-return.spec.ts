@@ -12,6 +12,7 @@
  *   因此 BFCache 用例**先尝试 headless**，未命中就显式 skip 并记录原因，不伪造通过。
  *   该路径留给最终独立验收（不在本循环内用 headful 弹窗换通过）。
  * - 期望值一律从夹具推导（filterTimeline + paginate 同一份生产规则），不硬编码条数。
+ * - 面板是否打开只认 `dialog.open`；不读私有状态机字段 `data-source-state`。
  */
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
@@ -19,84 +20,32 @@ import { join } from "node:path";
 import type { PublicEntry } from "../../src/domain/contract.ts";
 import { PAGE_SIZE, paginate, sortEntriesDesc } from "../../src/lib/timeline.ts";
 import { filterTimeline } from "../../src/lib/source-filter.ts";
+import { pickTopic } from "./helpers.ts";
+import {
+  ALL,
+  BASE,
+  SOURCES_BASE,
+  applySources,
+  dialog,
+  entryIds,
+  filterState,
+  goBackAndAssertCrossDocument,
+  openFirstDetail,
+  openPanel,
+  ready,
+  statusText,
+  toggle,
+  waitClientReady,
+} from "./source-filter-helpers.ts";
 
-const BASE = "/overthecocoons/";
-test.use({ baseURL: "http://127.0.0.1:4323" });
+test.use({ baseURL: SOURCES_BASE });
 
 const snapshot = JSON.parse(
   readFileSync(join(process.cwd(), "fixtures", "snapshot-sources.json"), "utf-8"),
 ) as { entries: PublicEntry[] };
 const sorted = sortEntriesDesc(snapshot.entries);
-const ALL = [
-  "baidu-aishort",
-  "chinanews-society",
-  "chinanews-world",
-  "chinanews-dxw",
-  "geekpark",
-  "solidot",
-];
 /** 阅读基准线，与 src/client/timeline-view.ts READ_LINE 一致。 */
 const READ_LINE = 100;
-
-const dialog = (page: Page) => page.locator("dialog[data-ksource]");
-const entryButton = (page: Page) => page.locator("button[data-source-open]");
-
-async function waitClientReady(page: Page): Promise<void> {
-  await page.waitForSelector('html[data-oct-client="ready"]');
-}
-
-async function ready(page: Page, path = ""): Promise<void> {
-  await page.goto(`${BASE}${path}`);
-  await waitClientReady(page);
-}
-
-async function openPanel(page: Page): Promise<void> {
-  await entryButton(page).click();
-  await expect(dialog(page)).toHaveAttribute("data-source-state", "open");
-}
-
-async function toggle(page: Page, sourceId: string, checked: boolean): Promise<void> {
-  const input = page.locator(`.k-source-input[value="${sourceId}"]`);
-  if ((await input.isChecked()) !== checked) {
-    await page.locator(`.k-source-option:has(.k-source-input[value="${sourceId}"])`).click();
-  }
-}
-
-async function applySources(page: Page, sources: string[]): Promise<void> {
-  await openPanel(page);
-  for (const id of ALL) await toggle(page, id, sources.includes(id));
-  await page.locator("[data-ksource-apply]").click();
-  await expect(dialog(page)).toHaveJSProperty("open", false);
-  await page.waitForFunction(() => !document.documentElement.hasAttribute("data-oct-topic-anim"));
-}
-
-async function statusText(page: Page): Promise<string> {
-  return page.evaluate(() => document.querySelector("[data-status]")?.textContent ?? "");
-}
-
-async function entryIds(page: Page): Promise<string[]> {
-  return page.evaluate(() =>
-    [...document.querySelectorAll<HTMLAnchorElement>(".k-entry .k-headline a[data-detail]")].map(
-      (anchor) => anchor.getAttribute("href")!.split("/items/")[1]!.replace(/\/$/, ""),
-    ),
-  );
-}
-
-/** 切换主题（≤767px 时 header Tab 隐藏，走全屏菜单，与真实移动路径一致）。 */
-async function pickTopic(page: Page, topic: string): Promise<void> {
-  const headerTab = page.locator(`[data-ktabs] .tab[data-topic="${topic}"]`);
-  if (await headerTab.isVisible()) {
-    await headerTab.click();
-  } else {
-    await page.locator("[data-kmenu-open]").click();
-    await page.locator(`.k-menu-topics .tab[data-topic="${topic}"]`).click();
-    await page.waitForFunction(() => {
-      const menu = document.querySelector<HTMLDialogElement>("dialog[data-kmenu]");
-      return !menu || !menu.open;
-    });
-  }
-  await page.waitForFunction(() => !document.documentElement.hasAttribute("data-oct-topic-anim"));
-}
 
 /**
  * 把指定 data-gi 条目滚到阅读基准线（用户手势语义：先派发滚动键再 instant 滚动，
@@ -116,38 +65,12 @@ async function readAt(page: Page, gi: number): Promise<void> {
   await page.waitForTimeout(300);
 }
 
-/** 当前 history.state 里的来源筛选快照（测试诊断用；生产不暴露任何全局接口）。 */
-async function filterState(page: Page): Promise<Record<string, unknown> | null> {
-  return page.evaluate(() => {
-    const state = history.state as Record<string, unknown> | null;
-    return (state?.["octFilter"] as Record<string, unknown> | undefined) ?? null;
-  });
-}
-
-/** 真实跨文档返回：断言导航类型证明不是同页切换。 */
-async function goBackAndAssertCrossDocument(page: Page): Promise<void> {
-  await page.goBack();
-  await waitClientReady(page);
-  const type = await page.evaluate(
-    () =>
-      (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined)
-        ?.type ?? "unknown",
-  );
-  expect(type, "必须是真实跨文档后退（不是同页切换）").toBe("back_forward");
-}
-
-/** 进入第一条可见条目的详情页（真实点击标题链接）。 */
-async function openFirstDetail(page: Page): Promise<void> {
-  await page.locator(".k-entry .k-headline a[data-detail]").first().click();
-  await page.waitForURL(/\/items\//);
-  await waitClientReady(page);
-}
-
 test.describe("非 BFCache 跨文档返回（主要验收路径）", () => {
   test("单源 + 主题 + 第 2 页 + 阅读位置：返回后全部恢复并播报", async ({ page }) => {
     await ready(page);
     await applySources(page, ["geekpark"]);
     await pickTopic(page, "科技");
+    await page.waitForFunction(() => !document.documentElement.hasAttribute("data-oct-topic-anim"));
     const expected = filterTimeline(sorted, "科技", ["geekpark"]);
     expect(paginate(expected, 1).totalPages).toBe(2);
 
@@ -195,6 +118,40 @@ test.describe("非 BFCache 跨文档返回（主要验收路径）", () => {
     // 播报口径（规格统一定义）
     const status = await statusText(page);
     expect(status).toContain("已恢复来源筛选与阅读位置：极客公园，科技，第 2 页，共 2 页");
+  });
+
+  test("静态分页页首次进入：从 /page/2/ 进详情再返回仍是第 2 页且位置恢复", async ({ page }) => {
+    // 覆盖盲区（复审 A1）：静态分页页首次不渲染列表，页码必须取自静态 DOM 事实。
+    await ready(page, "page/2/");
+    // 静态层真实页码：分页器当前页就是第 2 页
+    await expect(page.locator('[data-pager] [aria-current="page"]')).toHaveAttribute(
+      "aria-label",
+      "第 2 页",
+    );
+    const allExpected = filterTimeline(sorted, "全部", ALL);
+    expect(await entryIds(page)).toEqual(allExpected.slice(PAGE_SIZE, PAGE_SIZE * 2).map((e) => e.id));
+    // 首次进入的快照写的就是真实页码（不是恒为 1）
+    expect(await filterState(page)).toMatchObject({ sources: ALL, topic: "全部", page: 2 });
+    // 滚到中部产生阅读条目
+    await readAt(page, 23);
+    const readId = allExpected[23]!.id;
+    expect(await filterState(page)).toMatchObject({ page: 2, readId });
+
+    await openFirstDetail(page);
+    await goBackAndAssertCrossDocument(page);
+
+    // URL 仍是 page/2/，列表也必须是第 2 页（不是回落到第 1 页）
+    expect(new URL(page.url()).pathname).toBe(`${BASE}page/2/`);
+    await expect(page.locator('[data-pager] [aria-current="page"]')).toHaveAttribute(
+      "aria-label",
+      "第 2 页",
+    );
+    expect(await entryIds(page)).toEqual(allExpected.slice(PAGE_SIZE, PAGE_SIZE * 2).map((e) => e.id));
+    await expect.poll(async () => (await page.locator(`[data-gi="23"]`).boundingBox())?.y ?? 9999, {
+      timeout: 5_000,
+    }).toBeLessThanOrEqual(READ_LINE + 8);
+    expect(await filterState(page)).toMatchObject({ sources: ALL, topic: "全部", page: 2, readId });
+    expect(await statusText(page)).toContain("第 2 页");
   });
 
   test("多源组合 + 全部主题：返回恢复入口标题与已选数量", async ({ page }) => {
@@ -261,6 +218,7 @@ test.describe("非 BFCache 跨文档返回（主要验收路径）", () => {
     await ready(page);
     await applySources(page, ["geekpark"]);
     await pickTopic(page, "科技");
+    await page.waitForFunction(() => !document.documentElement.hasAttribute("data-oct-topic-anim"));
     const expected = filterTimeline(sorted, "科技", ["geekpark"]);
     await page.locator('[data-pager] [aria-label="第 2 页"]').click();
     await readAt(page, 22);
@@ -311,7 +269,6 @@ test.describe("非 BFCache 跨文档返回（主要验收路径）", () => {
 
     await expect(dialog(page)).toHaveJSProperty("open", false);
     expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
-    expect(await page.locator("[data-ksource]").getAttribute("data-source-state")).toBe("closed");
     // 光标仍在其原始容器（未留在 dialog 顶层）
     expect(
       await page.evaluate(() => {
@@ -320,19 +277,34 @@ test.describe("非 BFCache 跨文档返回（主要验收路径）", () => {
       }),
     ).toBe(true);
     await expect(page.locator("html")).toHaveAttribute("data-oct-scrollbars", "ready");
-    // 恢复不重播入场：标题未被拆字（.ch 为空），摘要/媒体立即可见（不是停在透明初态）
-    expect(await page.locator(".k-entry .k-headline .ch").count()).toBe(0);
+    // 恢复不重播入场：按可观察结果断言，不绑定拆字/媒体入场的内部产物——
+    // 标题文字可见（不是被推到视口外的隐藏初态）、摘要与媒体不透明且无 clip 遮挡、
+    // 且不存在进行中的入场标记。
+    expect(
+      await page.locator(".k-entry").first().evaluate((entry) => {
+        const text = entry.querySelector<HTMLElement>(".k-headline")!;
+        const rect = text.getBoundingClientRect();
+        const style = getComputedStyle(text);
+        return {
+          visible: rect.height > 0 && rect.width > 0 && style.visibility === "visible",
+          opacity: Number(style.opacity),
+          clip: style.clipPath,
+        };
+      }),
+      "标题文字立即可见（不是入场隐藏态）",
+    ).toEqual({ visible: true, opacity: 1, clip: "none" });
     await expect(page.locator(".k-entry").first()).toBeVisible();
     await expect(page.locator(".k-entry .k-summary").first()).toHaveCSS("opacity", "1");
-    // 媒体未被 addMediaEntrance 接管：无 inline opacity/clip-path 隐藏初态
     expect(
       await page.locator(".k-entry .k-media").first().evaluate((el) => ({
         visibility: getComputedStyle(el).visibility,
-        opacity: getComputedStyle(el).opacity,
-        clip: (el as HTMLElement).style.clipPath,
+        opacity: Number(getComputedStyle(el).opacity),
+        clipped: getComputedStyle(el).clipPath !== "none",
       })),
-      "恢复不重播媒体入场（无隐藏初态）",
-    ).toEqual({ visibility: "visible", opacity: "1", clip: "" });
+      "媒体区域可见（不透明、无 clip 遮挡）",
+    ).toEqual({ visibility: "visible", opacity: 1, clipped: false });
+    // 无进行中的入场标记（列表两段式切换的动画属性）
+    expect(await page.evaluate(() => document.documentElement.hasAttribute("data-oct-topic-anim"))).toBe(false);
     // 媒体尺寸/比例保持：桌面是 4/3（.layout-* .k-media），≤767px 是固定高度
     // height: clamp(180px, 52vw, 240px)（kinetic.css 手机规则）。按断点断言真实规则，
     // 不把一个断点的期望套到另一个断点上。
@@ -360,6 +332,7 @@ test.describe("刷新与重新打开重置", () => {
     await ready(page);
     await applySources(page, ["geekpark"]);
     await pickTopic(page, "科技");
+    await page.waitForFunction(() => !document.documentElement.hasAttribute("data-oct-topic-anim"));
     await page.locator('[data-pager] [aria-label="第 2 页"]').click();
     await readAt(page, 21);
     expect(await filterState(page)).toMatchObject({ sources: ["geekpark"], page: 2 });
@@ -385,7 +358,7 @@ test.describe("刷新与重新打开重置", () => {
   });
 
   test("重新打开：新页面直接访问同一 URL，来源全选、不恢复", async ({ browser }) => {
-    const context = await browser.newContext({ baseURL: "http://127.0.0.1:4323" });
+    const context = await browser.newContext({ baseURL: SOURCES_BASE });
     try {
       const first = await context.newPage();
       await ready(first);
@@ -430,7 +403,7 @@ test.describe("BFCache 返回（headless 环境通常不命中，未命中即显
       ignoreDefaultArgs: ["--disable-back-forward-cache"],
     });
     try {
-      const context = await isolated.newContext({ baseURL: "http://127.0.0.1:4323" });
+      const context = await isolated.newContext({ baseURL: SOURCES_BASE });
       const page = await context.newPage();
       await ready(page);
       await applySources(page, ["geekpark"]);

@@ -6,12 +6,15 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { LEGACY_SOURCE_ID } from "../../src/lib/sources.ts";
 import {
   SUBSCRIPTIONS,
+  SUBSCRIPTION_IDS,
   allState,
   entrySourceId,
   filterTimeline,
   normalizeSources,
+  sameSources,
   selectionSummary,
   selectionTitle,
 } from "../../src/lib/source-filter.ts";
@@ -120,4 +123,20 @@ test("外部输入规范化：非数组、空数组、全非法值一律 null", 
   }
   // 混入未知值时丢弃未知项，保留已知项
   assert.deepEqual(normalizeSources(["geekpark", "unknown-source"]), ["geekpark"]);
+});
+
+test("订阅 ID 集合是固定次序的同一份事实源（不再各处 map 复制）", () => {
+  assert.deepEqual([...SUBSCRIPTION_IDS], SUBSCRIPTIONS.map((item) => item.id));
+  assert.equal(Object.isFrozen(SUBSCRIPTION_IDS), false, "只读约定由类型保证，不做运行时冻结");
+  assert.equal(SUBSCRIPTION_IDS[0], LEGACY_SOURCE_ID);
+});
+
+test("来源集合等价判定：逐项相等为真，长度或次序不同为假", () => {
+  assert.equal(sameSources([], []), true);
+  assert.equal(sameSources(["geekpark"], ["geekpark"]), true);
+  assert.equal(sameSources([...SUBSCRIPTION_IDS], [...SUBSCRIPTION_IDS]), true);
+  // 集合相同但次序不同不等价：固定次序是入口文案与快照的共同口径
+  assert.equal(sameSources(["geekpark", "solidot"], ["solidot", "geekpark"]), false);
+  assert.equal(sameSources(["geekpark"], ["geekpark", "solidot"]), false);
+  assert.equal(sameSources([...SUBSCRIPTION_IDS], [...SUBSCRIPTION_IDS].reverse()), false);
 });

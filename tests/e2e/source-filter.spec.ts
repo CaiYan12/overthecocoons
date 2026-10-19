@@ -4,87 +4,38 @@
  * 数据：fixtures/snapshot-sources.json（确定性多源夹具，56 条 / 六源 / 主题 科技33·社会9·新闻8·文化6），
  * 由 playwright.config.ts 的第二 webServer 注入构建到 .snapshot/sources-dist 并在 4323 提供服务。
  * 期望值一律从夹具推导（不硬编码实时上游条数），断言只用公开 DOM 语义：可访问名称、可见内容、
- * 真实 URL、条目身份、页码、焦点、滚动与渲染中间帧。
+ * 真实 URL、条目身份、页码、焦点、滚动与渲染中间帧。面板是否打开只认 `dialog.open`，
+ * 不读私有状态机字段 `data-source-state`（规格 Testing Decisions）。
  */
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { PublicEntry } from "../../src/domain/contract.ts";
 import { sortEntriesDesc } from "../../src/lib/timeline.ts";
 import { filterTimeline } from "../../src/lib/source-filter.ts";
-import { contrastRatio, pickTopic, samplePixels } from "./helpers.ts";
+import { contrastRatio, designToken, parseHexColor, pickTopic, samplePixels } from "./helpers.ts";
+import {
+  ALL,
+  BASE,
+  SOURCES_BASE,
+  applySources,
+  dialog,
+  entryButton,
+  entryIds,
+  listStructure,
+  openPanel,
+  panelSettled,
+  ready,
+  statusText,
+  toggle,
+} from "./source-filter-helpers.ts";
 
-const BASE = "/overthecocoons/";
-const SOURCES_BASE = "http://127.0.0.1:4323";
 test.use({ baseURL: SOURCES_BASE });
 
 const snapshot = JSON.parse(
   readFileSync(join(process.cwd(), "fixtures", "snapshot-sources.json"), "utf-8"),
 ) as { entries: PublicEntry[] };
 const sorted = sortEntriesDesc(snapshot.entries);
-const ALL = [
-  "baidu-aishort",
-  "chinanews-society",
-  "chinanews-world",
-  "chinanews-dxw",
-  "geekpark",
-  "solidot",
-];
-
-/** 已构建站点就绪（客户端增强模块执行完成）。 */
-async function ready(page: Page, path = ""): Promise<void> {
-  await page.goto(`${BASE}${path}`);
-  await page.waitForSelector('html[data-oct-client="ready"]');
-}
-
-const dialog = (page: Page) => page.locator("dialog[data-ksource]");
-const entryButton = (page: Page) => page.locator("button[data-source-open]");
-
-async function openPanel(page: Page): Promise<void> {
-  await entryButton(page).click();
-  await expect(dialog(page)).toHaveJSProperty("open", true);
-  await expect(dialog(page)).toHaveAttribute("data-source-state", "open");
-}
-
-/** 按来源 ID 切换面板草稿（真实点击 label，与用户路径一致）。 */
-async function toggle(page: Page, sourceId: string, checked: boolean): Promise<void> {
-  const input = page.locator(`.k-source-input[value="${sourceId}"]`);
-  if ((await input.isChecked()) !== checked) await page.locator(`.k-source-option:has(.k-source-input[value="${sourceId}"])`).click();
-}
-
-async function apply(page: Page): Promise<void> {
-  await page.locator("[data-ksource-apply]").click();
-  await expect(dialog(page)).toHaveJSProperty("open", false);
-  await page.waitForFunction(() => !document.documentElement.hasAttribute("data-oct-topic-anim"));
-}
-
-/** 把草稿设为给定来源集合后应用。 */
-async function applySources(page: Page, sources: string[]): Promise<void> {
-  await openPanel(page);
-  for (const id of ALL) await toggle(page, id, sources.includes(id));
-  await apply(page);
-}
-
-async function statusText(page: Page): Promise<string> {
-  return page.evaluate(() => document.querySelector("[data-status]")?.textContent ?? "");
-}
-
-async function entryIds(page: Page): Promise<string[]> {
-  return page.evaluate(() =>
-    [...document.querySelectorAll<HTMLAnchorElement>(".k-entry .k-headline a[data-detail]")].map(
-      (anchor) => anchor.getAttribute("href")!.split("/items/")[1]!.replace(/\/$/, ""),
-    ),
-  );
-}
-
-/**
- * 列表结构快照：剔除动画写入的内联样式后再比较。
- * 滚动进度线（.k-progress）与揭示初态由 ScrollTrigger/GSAP 持续改写 style，
- * 与「是否重渲染」无关；结构与文案（标签、类名、data-*、文本）全部保留。
- */
-async function listStructure(page: Page): Promise<string> {
-  return page.locator("[data-klist]").evaluate((el) => el.innerHTML.replace(/\sstyle="[^"]*"/g, ""));
-}
 
 test.describe("入口与面板结构", () => {
   test("时间线 HUD 的 SOURCE 标题是入口；打开后为原生模态「选择来源」", async ({ page }) => {
@@ -115,7 +66,7 @@ test.describe("入口与面板结构", () => {
     const values = await dialog(page).locator(".k-source-input").evaluateAll((inputs) =>
       inputs.map((input) => (input as HTMLInputElement).value),
     );
-    expect(values).toEqual(ALL);
+    expect(values).toEqual([...ALL]);
     // 逐个可独立选择：只勾 Solidot 时其他五项必须为未选
     for (const id of ALL) await toggle(page, id, id === "solidot");
     for (const id of ALL) {
@@ -381,19 +332,19 @@ test.describe("键盘与焦点", () => {
     await expect(page.locator("[data-source-dim]")).toHaveText("已选 6 / 6 个订阅源");
   });
 
-  test("应用后焦点可见且不被重渲染留在不可见位置", async ({ page }) => {
+  test("桌面：应用后焦点可见且不产生滚动", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await ready(page);
-    // 应用前入口是否已在视口内：桌面右栏在首屏内（应用后不得产生滚动）；
-    // ≤767px 时 HUD 在 Hero 之后、首屏之外（实测 iPhone 13：入口 top 692 > innerHeight 664），
-    // 因此「焦点可见」要求把页面滚到入口处——这是规格明确要求的可访问性结果。
+    // 桌面右栏在首屏内（布局事实）：应用后不得为「让焦点可见」而滚动页面。
     const before = await page.evaluate(() => {
       const rect = document.querySelector("button[data-source-open]")!.getBoundingClientRect();
       return rect.top >= 0 && rect.bottom <= window.innerHeight;
     });
+    expect(before, "1440×900 下入口本应在首屏内").toBe(true);
     await applySources(page, ["solidot"]);
     await expect(entryButton(page)).toBeFocused();
     await expect(entryButton(page)).toBeInViewport();
-    if (before) expect(await page.evaluate(() => window.scrollY), "已在视口内时不得滚动").toBe(0);
+    expect(await page.evaluate(() => window.scrollY), "入口本已可见时不得滚动").toBe(0);
     // 几何断言：焦点元素完整可见且不被固定 header 遮挡（toBeInViewport 只判交叠比例）
     const geometry = await page.evaluate(() => {
       const rect = document.querySelector("button[data-source-open]")!.getBoundingClientRect();
@@ -403,6 +354,58 @@ test.describe("键盘与焦点", () => {
     });
     expect(geometry.top, "焦点元素不被固定 header 遮挡").toBeGreaterThanOrEqual(geometry.headerBottom - 1);
     expect(geometry.bottom, "焦点元素在视口内").toBeLessThanOrEqual(geometry.viewport + 1);
+  });
+
+  test("手机：应用后焦点必须可见（允许滚动），且不被 header 遮挡", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 664 });
+    await ready(page);
+    // 实测 iPhone 13 的 664px 视口：入口 top 692 > innerHeight 664（首屏之外）
+    const before = await page.evaluate(() => {
+      const rect = document.querySelector("button[data-source-open]")!.getBoundingClientRect();
+      return rect.top >= 0 && rect.bottom <= window.innerHeight;
+    });
+    expect(before, "390×664 下入口本应在首屏之外").toBe(false);
+    await applySources(page, ["solidot"]);
+    await expect(entryButton(page)).toBeFocused();
+    expect(
+      await page.evaluate(() => window.scrollY),
+      "焦点可见要求把页面滚到入口处（规格明确要求的可访问性结果）",
+    ).toBeGreaterThan(0);
+    const geometry = await page.evaluate(() => {
+      const rect = document.querySelector("button[data-source-open]")!.getBoundingClientRect();
+      const headerBottom =
+        document.querySelector<HTMLElement>("header")?.getBoundingClientRect().bottom ?? 0;
+      return { top: rect.top, bottom: rect.bottom, headerBottom, viewport: window.innerHeight };
+    });
+    expect(geometry.top, "焦点元素不被固定 header 遮挡").toBeGreaterThanOrEqual(geometry.headerBottom - 1);
+    expect(geometry.bottom, "焦点元素在视口内").toBeLessThanOrEqual(geometry.viewport + 1);
+  });
+
+  test("取消不改变原滚动位置（打开 → 取消 → scrollY 不变）", async ({ page }) => {
+    await ready(page);
+    // 用用户手势语义滚动到中部（站点只把用户手势滚动记入阅读位置，不影响本断言）
+    await page.evaluate(() => window.scrollTo({ top: 600, behavior: "instant" }));
+    // 等滚动位置落定再取基准：移动 WebKit 在布局稳定前可能把 600 落到 607（实测），
+    // 直接读会得到一个「还没稳」的基准值，从而把正常行为误判为取消改变了位置。
+    await expect
+      .poll(async () => {
+        const a = await page.evaluate(() => Math.round(window.scrollY));
+        await page.waitForTimeout(120);
+        const b = await page.evaluate(() => Math.round(window.scrollY));
+        return a === b ? a : -1;
+      })
+      .toBeGreaterThan(0);
+    const before = await page.evaluate(() => Math.round(window.scrollY));
+    await openPanel(page);
+    await page.locator("[data-ksource-cancel]").click();
+    await expect(dialog(page)).toHaveJSProperty("open", false);
+    await expect(entryButton(page)).toBeFocused();
+    expect(await page.evaluate(() => Math.round(window.scrollY)), "取消不得改变滚动位置").toBe(before);
+    // Esc 与关闭按钮同理（同一关闭路径）
+    await openPanel(page);
+    await page.keyboard.press("Escape");
+    await expect(dialog(page)).toHaveJSProperty("open", false);
+    expect(await page.evaluate(() => Math.round(window.scrollY)), "Esc 取消不得改变滚动位置").toBe(before);
   });
 });
 
@@ -433,7 +436,8 @@ test.describe("动效、降级与运行环境", () => {
       }).observe(list, { childList: true });
       document.querySelector<HTMLButtonElement>("button[data-source-open]")!.click();
     });
-    await expect(dialog(page)).toHaveAttribute("data-source-state", "open");
+    await expect(dialog(page)).toHaveJSProperty("open", true);
+    await expect(dialog(page).locator(".k-source-surface")).toBeVisible();
     // 必须真的改草稿：草稿等价于已应用集合时应用只关闭面板（规格要求的短路），列表本就不该变。
     await toggle(page, "solidot", false);
     await expect(dialog(page).locator("[data-ksource-note]")).toHaveText("已选 5 / 6 个订阅源");
@@ -470,35 +474,63 @@ test.describe("动效、降级与运行环境", () => {
     expect(record.listAt, "列表必须在面板退场开始后才变化").toBeGreaterThan(record.closeStart + 120);
   });
 
-  test("减弱动态：取消空间位移与错峰，开合立即完成", async ({ page }) => {
+  test("减弱动态：无空间位移、无错峰，保留 opacity 轻淡入淡出", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await ready(page);
     await page.evaluate(() => {
       const dialog = document.querySelector<HTMLDialogElement>("[data-ksource]")!;
       const surface = dialog.querySelector<HTMLElement>(".k-source-surface")!;
-      (window as unknown as { reducedFrames: number[] }).reducedFrames = [];
+      const options = [...dialog.querySelectorAll<HTMLElement>(".k-source-option")];
+      type Frame = { t: number; opacity: number; y: number; options: number[] };
+      const frames: Frame[] = [];
+      (window as unknown as { reducedFrames: Frame[] }).reducedFrames = frames;
       const sample = () => {
         if (dialog.open) {
           const style = getComputedStyle(surface);
-          (window as unknown as { reducedFrames: number[] }).reducedFrames.push(new DOMMatrixReadOnly(style.transform === "none" ? "" : style.transform).m42);
+          frames.push({
+            t: performance.now(),
+            opacity: Number(style.opacity),
+            y: new DOMMatrixReadOnly(style.transform === "none" ? "" : style.transform).m42,
+            options: options.map((el) => Number(getComputedStyle(el).opacity)),
+          });
         }
-        requestAnimationFrame(sample);
       };
-      requestAnimationFrame(sample);
+      // 用 8ms 定时器而非 rAF 采样：headless 移动 WebKit 的 rAF 明显被节流（实测 160ms 淡入
+      // 只拿到 1–2 个中间帧），定时器采样才能稳定观察到 0<opacity<1 的中间态。
+      // 采到的仍是浏览器真实渲染出的 computed opacity，不是模拟值。
+      const timer = setInterval(sample, 8);
+      (window as unknown as { stopReducedSample: () => void }).stopReducedSample = () => clearInterval(timer);
       document.querySelector<HTMLButtonElement>("button[data-source-open]")!.click();
     });
-    await expect(dialog(page)).toHaveAttribute("data-source-state", "open");
-    // 减弱动态下打开是同步完成的（不创建时间线），首帧采样与 state 断言之间存在竞态，
-    // 因此等采样器至少跑过一帧再读。
-    await page.waitForFunction(() => (window as unknown as { reducedFrames: number[] }).reducedFrames.length > 0);
-    const frames = await page.evaluate(() => (window as unknown as { reducedFrames: number[] }).reducedFrames);
-    expect(frames.every((y) => Math.abs(y) < 0.5), "无空间位移").toBe(true);
-    // 减弱动态下开合立即完成：打开即已 settled，关闭同样不应留下中间态
-    expect(await dialog(page).locator(".k-source-surface").evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+    await expect(dialog(page)).toHaveJSProperty("open", true);
+    await page.waitForFunction(
+      () => (window as unknown as { reducedFrames: unknown[] }).reducedFrames.length >= 8,
+    );
+    // 采样器持续记录到关闭之后再读，保证淡出也有帧
+    const frames = await page.evaluate(
+      () => (window as unknown as { reducedFrames: Array<{ t: number; opacity: number; y: number; options: number[] }> }).reducedFrames,
+    );
+    // (a) 无空间位移：全程 transform 的 Y 位移恒为 0
+    expect(frames.every((frame) => Math.abs(frame.y) < 0.5), "无空间位移").toBe(true);
+    // (b) 存在 opacity 中间帧：至少 2 帧 0<opacity<1（淡入；淡出另测）
+    const fadeIn = frames.filter((frame) => frame.opacity > 0.02 && frame.opacity < 0.98);
+    expect(fadeIn.length, "减弱动态仍有 opacity 淡入中间帧").toBeGreaterThanOrEqual(2);
+    // (c) 无错峰：各选项 opacity 与面板同时变化（同一帧内相差 < 0.05）
+    for (const frame of fadeIn) {
+      const spread = Math.max(...frame.options) - Math.min(...frame.options);
+      expect(spread, `选项不得错峰（帧 ${Math.round(frame.t)} 极差 ${spread}）`).toBeLessThan(0.05);
+    }
+    // 淡出同样保留淡入淡出（不是瞬时消失）
     await page.locator("[data-ksource-cancel]").click();
     await expect(dialog(page)).toHaveJSProperty("open", false);
+    const closing = await page.evaluate(() => {
+      const all = (window as unknown as { reducedFrames: Array<{ opacity: number }> }).reducedFrames;
+      (window as unknown as { stopReducedSample: () => void }).stopReducedSample();
+      return all.slice(-24);
+    });
+    expect(closing.filter((frame) => frame.opacity > 0.02 && frame.opacity < 0.98).length, "淡出也有中间帧").toBeGreaterThanOrEqual(1);
+    // 取消后滚动锁释放、面板可再次打开
     expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
-    // 关闭后再走完整的应用流程（面板已关闭，入口可点）
     await applySources(page, ["solidot"]);
     await expect(page.locator("[data-source-title]")).toHaveText("Solidot");
     await expect(page.locator(".k-entry").first()).toBeVisible();
@@ -550,7 +582,8 @@ test.describe("动效、降级与运行环境", () => {
     await entry.click();
     await page.locator("[data-ksource-close]").click();
     await entry.click();
-    await expect(dialog(page)).toHaveAttribute("data-source-state", "open");
+    await expect(dialog(page)).toHaveJSProperty("open", true);
+    await expect(dialog(page).locator(".k-source-surface")).toBeVisible();
     await page.locator("[data-ksource-cancel]").click();
     await expect(dialog(page)).toHaveJSProperty("open", false);
     expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
@@ -587,6 +620,15 @@ test.describe("动效、降级与运行环境", () => {
     await page.addInitScript(() => localStorage.setItem("overthecocoons.theme", "dark"));
     await ready(page);
     await openPanel(page);
+    // 像素采样必须在面板入场淡入结束后进行：autoAlpha 中间帧会把纸面底色与标题一起调亮，
+    // 实测移动配置在淡入途中采样得到 2.86:1（真实终态是 13.4:1）——这是测量时机问题，不是配色缺陷。
+    await expect
+      .poll(() =>
+        dialog(page).locator(".k-source-surface").evaluate((el) => Number(getComputedStyle(el).opacity)),
+        { timeout: 3_000 },
+      )
+      .toBe(1);
+    await panelSettled(page);
     const heading = dialog(page).getByRole("heading", { name: "选择来源" });
     const box = (await heading.boundingBox())!;
     const surfaceBox = (await dialog(page).locator(".k-source-surface").boundingBox())!;
@@ -609,6 +651,23 @@ test.describe("动效、降级与运行环境", () => {
     expect(checkedBox.background).not.toBe("rgba(0, 0, 0, 0)");
     expect(checkedBox.mark).not.toBe("none");
   });
+
+  test("面板与 MENU 互斥：任一打开时另一个入口不响应", async ({ page }) => {
+    await ready(page);
+    // 面板打开时点 MENU：模态使背景 inert，用户点不到；这里直接派发 click 验证互斥守卫
+    await openPanel(page);
+    await page.evaluate(() => document.querySelector<HTMLButtonElement>("[data-kmenu-open]")!.click());
+    await expect(page.locator("dialog[data-kmenu]")).toHaveJSProperty("open", false);
+    await expect(dialog(page)).toHaveJSProperty("open", true);
+    await page.locator("[data-ksource-cancel]").click();
+    await expect(dialog(page)).toHaveJSProperty("open", false);
+    // MENU 打开时点来源入口：同样不叠开面板
+    await page.locator("[data-kmenu-open]").click();
+    await expect(page.locator("dialog[data-kmenu]")).toHaveJSProperty("open", true);
+    await page.evaluate(() => document.querySelector<HTMLElement>("[data-source-open]")!.click());
+    await expect(dialog(page)).toHaveJSProperty("open", false);
+    await expect(page.locator("dialog[data-kmenu]")).toHaveJSProperty("open", true);
+  });
 });
 
 test.describe("触屏与无脚本", () => {
@@ -616,17 +675,42 @@ test.describe("触屏与无脚本", () => {
 
   test("触屏：面板底部上拉、选项点击生效、无残留 hover", async ({ page }) => {
     await ready(page);
+    // 触屏上下文：hover 媒体查询不成立，hover 规则整体不生效
+    expect(
+      await page.evaluate(() => matchMedia("(hover: hover) and (pointer: fine)").matches),
+    ).toBe(false);
     await entryButton(page).tap();
-    await expect(dialog(page)).toHaveAttribute("data-source-state", "open");
+    await expect(dialog(page)).toHaveJSProperty("open", true);
+    await panelSettled(page);
     const surface = await dialog(page).locator(".k-source-surface").boundingBox();
     expect(surface!.y + surface!.height, "面板贴底").toBeGreaterThan(700);
-    await page.locator('.k-source-option:has(.k-source-input[value="solidot"])').tap();
+    const option = page.locator('.k-source-option:has(.k-source-input[value="solidot"])');
+    await option.tap();
     await expect(page.locator('.k-source-input[value="solidot"]')).not.toBeChecked();
+    // 触屏无残留 hover：未选中态边框就是 --rule，没有被 hover 的 accent 覆盖。
+    // 先等 160ms 选中态过渡结束——否则读到的是过渡中的 accent，而非 hover 残留（实测）。
+    await page.waitForTimeout(240);
+    const accent = (parseHexColor(await designToken(page, "--accent"))).join(",");
+    const rule = (parseHexColor(await designToken(page, "--rule"))).join(",");
+    const state = await option.evaluate((el) => ({
+      border: getComputedStyle(el).borderTopColor.replace(/\s/g, ""),
+      hoverGate: matchMedia("(hover: hover) and (pointer: fine)").matches,
+      hoverMatches: el.matches(":hover"),
+    }));
+    expect(state.hoverGate, "触屏上下文不匹配 hover 门控媒体查询").toBe(false);
+    // 注意：触屏点击后 `:hover` 在部分引擎上仍会匹配到被点元素（浏览器实现差异），
+    // 因此判据是「hover 规则不生效 → 边框仍是 --rule」，而不是 :hover 为假。
+    expect(state.border, "触屏点击后不得留下 hover 态边框").toBe(`rgb(${rule})`);
+    expect(state.border).not.toBe(`rgb(${accent})`);
     await page.locator("[data-ksource-apply]").tap();
     await expect(dialog(page)).toHaveJSProperty("open", false);
     await expect(page.locator("[data-source-dim]")).toHaveText("已选 5 / 6 个订阅源");
-    // 触屏无残留 hover：面板关闭后入口不应处于 :hover 态
+    // 面板关闭后入口不应处于 :hover 态，且标题颜色不是 hover 的 accent
     expect(await page.evaluate(() => document.querySelector("[data-source-open]")!.matches(":hover"))).toBe(false);
+    const titleColor = await page
+      .locator("[data-source-open] .k-source-title")
+      .evaluate((el) => getComputedStyle(el).color);
+    expect(titleColor.replace(/\s/g, "")).not.toBe(`rgb(${accent})`);
   });
 });
 
@@ -657,4 +741,86 @@ test.describe("无 JS 降级", () => {
       await context.close();
     }
   });
+
+  test("筛选初始化失败（数据岛损坏）：入口仍是通往来源页的链接，静态阅读/主题/分页可用", async ({ page }) => {
+    // 只破坏数据岛内容：真实构建产物原样返回，其余脚本照常执行
+    await page.route(`${SOURCES_BASE}${BASE}`, async (route) => {
+      const response = await route.fetch();
+      const body = (await response.text()).replace(
+        /(<script type="application\/json" data-kdata[^>]*>)[\s\S]*?(<\/script>)/,
+        "$1{\"entries\": broken$2",
+      );
+      await route.fulfill({ response, body });
+    });
+    await page.goto(`${BASE}`);
+    await page.waitForSelector('html[data-oct-client="ready"]');
+    // 时间线视图未就绪 → 不得把静态链接替换为按钮（死按钮）
+    await expect(page.locator("button[data-source-open]")).toHaveCount(0);
+    const entry = page.locator("a[data-source-open]");
+    await expect(entry).toHaveAttribute("href", `${BASE}sources/`);
+    await expect(page.locator("[data-source-title]")).toHaveText("多源聚合");
+    // 静态条目、主题、分页仍可用
+    await expect(page.locator(".k-entry")).toHaveCount(20);
+    await page.locator('[data-pager] [aria-label="第 2 页"]').click();
+    await page.waitForURL(`${BASE}page/2/`);
+    await expect(page.locator(".k-entry")).toHaveCount(20);
+    await page.goto(`${BASE}topics/tech/`);
+    await expect(page.locator(".k-entry .tpc").first()).toHaveText("科技");
+    // 入口真导航到来源说明页
+    await page.goto(`${BASE}`);
+    await page.locator("a[data-source-open]").click();
+    await page.waitForURL(`${BASE}sources/`);
+    await expect(page.getByRole("heading", { name: "百度热点", exact: false }).first()).toBeVisible();
+  });
+});
+
+test.describe("视口矩阵（320/390/768/1024/1440 × 明暗）", () => {
+  const widths = [320, 390, 768, 1024, 1440];
+  for (const width of widths) {
+    test(`${width}px：无横溢出、面板定位正确、选项 44px、入口文案正确`, async ({ page }) => {
+      for (const theme of ["light", "dark"] as const) {
+        await page.addInitScript((value) => localStorage.setItem("overthecocoons.theme", value), theme);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(`${BASE}`);
+        await page.waitForSelector('html[data-oct-client="ready"]');
+        await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+        // 无横溢出（页面不得出现横向滚动条）
+        const overflow = await page.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          innerWidth: window.innerWidth,
+        }));
+        expect(overflow.scrollWidth, `${width}px/${theme} 无横溢出`).toBeLessThanOrEqual(
+          overflow.innerWidth + 1,
+        );
+        // 入口文案
+        await expect(page.locator("[data-source-title]")).toHaveText("多源聚合");
+        await expect(page.locator("[data-source-dim]")).toHaveText("已选 6 / 6 个订阅源");
+        await openPanel(page);
+        await panelSettled(page);
+        const surface = (await dialog(page).locator(".k-source-surface").boundingBox())!;
+        const viewport = await page.evaluate(() => ({ w: window.innerWidth, h: window.innerHeight }));
+        if (width >= 768) {
+          // 桌面：居中纸面模态（左右留白近似相等，且不与视口边缘贴合）
+          const left = surface.x;
+          const right = viewport.w - (surface.x + surface.width);
+          expect(Math.abs(left - right), `${width}px 面板水平居中`).toBeLessThanOrEqual(2);
+          expect(surface.y, `${width}px 面板垂直居中`).toBeGreaterThan(8);
+          expect(surface.y + surface.height, `${width}px 面板不贴底`).toBeLessThan(viewport.h - 8);
+        } else {
+          // 手机：底部上拉（贴底、满宽）
+          expect(Math.abs(surface.y + surface.height - viewport.h), `${width}px 面板贴底`).toBeLessThanOrEqual(1);
+          expect(Math.abs(surface.width - viewport.w), `${width}px 面板满宽`).toBeLessThanOrEqual(1);
+        }
+        // 选项与操作按钮点击高度 ≥44px
+        const heights = await dialog(page)
+          .locator(".k-source-option, .k-source-all, .k-source-close, .k-source-apply, .k-source-cancel")
+          .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+        expect(Math.min(...heights), `${width}px 控件点击高度 ≥44px`).toBeGreaterThanOrEqual(44);
+        // 面板内容不得溢出视口
+        expect(surface.height, `${width}px 面板不高于视口`).toBeLessThanOrEqual(viewport.h + 1);
+        await page.locator("[data-ksource-cancel]").click();
+        await expect(dialog(page)).toHaveJSProperty("open", false);
+      }
+    });
+  }
 });
