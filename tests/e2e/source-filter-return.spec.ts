@@ -129,7 +129,9 @@ async function goBackAndAssertCrossDocument(page: Page): Promise<void> {
   await page.goBack();
   await waitClientReady(page);
   const type = await page.evaluate(
-    () => performance.getEntriesByType("navigation")[0]?.type ?? "unknown",
+    () =>
+      (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined)
+        ?.type ?? "unknown",
   );
   expect(type, "必须是真实跨文档后退（不是同页切换）").toBe("back_forward");
 }
@@ -331,13 +333,25 @@ test.describe("非 BFCache 跨文档返回（主要验收路径）", () => {
       })),
       "恢复不重播媒体入场（无隐藏初态）",
     ).toEqual({ visibility: "visible", opacity: "1", clip: "" });
-    // 媒体尺寸/比例保持：列表版画是 4/3（.layout-a/.layout-b .k-media），未被恢复路径破坏
-    const ratio = await page.locator(".k-media").first().evaluate((el) => {
+    // 媒体尺寸/比例保持：桌面是 4/3（.layout-* .k-media），≤767px 是固定高度
+    // height: clamp(180px, 52vw, 240px)（kinetic.css 手机规则）。按断点断言真实规则，
+    // 不把一个断点的期望套到另一个断点上。
+    const media = await page.locator(".k-media").first().evaluate((el) => {
       const rect = el.getBoundingClientRect();
-      return rect.height / rect.width;
+      return {
+        ratio: rect.height / rect.width,
+        height: rect.height,
+        mobile: matchMedia("(max-width: 767px)").matches,
+        vw: window.innerWidth,
+      };
     });
-    expect(ratio, "列表媒体保持 4/3").toBeGreaterThan(0.7);
-    expect(ratio, "列表媒体保持 4/3").toBeLessThan(0.8);
+    if (media.mobile) {
+      const expected = Math.min(240, Math.max(180, media.vw * 0.52));
+      expect(media.height, "手机媒体高度按 clamp(180px, 52vw, 240px)").toBeCloseTo(expected, 0);
+    } else {
+      expect(media.ratio, "桌面列表媒体保持 4/3").toBeGreaterThan(0.72);
+      expect(media.ratio, "桌面列表媒体保持 4/3").toBeLessThan(0.78);
+    }
   });
 });
 

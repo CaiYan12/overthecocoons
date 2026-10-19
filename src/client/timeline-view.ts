@@ -293,7 +293,10 @@ function scrollToEntry(index: number, instant = false): void {
   if (!element) return;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   samplingState.paused = true;
-  element.scrollIntoView({ behavior: reduced || instant ? "auto" : "smooth", block: "start" });
+  // 恢复路径必须即时定位：`behavior: "auto"` 会沿用 CSS 的 `html{scroll-behavior:smooth}`，
+  // 恢复就变成一次平滑滚动（规格要求恢复原阅读位置不重播无意义动效；实测 Firefox 上
+  // 平滑滚动还会被 ScrollTrigger.refresh 打断，停在半途）。因此显式用 "instant"。
+  element.scrollIntoView({ behavior: instant ? "instant" : reduced ? "auto" : "smooth", block: "start" });
 }
 
 /** 来源入口文案同步（Issue #34）：标题随已应用集合（单源名/多源聚合），辅文为已选数量。 */
@@ -416,7 +419,9 @@ function renderView(
     if (!options?.restoreAnnouncement) message += "；已恢复到原阅读位置";
   } else {
     samplingState.paused = true;
-    window.scrollTo({ top: 0, behavior: "auto" });
+    // 同 scrollToEntry：CSS 的 scroll-behavior:smooth 会让 "auto" 变成平滑滚动，
+    // 恢复路径（含目标失效回退）必须即时到位，不叠加一次无意义的滚动动效。
+    window.scrollTo({ top: 0, behavior: options?.instantRestore ? "instant" : "auto" });
     if (decision.mode === "fallback" && filtered.length > 0 && nextTopic !== previousTopic) {
       // 回退提示仅限主题变化时播报（T05 收尾项）：主题切换后记忆条目不在当前列表，
       // 同主题后续翻页属既有状态，不得重复播报「内容已变化」。记忆保留——
