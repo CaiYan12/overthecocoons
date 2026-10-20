@@ -54,6 +54,19 @@ data 更新编排说明见 `docs/mvp-architecture.md`（工作流与失败控制
 - [x] GSAP 自托管库许可条款落档核查（2026-10-05 实读 gsap.com/standard-license：免费含商用、自托管属许可用途、须保留版权声明——本项目合规，落档 `docs/mvp-dependency-evidence.md`）
 - [ ] 非阻塞观察项：跨生成周期 pubDate 稳定性（feed 实测有缓存，跨约 5 小时生成周期是否漂移未观测；不设截止，多源接入或异常时复核）
 
+### 六源数据未进入生产（2026-10-20 关闭 Issue 时核实发现）
+
+关闭 Issue #1–#9 与 #33 时逐条核对验收项发现：代码侧六源接入已合并并上线（PR #36 / `main` @ `82a9d15`），
+但**生产 `data` 分支的 800 条条目仍全部是 `baidu-aishort`**，六源采集未真正跑进数据链路。
+
+- [ ] 让 `update-data` 工作流实际抓取六个订阅（百度 + 中新网社会/国际/东西问 + 极客公园 + Solidot）并写入 `data` 分支
+      ——现状证据：`origin/data:items.json` 的 `sourceId` 分布为 `{"baidu-aishort":800}`；线上快照 800 条同源。
+      `docs/multi-source-ingestion.md` 记录本地已用 `.snapshot/multi-source-local-20261019/` 演练出六源 214 条，
+      说明采集代码可用，缺的是生产工作流的实际切换与首次写入。
+- [ ] 六源首次进入生产后复核：来源筛选面板能否真实呈现多源（当前线上只有单一来源，多选场景未在真实数据上验收）
+- [ ] 新增来源（中新网三频道、极客公园、Solidot）的公开展示许可核查——`docs/multi-source-ingestion.md` 记录仍待维护者裁定；
+      许可未定时不应让六源内容进入公开快照
+
 ### deferred minor（41 条，2026-10-05 全清）
 
 全部 41 条已处置完毕：代码修复 / 测试补强 / 报告勘误 / 取舍裁定记录，逐条处置口径见 `docs/remaining-work-report.md`。
