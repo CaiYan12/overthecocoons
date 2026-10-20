@@ -2,6 +2,48 @@
   "schemaVersion": 1,
   "items": [
     {
+      "stableId": "39a81fa9802fdfa3eafc4983338962a62d0bba293ae629f363d6b2ab37be62d0",
+      "sourceId": "chinanews-dxw",
+      "guid": "url:https://www.chinanews.com.cn/dxw/2026/10-20/10718047.shtml",
+      "title": "东西问丨傅稻镰：一粒稻米，如何照见良渚与世界？",
+      "summary": "中新社杭州10月20日电 题：一粒稻米，如何照见良渚与世界？",
+      "topic": "文化",
+      "url": "https://www.chinanews.com.cn/dxw/2026/10-20/10718047.shtml",
+      "firstSeenAt": "2026-10-20T12:01:04.488Z",
+      "originalTime": null,
+      "wdFingerprint": "",
+      "wdMissing": true,
+      "contentVersion": 1
+    },
+    {
+      "stableId": "4d86c676a08fde49e1bc36ba198c4c16fe505d2b0ab3a1468677bd6bed029ff7",
+      "sourceId": "chinanews-dxw",
+      "guid": "url:https://www.chinanews.com.cn/dxw/2026/10-20/10717883.shtml",
+      "title": "东西问丨潘维廉：长征精神为何能成为人类共同的精神财富？",
+      "summary": "中新社北京10月20日电 题：长征精神为何能成为人类共同的精神财富？",
+      "topic": "文化",
+      "url": "https://www.chinanews.com.cn/dxw/2026/10-20/10717883.shtml",
+      "firstSeenAt": "2026-10-20T12:01:04.488Z",
+      "originalTime": null,
+      "wdFingerprint": "",
+      "wdMissing": true,
+      "contentVersion": 1
+    },
+    {
+      "stableId": "974036e94c085e3cb5514c92222a4e64d39758e21846ee6411bfb28320c87b77",
+      "sourceId": "chinanews-dxw",
+      "guid": "url:https://www.chinanews.com.cn/dxw/2026/10-20/10718049.shtml",
+      "title": "东西问丨良渚发现90周年：读懂文明多样比固守单一定论更要紧",
+      "summary": "中新社杭州10月20日电 题：良渚发现90周年：读懂文明多样比固守单一定论更要紧",
+      "topic": "文化",
+      "url": "https://www.chinanews.com.cn/dxw/2026/10-20/10718049.shtml",
+      "firstSeenAt": "2026-10-20T12:01:04.488Z",
+      "originalTime": null,
+      "wdFingerprint": "",
+      "wdMissing": true,
+      "contentVersion": 1
+    },
+    {
       "stableId": "147c83b6a71d242988b25961e5bb6d3a6f57b58d28474b8cb6b78a130924a61c",
       "sourceId": "solidot",
       "guid": "url:https://www.solidot.org/story?sid=85650",
