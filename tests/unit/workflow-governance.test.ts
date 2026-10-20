@@ -59,6 +59,18 @@ describe("update-data 工作流定义（定时 + 手动）", () => {
     assert.doesNotMatch(yaml, /^ {2}pull_request:\s*$/m, "data 工作流不得由 PR 触发");
   });
 
+  it("代码 checkout 必须显式 ref: main，不得依赖事件默认 SHA（2026-10-20 实测缺陷）", () => {
+    // 缺陷经过：GitHub 的 schedule 事件用「工作流文件最后一次被修改时所在 commit」的 SHA，
+    // 不是 main 最新 HEAD。10-16 起连续 5 次定时抓取都跑 10-15 的旧代码 cd2d444，只抓百度；
+    // 六源代码 f789288（10-19）从未在定时任务中执行，导致线上长期只有 1 个来源。
+    const mainIdx = yaml.split("\n").findIndex(line => /- name: Checkout main/.test(line));
+    assert.notEqual(mainIdx, -1, "必须存在 Checkout main 步骤");
+    const lines = yaml.split("\n");
+    const nextStep = lines.findIndex((line, i) => i > mainIdx && /^\s+- name: /.test(line));
+    const block = lines.slice(mainIdx, nextStep === -1 ? undefined : nextStep).join("\n");
+    assert.match(block, /ref:\s*main\s*$/m, "Checkout main 必须显式 ref: main，否则定时任务会跑陈旧代码");
+  });
+
   it("权限最小化：显式 permissions 块，仅 contents: write", () => {
     assert.match(yaml, /^permissions:\s*$/m, "必须有顶层 permissions 块");
     assert.match(yaml, /^ {2}contents:\s*write\s*$/m);
