@@ -32,8 +32,16 @@ jobs:
     timeout-minutes: 15
     steps:
       # main 代码（编排 CLI、依赖与锁文件所在；只读使用）。
+      # 必须显式 ref: main —— 不能用事件默认 SHA（2026-10-20 实测缺陷）：
+      # GitHub 的 schedule 事件使用「工作流文件最后一次被修改时所在 commit」的 SHA，
+      # 而不是 main 的最新 HEAD。因此 10-16 起连续 5 次定时抓取都跑 10-15 的旧代码
+      # cd2d444，只抓百度一个源；六源代码 f789288（10-19）从未在定时任务中执行过。
+      # 该缺陷无声无息：update-data 的历史运行全部是 schedule，没有一次 workflow_dispatch，
+      # 所以「手动跑一次就正常、定时跑就回退」的矛盾长期无人发现。
       - name: Checkout main（只读：编排脚本与依赖）
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
 
       # data 分支权威状态检出到子目录；所有写入只发生在这个子目录。
       - name: Checkout data branch
