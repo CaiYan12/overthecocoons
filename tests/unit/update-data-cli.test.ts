@@ -27,10 +27,19 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
+/**
+ * 以参数数组执行 CLI：不经 shell、不拼接命令字符串。
+ *
+ * 安全说明（2026-10-20，响应 Mimosa CWE-78 报告）：本函数**从未**使用 shell——
+ * `spawnSync(file, args)` 在未设置 `shell: true` 时直接 exec，参数逐个传入 argv，
+ * 不存在命令注入面。Mimosa 依照「变量进入 spawn 系列调用」的形式特征报告，属误报。
+ * 此处保留显式 `shell: false` 与注释，使意图对静态扫描与审阅者都明确。
+ */
 function runCli(args: string[]): { status: number; stdout: string; stderr: string } {
   const result = spawnSync(process.execPath, [CLI, "--dir", dir, ...args], {
     cwd: ROOT,
     encoding: "utf-8",
+    shell: false,
   });
   return {
     status: result.status ?? -1,

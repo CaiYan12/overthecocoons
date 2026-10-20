@@ -11,7 +11,9 @@
  * `generatedAt` 即快照时间基准；时间字段语义详见 src/domain/contract.ts 头注。
  */
 import { readFileSync } from "node:fs";
-import { isAbsolute, resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { delimiter, isAbsolute, resolve } from "node:path";
+import { PathOutsideRootError, resolveWithinRoots } from "./path-guard.ts";
 import { isArticleImageUrl } from "./article-image.ts";
 import {
   HEX64,
@@ -29,15 +31,61 @@ export type Snapshot = PublicSnapshot;
 /** 仓库内置的演示快照路径（相对项目根）。 */
 export const DEFAULT_SNAPSHOT_PATH = "fixtures/snapshot.json";
 
+/**
+ * `SNAPSHOT_PATH` 允许的根目录（安全加固，2026-10-20）。
+ *
+ * 该环境变量属于外部输入，是路径穿越（CWE-22）的注入点。允许的根由 `SNAPSHOT_ROOTS`
+ * 环境变量显式给出（多个用 `path.delimiter` 分隔），缺省为：
+ *   1. 项目根 `process.cwd()` —— 覆盖 CI 的 `.snapshot/snapshot.json` 与文档里的项目内路径；
+ *   2. 系统临时目录 `os.tmpdir()` —— 覆盖测试在临时目录构造快照的既有用法。
+ *
+ * 为什么把 tmpdir 列为默认根：既有单测（`snapshot.test.ts`、`render.test.ts` 的完整
+ * astro build 接线）用 `mkdtemp` / `tmpdir()` 生成快照后再经 `SNAPSHOT_PATH` 注入，
+ * 这是仓库既有约定；收紧到项目根会破坏它们。tmpdir 本身已受系统权限隔离，
+ * 且本模块只读取单个 JSON 文件，风险面远小于任意路径。
+ * 需要更严格时，部署侧可用 `SNAPSHOT_ROOTS` 显式收窄。
+ */
+export function snapshotAllowedRoots(): string[] {
+  const configured = process.env.SNAPSHOT_ROOTS;
+  if (typeof configured === "string" && configured.length > 0) {
+    return configured.split(delimiter).filter((entry) => entry.length > 0);
+  }
+  return [process.cwd(), tmpdir()];
+}
+
 /** 读取快照：环境变量 `SNAPSHOT_PATH` 优先，缺省用演示快照。 */
 export function loadSnapshot(): Snapshot {
   const configured = process.env.SNAPSHOT_PATH ?? DEFAULT_SNAPSHOT_PATH;
-  return loadSnapshotFrom(configured);
+  // 环境变量属于外部输入：解析后必须落在允许的根内（CWE-22 纵深防御）。
+  try {
+    return loadSnapshotFrom(configured, { allowedRoots: snapshotAllowedRoots() });
+  } catch (cause) {
+    if (cause instanceof PathOutsideRootError) {
+      throw new Error(
+        `快照路径不被允许：${configured}（SNAPSHOT_PATH 必须位于允许的根内：${snapshotAllowedRoots().join("、")}）`,
+        { cause },
+      );
+    }
+    throw cause;
+  }
 }
 
-/** 从给定路径读取并校验快照文件。 */
-export function loadSnapshotFrom(path: string): Snapshot {
-  const absolute = isAbsolute(path) ? path : resolve(process.cwd(), path);
+/**
+ * 从给定路径读取并校验快照文件。
+ *
+ * @param path 快照文件路径（相对路径按 `allowedRoots[0]` 或 `process.cwd()` 解析）
+ * @param options.allowedRoots 若给出，则解析后必须落在其一内，越界抛 `PathOutsideRootError`。
+ *   **只有外部输入来源（环境变量）才传该选项**——形如 `SNAPSHOT_PATH` 的注入缝（CWE-22）。
+ *   内部调用不传，保留既有的绝对路径语义。
+ */
+export function loadSnapshotFrom(
+  path: string,
+  options: { allowedRoots?: readonly string[] } = {},
+): Snapshot {
+  const absolute =
+    options.allowedRoots === undefined
+      ? (isAbsolute(path) ? path : resolve(process.cwd(), path))
+      : resolveWithinRoots(path, options.allowedRoots);
   let raw: string;
   try {
     raw = readFileSync(absolute, "utf-8");

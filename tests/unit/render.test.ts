@@ -419,9 +419,11 @@ test("来源面板静态结构（Issue #34）：仅时间线页渲染，六订�
     assert.match(html, /<button type="button" class="k-source-cancel" data-ksource-cancel data-cursor-soft>取消<\/button>/, `${rel} 取消`);
     assert.match(html, /<button type="button" class="k-source-apply" data-ksource-apply data-cursor-soft>应用<\/button>/, `${rel} 应用`);
     // 六订阅固定次序、名称准确、频道不合并（静态默认全选）
+    // 勾号自 2026-10-20 起为内联 SVG（Lucide v1.59.0 几何），box 内不再是空标签：
+    // 用 [\s\S]*? 跨越 SVG 块，再断言图标几何本身。
     const options = [
       ...html.matchAll(
-        /<label class="k-source-option">\s*<input type="checkbox" class="k-source-input" value="([^"]+)" checked>\s*<span class="k-source-box" aria-hidden="true"><\/span>\s*<span class="k-source-label">([^<]+)<\/span>/g,
+        /<label class="k-source-option">\s*<input type="checkbox" class="k-source-input" value="([^"]+)" checked>\s*<span class="k-source-box" aria-hidden="true">[\s\S]*?<\/span>\s*<span class="k-source-label">([^<]+)<\/span>/g,
       ),
     ];
     assert.deepEqual(
@@ -434,7 +436,25 @@ test("来源面板静态结构（Issue #34）：仅时间线页渲染，六订�
       ["百度热点", "中新网·社会", "中新网·国际", "中新网·东西问", "极客公园", "Solidot"],
       `${rel} 六订阅名称准确`,
     );
+    // 勾号/横条为 Lucide v1.59.0（ISC）官方几何：24×24、stroke-width 2、round cap/join。
+    assert.match(
+      html,
+      /<svg class="k-source-mark k-source-mark-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"><\/path><\/svg>/,
+      `${rel} 选中勾号为 Lucide check 几何`,
+    );
+    assert.match(
+      html,
+      /<svg class="k-source-mark k-source-mark-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"><\/path><\/svg>/,
+      `${rel} 部分选中为 Lucide minus 几何`,
+    );
+    // 不再使用 border 折角伪造勾号（历史方案布局盒中心 ≠ 视觉重心，实测偏移 1.31/2.38px）
   }
+  // 全局样式检查：一次即可，不随页面重复。
+  const allCss = cssFiles.map(readDist).join("\n");
+  assert.ok(
+    !/\.k-source-box::after\s*\{[^}]*border-width/.test(allCss),
+    "不应回退到 border 折角伪勾号（应使用 .k-source-mark SVG）",
+  );
 });
 
 test("时间呈现口径：可见文本为北京时间（同一换算函数），<time datetime> 保留 UTC 原值", () => {
