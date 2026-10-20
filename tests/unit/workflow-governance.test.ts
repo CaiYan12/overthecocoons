@@ -332,6 +332,30 @@ describe("build-deploy 发布前门禁（检查失败必须阻止部署）", () 
     assert.doesNotMatch(yaml, /if:\s*always\(\)/, "不得用 always() 绕过门禁");
   });
 
+  it("分层门禁：data 更新（repository_dispatch）跳过 e2e，但代码推送必须跑全量", () => {
+    // 用户裁定（2026-10-20）：data 更新不改代码，同一 commit 重复跑 e2e 无新信息。
+    // 该豁免必须**只**针对 repository_dispatch，不得扩大到 push/workflow_dispatch。
+    const nextStep = lines.findIndex((line, i) => i > e2eIdx && /^\s+- name: /.test(line));
+    assert.notEqual(nextStep, -1, "E2E 步骤后应还有生产构建步骤");
+    const e2eBlock = lines.slice(e2eIdx, nextStep).join("\n");
+    assert.match(
+      e2eBlock,
+      /if:\s*github\.event_name != 'repository_dispatch'/,
+      "e2e 豁免条件必须精确为 repository_dispatch（不得遗漏，也不得放宽到其它事件）",
+    );
+    // install 步骤同样跳过，避免为不跑的 e2e 白装浏览器。
+    const pwIdx = lineOf(/^\s+- name: Install Playwright browsers/, "Playwright 安装步骤");
+    const pwNext = lines.findIndex((line, i) => i > pwIdx && /^\s+- name: /.test(line));
+    const pwBlock = lines.slice(pwIdx, pwNext).join("\n");
+    assert.match(pwBlock, /if:\s*github\.event_name != 'repository_dispatch'/, "浏览器安装应随 e2e 一同跳过");
+    // check / build / test:node 三个秒级门禁**不得**带事件豁免——它们对真实数据变化仍有意义。
+    for (const [label, idx] of [["Check types", checkIdx], ["Build with fixtures", fixtureBuildIdx], ["Unit + artifact tests", unitIdx]] as const) {
+      const next = lines.findIndex((line, i) => i > idx && /^\s+- name: /.test(line));
+      const block = lines.slice(idx, next).join("\n");
+      assert.doesNotMatch(block, /if:\s*/, `${label} 不得带事件豁免条件`);
+    }
+  });
+
   it("快照 CLI 损坏即拒绝：build-snapshot.ts 调用 verifyManifest，失败退出 1", () => {
     const cli = readRepoFile("scripts/build-snapshot.ts");
     assert.match(cli, /verifyManifest/, "必须做三文件摘要校验（MVP-Q13 停写语义）");

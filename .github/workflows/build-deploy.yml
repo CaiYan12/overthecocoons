@@ -103,9 +103,17 @@ jobs:
         run: pnpm run test:node
 
       - name: Install Playwright browsers（仅 chromium，与 test:e2e 口径一致）
+        if: github.event_name != 'repository_dispatch'
         run: pnpm exec playwright install --with-deps chromium
 
+      # 分层（2026-10-20 用户裁定）：repository_dispatch 由 data 更新触发，**代码零改动**，
+      # 同一 commit 重复跑 e2e 不产生新信息（实测近 30 天 17/47 次运行属此类，约占 76 分钟/月）。
+      # 代码推送（push / workflow_dispatch）仍跑全量 e2e——那才是 e2e 该保护的对象。
+      # 保留 check / build / test:node：它们只需秒级，且真实数据变化可能暴露契约问题。
+      # 已知取舍：data 更新导致「代码未改但真实数据渲染崩坏」这类问题 e2e 抓不到（e2e 跑夹具）；
+      # 该风险由随后的生产 Build site 承担——它会真实构建 .snapshot/snapshot.json，失败即阻断发布。
       - name: E2E tests（chromium project；webServer 复用上面已构建的 dist）
+        if: github.event_name != 'repository_dispatch'
         run: pnpm run test:e2e
       # ---- 门禁结束；以下为生产构建与发布 ----
 
