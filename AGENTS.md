@@ -67,6 +67,15 @@
 - `/items/<id>/` 返回入口、标题、图片、简介、来源、操作区及HUD分组已增加滚入播放一次的GSAP入场，维护前读 `docs/ui-detail-motion.md`。正文280ms/power3.out轻抬淡入、50ms分组；交互区域仅淡入以保持点击位置稳定。图片复用列表900ms入场/投影/高光接管，原820px/21:9及移动高度规则保持。
 - 详情专用首绘门控、1500ms迟到放行/停钟收尾、键盘直显、缺库/减弱动态静态及pagehide回收已实现。最终check0错误/0警告+2既有提示、build66及真实build250通过；五配置联合57通过+13指针/剪贴板不适用跳过。IAB源图1440/390/320图文同宽且无横溢出；无JS冒烟Chromium/WebKit通过，Firefox关闭上下文协议异常未计通过。初轮失败、复制位移修正及验收边界见同文档，未重跑全站全部测试，无新真机/FPS/线上验证，未提交发布。
 
+## 2026-10-19 来源筛选（本地）
+
+- Issue #34（来源多选面板 + 时间线交集过滤）与 #35（详情返回恢复来源筛选与阅读位置）已在集成分支 `codex/source-filter` 完成并复审修复；维护前先读 `docs/ui-source-filter-spec.md`（权威规格 + 验收勾选状态）与 `docs/ui-source-filter.md`（实施与证据）。六个订阅（百度 + 中新网社会/国际/东西问 + 极客公园 + Solidot）按订阅源分别可选，不按网站合并。
+- 复审修复要点：①静态分页页首次进入的页码取自分页器 `[aria-current="page"]` 的 `data-page`（原先恒为 1，从 `/page/2/` 进详情再返回会丢页）；②减弱动态只做 opacity 轻淡入淡出（CSS keyframes，无位移/错峰；`kinetic.css` 的 reduced 段不得出现 transform 过渡）；③筛选初始化失败（数据岛损坏）时不接管入口，静态 `<a href="…/sources/">` 保持可用；④快照 history 读写与恢复判定抽到 `src/client/filter-history.ts`；⑤`sameSources`/`SUBSCRIPTION_IDS`/`LEGACY_SOURCE_ID` 收敛为单一事实源（后者在 `src/lib/sources.ts`）。
+- 测试口径：e2e 不再断言私有状态机字段 `data-source-state`（只认 `dialog.open` 与可观察语义）；两个 spec 共用 `tests/e2e/source-filter-helpers.ts`；新增静态分页返回、减弱动态中间帧、初始化失败降级、MENU 互斥、取消不滚动、触屏 hover 门控与 320/390/768/1024/1440 × 明暗视口矩阵用例。
+- 验证：check 0 错误/0 警告/2 既有提示、build 66 页、Node 336/336、Chromium 全量 245 passed + 3 skipped、来源筛选专项 42 passed + 1 skipped、五配置 210 passed + 5 skipped（跳过为既有触屏专项与 BFCache 显式 skip）。真实六源产物（250 页）在 320/390/768/1024/1440 × 明暗共 12 组实看截图：桌面居中、手机底部上拉、暗色同主题层次、选项 44px、无横溢出；短屏仅面板内容滚动。headless 脚本另复核静态 `/page/2/` 返回保持第 2 页与阅读位置（`scrollY=1332`）、减弱动态 5 帧淡入 + 5 帧淡出且位移恒 0。
+- BFCache 命中路径：headless 拿不到 `pageshow.persisted`（五配置显式 skip 并记录），最终用 headful（窗口移出屏幕外）一次性确认 `persisted === true` 时来源/页码/阅读位置均恢复。**headless 自动化仍未覆盖该路径**，不得据一次人工确认宣称自动化已覆盖。
+- 仍未验证：新真机、FPS、线上部署；移动配置为设备模拟。未推送、未部署。实施票 #34/#35 已按验收闭环，父规格 #33 保持 OPEN。
+
 ## 项目记忆与技能目录
 
 - `.agents/memories/` 为**项目记忆目录**（已入 git 跟踪，不得加入 `.gitignore`）：`memory.md` 为统领索引，登记全部记忆条目与摘要；单条记忆文件名 `YYYYMMDDHHMM.md`（本地时间，精确到分）。会话需要既往项目经验时，先读 `memory.md` 索引再打开对应条目；记忆是经验与过程沉淀，**当前状态以本文件状态段与 Git 现状为权威**，冲突时以现状为准。

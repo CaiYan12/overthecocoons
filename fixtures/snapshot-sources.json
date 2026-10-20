@@ -1,0 +1,559 @@
+{
+  "schemaVersion": 1,
+  "isFixture": true,
+  "generatedAt": "2026-10-18T10:00:00+08:00",
+  "entries": [
+    {
+      "id": "4ec52d478ede873b1690668cda4c5e9198138dd0c590da12162c7bb07511feb0",
+      "sourceId": "solidot",
+      "title": "【多源夹具】科技条目 batch-solidot-0",
+      "summary": "多源夹具摘要：solidot 的科技条目 batch-solidot-0。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-17T09:12:10+08:00",
+      "url": "https://example.com/solidot/batch-solidot-0"
+    },
+    {
+      "id": "2dedf2c2f543aa25c312a5e3c25c017bf9899d37a903fff05bf10d0aaadda18f",
+      "sourceId": "solidot",
+      "title": "【多源夹具】科技条目 batch-solidot-1",
+      "summary": "多源夹具摘要：solidot 的科技条目 batch-solidot-1。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-17T09:12:11+08:00",
+      "url": "https://example.com/solidot/batch-solidot-1"
+    },
+    {
+      "id": "ff960c730f8af1ec849db24f6a239e6fb7ccc71f1f372bba46e66abe8a1414d5",
+      "sourceId": "solidot",
+      "title": "【多源夹具】科技条目 batch-solidot-2",
+      "summary": "多源夹具摘要：solidot 的科技条目 batch-solidot-2。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-17T09:12:12+08:00",
+      "url": "https://example.com/solidot/batch-solidot-2"
+    },
+    {
+      "id": "4585754201aaa707b978c52d33b6f5b213d4e8e9d212b0fbc3bf8344fd1193a0",
+      "sourceId": "solidot",
+      "title": "【多源夹具】科技条目 batch-solidot-3",
+      "summary": "多源夹具摘要：solidot 的科技条目 batch-solidot-3。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-17T09:12:13+08:00",
+      "url": "https://example.com/solidot/batch-solidot-3"
+    },
+    {
+      "id": "fcf3b8d757ed20278a6f95a51f4474a380b9825af2637d815a7a56d0c02ae990",
+      "sourceId": "solidot",
+      "title": "【多源夹具】科技条目 batch-solidot-4",
+      "summary": "多源夹具摘要：solidot 的科技条目 batch-solidot-4。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-17T09:12:14+08:00",
+      "url": "https://example.com/solidot/batch-solidot-4"
+    },
+    {
+      "id": "e88c2e758e48dcdce6ccbe391fe46203881dd491a9331b6b35fe6c9532f4c84a",
+      "sourceId": "chinanews-dxw",
+      "title": "【多源夹具】文化条目 batch-chinanews-dxw-0",
+      "summary": "多源夹具摘要：chinanews-dxw 的文化条目 batch-chinanews-dxw-0。",
+      "topic": "文化",
+      "firstSeenAt": "2026-10-17T09:12:15+08:00",
+      "url": "https://example.com/chinanews-dxw/batch-chinanews-dxw-0"
+    },
+    {
+      "id": "a80826c973a9d56474fb5a663cf78295e46bd99ecf52e756a954dc5b3973f1da",
+      "sourceId": "chinanews-dxw",
+      "title": "【多源夹具】文化条目 batch-chinanews-dxw-1",
+      "summary": "多源夹具摘要：chinanews-dxw 的文化条目 batch-chinanews-dxw-1。",
+      "topic": "文化",
+      "firstSeenAt": "2026-10-17T09:12:16+08:00",
+      "url": "https://example.com/chinanews-dxw/batch-chinanews-dxw-1"
+    },
+    {
+      "id": "69224a8281f7f9adbe38425b50c85bcec924d0577d7a5f7201247182c33e1369",
+      "sourceId": "chinanews-world",
+      "title": "【多源夹具】新闻条目 batch-chinanews-world-0",
+      "summary": "多源夹具摘要：chinanews-world 的新闻条目 batch-chinanews-world-0。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-17T09:12:17+08:00",
+      "url": "https://example.com/chinanews-world/batch-chinanews-world-0"
+    },
+    {
+      "id": "69a7414acdf42d4ec3900ab838a963d8702551322cbe737e3cd4327f78ba4c9a",
+      "sourceId": "chinanews-world",
+      "title": "【多源夹具】新闻条目 batch-chinanews-world-1",
+      "summary": "多源夹具摘要：chinanews-world 的新闻条目 batch-chinanews-world-1。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-17T09:12:18+08:00",
+      "url": "https://example.com/chinanews-world/batch-chinanews-world-1"
+    },
+    {
+      "id": "96a25d0333285f3d64982485ed9c751131e2dfa9c53dacfae37dfab19a8e1d9a",
+      "sourceId": "baidu-aishort",
+      "title": "【多源夹具】社会条目 batch-baidu-aishort-0",
+      "summary": "多源夹具摘要：baidu-aishort 的社会条目 batch-baidu-aishort-0。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-17T09:12:19+08:00",
+      "url": "https://example.com/baidu-aishort/batch-baidu-aishort-0"
+    },
+    {
+      "id": "94a0346d3f210833565171bef22507c76925e1f7afb6078a4287e4fbbd47d449",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】文化条目 geek-0",
+      "summary": "多源夹具摘要：geekpark 的文化条目 geek-0。",
+      "imageUrl": "https://imgslim.geekpark.net/uploads/image/file/1000/cover.png",
+      "topic": "文化",
+      "firstSeenAt": "2026-10-18T09:00:00+08:00",
+      "url": "https://example.com/geekpark/geek-0"
+    },
+    {
+      "id": "cc33b2cbee951db8f8de386f84d20498dc4621693e07315cc663e8b1a2fab8d2",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】文化条目 geek-1",
+      "summary": "多源夹具摘要：geekpark 的文化条目 geek-1。",
+      "imageUrl": "https://imgslim.geekpark.net/uploads/image/file/1001/cover.png",
+      "topic": "文化",
+      "firstSeenAt": "2026-10-18T09:01:00+08:00",
+      "url": "https://example.com/geekpark/geek-1"
+    },
+    {
+      "id": "defe150de55d864630cd2030e9c6a974fc39aa4f162729a7a5942a575c58d324",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-2",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-2。",
+      "imageUrl": "https://imgslim.geekpark.net/uploads/image/file/1002/cover.png",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:02:00+08:00",
+      "url": "https://example.com/geekpark/geek-2"
+    },
+    {
+      "id": "36c89ff064137be6c971dfe1de01b48ea567e8e0f9c28b6ba11ff2b2d55fb29f",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-3",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-3。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:03:00+08:00",
+      "url": "https://example.com/geekpark/geek-3"
+    },
+    {
+      "id": "64b6b25abee5d6e3dcfa9cb36d88472c21142c9c3a6828adaeede3fb68ce87b5",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-4",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-4。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:04:00+08:00",
+      "url": "https://example.com/geekpark/geek-4"
+    },
+    {
+      "id": "3e8d2cf685c0b58745aa2ba1f4f972712d8cff0c21c20ac35840cbcbc65b5029",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-5",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-5。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:05:00+08:00",
+      "url": "https://example.com/geekpark/geek-5"
+    },
+    {
+      "id": "a5f5a3f8a1d6fd4ded597d4b325ca1781594cc458ab38b3adcd4a87fd544bd00",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-6",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-6。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:06:00+08:00",
+      "url": "https://example.com/geekpark/geek-6"
+    },
+    {
+      "id": "f2da51e8e09e3e4abd79afb7f3bd8f93f648230c864dc60d61f2a4fceef17230",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-7",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-7。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:07:00+08:00",
+      "url": "https://example.com/geekpark/geek-7"
+    },
+    {
+      "id": "a51fec717c8fb5ed24c60d0dc55d07387f2ac941f8c3e14a5dac1d26db227368",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-8",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-8。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:08:00+08:00",
+      "url": "https://example.com/geekpark/geek-8"
+    },
+    {
+      "id": "581b5bb32062bf7069d4b8541dd56d9b3e8055e06f349ee8c7a131b6aea8fc9d",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-9",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-9。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:09:00+08:00",
+      "url": "https://example.com/geekpark/geek-9"
+    },
+    {
+      "id": "fa4f64c21feff14c4b1b83b0d141407b7d6d43a73cb90268dc4631b0406729f4",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-10",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-10。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:10:00+08:00",
+      "url": "https://example.com/geekpark/geek-10"
+    },
+    {
+      "id": "4dc83bd9043b788d6959d17bd63a3a78055a303bb27942f82116acd85a8a7f9e",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-11",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-11。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:11:00+08:00",
+      "url": "https://example.com/geekpark/geek-11"
+    },
+    {
+      "id": "659c06787f5c65b42cc4af0676cadd05e51f57542f6b7f64ffd12d5d7a39b945",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-12",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-12。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:12:00+08:00",
+      "url": "https://example.com/geekpark/geek-12"
+    },
+    {
+      "id": "f53733e509e9e0997820a3f9fd32d70997bdb8b7485b84157b3c433188564546",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-13",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-13。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:13:00+08:00",
+      "url": "https://example.com/geekpark/geek-13"
+    },
+    {
+      "id": "ee1b48ec2acd9bba924d6aac6361f7ad7b2b89f017c64db8977d3759a7f717bb",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-14",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-14。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:14:00+08:00",
+      "url": "https://example.com/geekpark/geek-14"
+    },
+    {
+      "id": "7b131960a712c5d1f01070b0da3a0be4ce4f076638f3a2755e77f88537524dc8",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-15",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-15。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:15:00+08:00",
+      "url": "https://example.com/geekpark/geek-15"
+    },
+    {
+      "id": "3725df6f1808679dd77dc760ca62bcd5f1e6a8c8c11ef647a76864a50b158d0c",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-16",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-16。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:16:00+08:00",
+      "url": "https://example.com/geekpark/geek-16"
+    },
+    {
+      "id": "82e7f90aad3d29ba45f8e921bba524ad51aa17c85731a6d849d48261747978b4",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-17",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-17。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:17:00+08:00",
+      "url": "https://example.com/geekpark/geek-17"
+    },
+    {
+      "id": "5ce9d12db3475ec2d2e8ec5924a7d7452c8a3a019d98676880a322a2ae2fb338",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-18",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-18。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:18:00+08:00",
+      "url": "https://example.com/geekpark/geek-18"
+    },
+    {
+      "id": "ba6ec9ecba20f7da6073c57d873acbae1a512f49b1a9818836c5cf793f0e847c",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-19",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-19。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:19:00+08:00",
+      "url": "https://example.com/geekpark/geek-19"
+    },
+    {
+      "id": "ecd619eff9648f5cf7b2ca8622f08028b4be02018d72805b5337a14177c698fc",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-20",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-20。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:20:00+08:00",
+      "url": "https://example.com/geekpark/geek-20"
+    },
+    {
+      "id": "26d1255f6ed94e083258f052e2d45433ee7742333762963d07ccf3458e4939e9",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-21",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-21。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:21:00+08:00",
+      "url": "https://example.com/geekpark/geek-21"
+    },
+    {
+      "id": "3f04d086bd4473b220f3c742ff1f09a2b278344e716177aaa1efb45487a5b8e6",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-22",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-22。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:22:00+08:00",
+      "url": "https://example.com/geekpark/geek-22"
+    },
+    {
+      "id": "eb97b55733c3a24828e20210a37e359f9fc91a21f752fc200e9d57756d6225ab",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-23",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-23。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:23:00+08:00",
+      "url": "https://example.com/geekpark/geek-23"
+    },
+    {
+      "id": "175742a62927abc3e3afa7aa4bf6e4063503595817e9d2230b42d3ef3be76d6b",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-24",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-24。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:24:00+08:00",
+      "url": "https://example.com/geekpark/geek-24"
+    },
+    {
+      "id": "901762f3dfcd4694407734c99dfba99a1b4def15a6fe98063b68a16b4e3ee47a",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-25",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-25。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:25:00+08:00",
+      "url": "https://example.com/geekpark/geek-25"
+    },
+    {
+      "id": "26978c53b5199f8b2e4c4cd65f3cf06c34b5bca957b9e595efaf34b3c5871358",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-26",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-26。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:26:00+08:00",
+      "url": "https://example.com/geekpark/geek-26"
+    },
+    {
+      "id": "7e97ca27b1026a10e8ff6c8aea5327dc499b54824f554d1fb95442a905061cfd",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-27",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-27。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:27:00+08:00",
+      "url": "https://example.com/geekpark/geek-27"
+    },
+    {
+      "id": "a49d20a0fe10f006c7f0b8312413efd32b3cef43656089bcb732563047e074ee",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-28",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-28。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:28:00+08:00",
+      "url": "https://example.com/geekpark/geek-28"
+    },
+    {
+      "id": "b5308783cadc12d4c22f0d8f6756acea1b8c28974c486b497b66e65d93e0a421",
+      "sourceId": "geekpark",
+      "title": "【多源夹具】科技条目 geek-29",
+      "summary": "多源夹具摘要：geekpark 的科技条目 geek-29。",
+      "topic": "科技",
+      "firstSeenAt": "2026-10-18T09:29:00+08:00",
+      "url": "https://example.com/geekpark/geek-29"
+    },
+    {
+      "id": "d526696bdf4141db91fb06b0eea788ed23c82c774a48c489f72eb19260a1e6d6",
+      "sourceId": "chinanews-society",
+      "title": "【多源夹具】社会条目 society-0",
+      "summary": "多源夹具摘要：chinanews-society 的社会条目 society-0。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-18T09:30:00+08:00",
+      "url": "https://example.com/chinanews-society/society-0"
+    },
+    {
+      "id": "2b8c7fae162e294a98bd915dd47dab5d2e4f91a50f8a06481627571991255986",
+      "sourceId": "chinanews-society",
+      "title": "【多源夹具】社会条目 society-1",
+      "summary": "多源夹具摘要：chinanews-society 的社会条目 society-1。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-18T09:31:00+08:00",
+      "url": "https://example.com/chinanews-society/society-1"
+    },
+    {
+      "id": "7b2f7922a6e2626e3e2ad88810c5d578729544e71cfd6957c5ca1c06b3a6bfb7",
+      "sourceId": "chinanews-society",
+      "title": "【多源夹具】社会条目 society-2",
+      "summary": "多源夹具摘要：chinanews-society 的社会条目 society-2。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-18T09:32:00+08:00",
+      "url": "https://example.com/chinanews-society/society-2"
+    },
+    {
+      "id": "e9b8f94d5621bc2ef298d85eac2c9c0c0f642e98d18c432e1a9c098c7f2e05b3",
+      "sourceId": "chinanews-society",
+      "title": "【多源夹具】社会条目 society-3",
+      "summary": "多源夹具摘要：chinanews-society 的社会条目 society-3。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-18T09:33:00+08:00",
+      "url": "https://example.com/chinanews-society/society-3"
+    },
+    {
+      "id": "ab798549c1022b2cc89168079b0500e2ac41dc778476d73cb5893dd3fceac99e",
+      "sourceId": "chinanews-society",
+      "title": "【多源夹具】社会条目 society-4",
+      "summary": "多源夹具摘要：chinanews-society 的社会条目 society-4。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-18T09:34:00+08:00",
+      "url": "https://example.com/chinanews-society/society-4"
+    },
+    {
+      "id": "0ad869950b61f3374824781f25d9371818a25ad817f20d5312754894c6bc7b1a",
+      "sourceId": "chinanews-society",
+      "title": "【多源夹具】社会条目 society-5",
+      "summary": "多源夹具摘要：chinanews-society 的社会条目 society-5。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-18T09:35:00+08:00",
+      "url": "https://example.com/chinanews-society/society-5"
+    },
+    {
+      "id": "bf378173605ff421a992f81d6064086da8bd5036985dd9fcf8a93f83085a5754",
+      "sourceId": "chinanews-world",
+      "title": "【多源夹具】新闻条目 world-0",
+      "summary": "多源夹具摘要：chinanews-world 的新闻条目 world-0。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-18T09:36:00+08:00",
+      "url": "https://example.com/chinanews-world/world-0"
+    },
+    {
+      "id": "f77ba25a65964d026b43b250f3af06d4ccb141e6841f5b933927244d9b22c72e",
+      "sourceId": "chinanews-world",
+      "title": "【多源夹具】新闻条目 world-1",
+      "summary": "多源夹具摘要：chinanews-world 的新闻条目 world-1。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-18T09:37:00+08:00",
+      "url": "https://example.com/chinanews-world/world-1"
+    },
+    {
+      "id": "efd83812b63997c32faff1ab6340ffecbcb69bed061bb192f80175483f8bf55c",
+      "sourceId": "chinanews-world",
+      "title": "【多源夹具】新闻条目 world-2",
+      "summary": "多源夹具摘要：chinanews-world 的新闻条目 world-2。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-18T09:38:00+08:00",
+      "url": "https://example.com/chinanews-world/world-2"
+    },
+    {
+      "id": "78bf51f61ae80869b4280016fc53ce77353affa9bffae9b26662ef0b6205ebfa",
+      "sourceId": "chinanews-dxw",
+      "title": "【多源夹具】文化条目 dxw-0",
+      "summary": "多源夹具摘要：chinanews-dxw 的文化条目 dxw-0。",
+      "topic": "文化",
+      "firstSeenAt": "2026-10-18T09:39:00+08:00",
+      "url": "https://example.com/chinanews-dxw/dxw-0"
+    },
+    {
+      "id": "273dbbb6a77af8951767fd35bf1b6ab3adf76c2db3e51cc97aef8ed4448c220f",
+      "sourceId": "chinanews-dxw",
+      "title": "【多源夹具】文化条目 dxw-1",
+      "summary": "多源夹具摘要：chinanews-dxw 的文化条目 dxw-1。",
+      "topic": "文化",
+      "firstSeenAt": "2026-10-18T09:40:00+08:00",
+      "url": "https://example.com/chinanews-dxw/dxw-1"
+    },
+    {
+      "id": "7e406147414a1d74c9b98d1681538d63ec45b113bea6075a27d30850da77191a",
+      "sourceId": "baidu-aishort",
+      "title": "【多源夹具】新闻条目 baidu-0",
+      "summary": "多源夹具摘要：baidu-aishort 的新闻条目 baidu-0。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-18T09:41:00+08:00",
+      "url": "https://example.com/baidu-aishort/baidu-0"
+    },
+    {
+      "id": "cdeb8ae3034ffb9f7b5b9b243c005aa72c8e47b0456de18e3baaff59e4aeb465",
+      "sourceId": "baidu-aishort",
+      "title": "【多源夹具】新闻条目 baidu-1",
+      "summary": "多源夹具摘要：baidu-aishort 的新闻条目 baidu-1。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-18T09:42:00+08:00",
+      "url": "https://example.com/baidu-aishort/baidu-1"
+    },
+    {
+      "id": "98b15ce22102063035c6127b252a0ae972d862324a486e30a8b91c0ba10e3549",
+      "sourceId": "baidu-aishort",
+      "title": "【多源夹具】新闻条目 baidu-2",
+      "summary": "多源夹具摘要：baidu-aishort 的新闻条目 baidu-2。",
+      "topic": "新闻",
+      "firstSeenAt": "2026-10-18T09:43:00+08:00",
+      "url": "https://example.com/baidu-aishort/baidu-2"
+    },
+    {
+      "id": "a292feec06d84f763c36b1a2896d371b1e0b227ae9679b383f02789f5b878720",
+      "sourceId": "baidu-aishort",
+      "title": "【多源夹具】社会条目 baidu-3",
+      "summary": "多源夹具摘要：baidu-aishort 的社会条目 baidu-3。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-18T09:44:00+08:00",
+      "url": "https://example.com/baidu-aishort/baidu-3"
+    },
+    {
+      "id": "18365cf807482a8021bbea7b445083703d31364e8744c533ce4c5887149fcb47",
+      "sourceId": "baidu-aishort",
+      "title": "【多源夹具】社会条目 baidu-4",
+      "summary": "多源夹具摘要：baidu-aishort 的社会条目 baidu-4。",
+      "topic": "社会",
+      "firstSeenAt": "2026-10-18T09:45:00+08:00",
+      "url": "https://example.com/baidu-aishort/baidu-4"
+    }
+  ],
+  "quarantined": [],
+  "sources": [
+    {
+      "sourceId": "baidu-aishort",
+      "lastAttemptedAt": "2026-10-18T09:30:00+08:00",
+      "lastSucceededAt": "2026-10-18T09:30:00+08:00",
+      "lastFailureAt": null,
+      "lastFailureReason": null
+    },
+    {
+      "sourceId": "chinanews-society",
+      "lastAttemptedAt": "2026-10-18T09:30:00+08:00",
+      "lastSucceededAt": "2026-10-18T09:30:00+08:00",
+      "lastFailureAt": null,
+      "lastFailureReason": null
+    },
+    {
+      "sourceId": "chinanews-world",
+      "lastAttemptedAt": "2026-10-18T09:30:00+08:00",
+      "lastSucceededAt": "2026-10-18T09:30:00+08:00",
+      "lastFailureAt": null,
+      "lastFailureReason": null
+    },
+    {
+      "sourceId": "chinanews-dxw",
+      "lastAttemptedAt": "2026-10-18T09:30:00+08:00",
+      "lastSucceededAt": "2026-10-18T09:30:00+08:00",
+      "lastFailureAt": null,
+      "lastFailureReason": null
+    },
+    {
+      "sourceId": "geekpark",
+      "lastAttemptedAt": "2026-10-18T09:30:00+08:00",
+      "lastSucceededAt": "2026-10-18T09:30:00+08:00",
+      "lastFailureAt": null,
+      "lastFailureReason": null
+    },
+    {
+      "sourceId": "solidot",
+      "lastAttemptedAt": "2026-10-18T09:30:00+08:00",
+      "lastSucceededAt": "2026-10-18T09:30:00+08:00",
+      "lastFailureAt": null,
+      "lastFailureReason": null
+    }
+  ]
+}

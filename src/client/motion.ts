@@ -405,7 +405,7 @@ function scheduleIntro(root: HTMLElement, parts: IntroParts): void {
 
 /* ---- 时间线列表动效（原型 initListMotion；listCtx 随重渲染整体回收） ---- */
 
-export function onListRendered(deferred: boolean): void {
+export function onListRendered(deferred: boolean, instantReveal = false): void {
   for (const cleanup of tiltCleanups.splice(0)) cleanup();
   enteringMedia.clear();
   if (listCtx) {
@@ -441,34 +441,38 @@ export function onListRendered(deferred: boolean): void {
         const sum = entry.querySelector<HTMLElement>(".k-summary");
         const meta = entry.querySelector<HTMLElement>(".k-meta");
         const media = entry.querySelector<HTMLElement>(".k-media");
-        // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入，其余上入兜底；
-        // T7 紧凑行无媒体，media 为空时 clip 分支整体跳过——拆字升起/摘要/meta 照常）
-        const clipFrom = entry.classList.contains("layout-a")
-          ? "inset(0 100% 0 0)"
-          : entry.classList.contains("layout-b")
-            ? "inset(0 0 0 100%)"
-            : "inset(0 0 100% 0)";
-        // T14：列表标题拆字升起恢复（T11 撤销）；splitChars 为 T13 递归版（T5 aria 语义保留：
-        // 链接 a 命名点 + 字符 aria-hidden）
-        const chs = headlineLink ? splitChars(headlineLink) : [];
-        if (chs.length) g.set(chs, { yPercent: 110, rotate: 2 });
-        if (sum) g.set(sum, { clipPath: "inset(0 0 100% 0)" });
-        if (meta) g.set(meta, { autoAlpha: 0, letterSpacing: ".2em" });
-        const tl = g.timeline({ paused: true, defaults: { ease: "power3.out" } });
-        if (chs.length) tl.to(chs, { yPercent: 0, rotate: 0, duration: 0.5, stagger: 0.02 }, 0);
-        if (sum) tl.to(sum, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power2.out" }, 0.08);
-        if (meta) tl.to(meta, { autoAlpha: 1, letterSpacing: ".04em", duration: 0.3, ease: "power2.out" }, 0.14);
-        if (media) addMediaEntrance(g, tl, media, 0.1, clipFrom);
+        // 详情返回恢复（Issue #35）：条目直显，不重播拆字/摘要/媒体入场。
+        // 进度线 scrub、节点激活与媒体高光/投影照常重建（规格：原媒体尺寸、揭示/高光保持）。
         const gi = Number(entry.dataset.gi ?? 0);
-        stl.create({
-          trigger: entry,
-          start: "top 85%",
-          once: true,
-          onEnter: () => {
-            if (delay) g.delayedCall(delay, () => tl.play());
-            else tl.play();
-          },
-        });
+        if (!instantReveal) {
+          // 动效词汇分化：图片揭示方向按版面交替（A 左入 / B 右入，其余上入兜底；
+          // T7 紧凑行无媒体，media 为空时 clip 分支整体跳过——拆字升起/摘要/meta 照常）
+          const clipFrom = entry.classList.contains("layout-a")
+            ? "inset(0 100% 0 0)"
+            : entry.classList.contains("layout-b")
+              ? "inset(0 0 0 100%)"
+              : "inset(0 0 100% 0)";
+          // T14：列表标题拆字升起恢复（T11 撤销）；splitChars 为 T13 递归版（T5 aria 语义保留：
+          // 链接 a 命名点 + 字符 aria-hidden）
+          const chs = headlineLink ? splitChars(headlineLink) : [];
+          if (chs.length) g.set(chs, { yPercent: 110, rotate: 2 });
+          if (sum) g.set(sum, { clipPath: "inset(0 0 100% 0)" });
+          if (meta) g.set(meta, { autoAlpha: 0, letterSpacing: ".2em" });
+          const tl = g.timeline({ paused: true, defaults: { ease: "power3.out" } });
+          if (chs.length) tl.to(chs, { yPercent: 0, rotate: 0, duration: 0.5, stagger: 0.02 }, 0);
+          if (sum) tl.to(sum, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power2.out" }, 0.08);
+          if (meta) tl.to(meta, { autoAlpha: 1, letterSpacing: ".04em", duration: 0.3, ease: "power2.out" }, 0.14);
+          if (media) addMediaEntrance(g, tl, media, 0.1, clipFrom);
+          stl.create({
+            trigger: entry,
+            start: "top 85%",
+            once: true,
+            onEnter: () => {
+              if (delay) g.delayedCall(delay, () => tl.play());
+              else tl.play();
+            },
+          });
+        }
         stl.create({
           trigger: entry,
           start: "top 62%",
@@ -883,6 +887,152 @@ function killMenuTl(): void {
     }
   }
   menuTl = null;
+}
+
+/* ---- 来源选择面板（Issue #34）：桌面居中轻抬淡入 / 手机底部上拉，280ms 对称进退 ----
+   与 MENU 同族编排：外壳 dialog 不参与 transform（顶层定位稳定），位移只作用在
+   .k-source-surface；内容（头/选项/提示/操作）160ms 轻显现 + 短错峰。
+   关闭沿原路反向并可被打开中断（kill 旧 timeline）；缺库时返回 false，
+   调用方立即完成（不创建任何补间，键盘操作不等待逐项显现）。
+   减弱动态另走 sourcePanelFadeMotion：只做 opacity 轻淡入淡出（无位移、无错峰），
+   与「缺库立即完成」是两条不同路径（规格 Implementation Decisions）。 */
+let sourceTl: { kill(): void } | null = null;
+
+/** 面板内参与进退的部件（与 CSS 减弱动态段同一组选择器）。 */
+const SOURCE_PART_SELECTOR =
+  ".k-source-surface, .k-source-head, .k-source-all, .k-source-option, .k-source-note, .k-source-actions";
+
+function killSourceTl(): void {
+  if (sourceTl) {
+    try {
+      sourceTl.kill();
+    } catch {
+      // 已回收的 timeline 重复 kill 不阻断
+    }
+  }
+  sourceTl = null;
+}
+
+function sourceMotionParts(dialog: HTMLDialogElement): {
+  surface: HTMLElement;
+  items: Element[];
+} | null {
+  const surface = dialog.querySelector<HTMLElement>(".k-source-surface");
+  if (!surface) return null;
+  const items = [
+    ...dialog.querySelectorAll(".k-source-head, .k-source-all, .k-source-option, .k-source-note, .k-source-actions"),
+  ];
+  return { surface, items };
+}
+
+/**
+ * 减弱动态的轻淡入淡出（规格 Implementation Decisions）：不创建任何位移/错峰时间线，
+ * 只给面板加 `data-source-fade="in"|"out"`，由 CSS keyframes 对 opacity 做 160ms 过渡。
+ *
+ * 为什么用动画而不是 inline opacity + transition：dialog 在 showModal 之前不参与渲染，
+ * 同一帧里「先置 0 再移除」不会产生可过渡的起点（实测 0 个中间帧，computed 直接是 1）；
+ * keyframes 在元素首次渲染时就会从 from 值开始，中间帧稳定可见。
+ *
+ * 返回过渡时长 ms（0 = 不适用：非减弱动态，调用方走 GSAP 或立即完成）。
+ */
+export function sourcePanelFadeMotion(dialog: HTMLDialogElement, to: 0 | 1): number {
+  if (!window.matchMedia(REDUCED_QUERY).matches) return 0;
+  if (!dialog.querySelector(SOURCE_PART_SELECTOR)) return 0;
+  dialog.dataset.sourceFade = to === 1 ? "in" : "out";
+  return motionDuration(dialog, "--motion-fast", 160) * 1000 + 40;
+}
+
+/**
+ * 面板光标可读性（复审 B9，等价于 MENU 的 data-menu-pointer）：面板是透明 dialog，
+ * 顶层里无法与纸面反相混合，指针落到面板之外时改用当前主题墨色。返回 null 表示
+ * 光标未激活（系统指针），调用方不写属性。
+ */
+export function sourcePointerState(
+  dialog: HTMLDialogElement,
+  x: number,
+  y: number,
+): "exposed" | "covered" | null {
+  if (!rootElement()?.classList.contains("k-cursor-on")) return null;
+  const surface = dialog.querySelector<HTMLElement>(".k-source-surface");
+  if (!surface) return null;
+  const rect = surface.getBoundingClientRect();
+  const inside = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  return inside ? "covered" : "exposed";
+}
+
+/** 打开动效：返回是否走了动画（false = 调用方按减弱动态/缺库自行收尾）。 */
+export function sourcePanelOpenMotion(dialog: HTMLDialogElement, onOpened: () => void): boolean {
+  const g = (window as MotionWindow).gsap;
+  if (!g || !enabled) return false;
+  const parts = sourceMotionParts(dialog);
+  if (!parts) return false;
+  const { surface, items } = parts;
+  killSourceTl();
+  moveCursorIntoTopLayer(dialog);
+  const duration = motionDuration(dialog, "--motion-normal", 280);
+  const fast = motionDuration(dialog, "--motion-fast", 160);
+  const mobile = window.matchMedia("(max-width: 767px)").matches;
+  if (mobile) g.set(surface, { yPercent: 100, opacity: 1, willChange: "transform" });
+  else g.set(surface, { y: 12, scale: 0.985, autoAlpha: 0, willChange: "transform,opacity" });
+  g.set(items, { y: 8, opacity: 0 });
+  sourceTl = g
+    .timeline({ onComplete: onOpened })
+    .to(
+      surface,
+      mobile
+        ? { yPercent: 0, duration, ease: "power3.out" }
+        : { y: 0, scale: 1, autoAlpha: 1, duration, ease: "power3.out" },
+      0,
+    )
+    .to(items, {
+      y: 0,
+      opacity: 1,
+      duration: fast,
+      stagger: { amount: Math.min(0.08, Math.max(0, duration - fast)) },
+      ease: "power3.out",
+    }, 0.04);
+  return true;
+}
+
+/** 关闭动效：返回是否走了动画（false = 调用方按减弱动态/缺库自行收尾）。 */
+export function sourcePanelCloseMotion(dialog: HTMLDialogElement, onClosed: () => void): boolean {
+  const g = (window as MotionWindow).gsap;
+  if (!g || !enabled) return false;
+  const parts = sourceMotionParts(dialog);
+  if (!parts) return false;
+  const { surface, items } = parts;
+  killSourceTl();
+  const duration = motionDuration(dialog, "--motion-normal", 280);
+  const fast = motionDuration(dialog, "--motion-fast", 160);
+  const mobile = window.matchMedia("(max-width: 767px)").matches;
+  g.set(surface, { willChange: "transform" });
+  sourceTl = g
+    .timeline({ onComplete: onClosed })
+    .to(items, { y: 8, opacity: 0, duration: fast, ease: "power3.out" }, 0)
+    .to(
+      surface,
+      mobile
+        ? { yPercent: 100, duration, ease: "power3.out" }
+        : { y: 12, scale: 0.985, autoAlpha: 0, duration, ease: "power3.out" },
+      0,
+    );
+  return true;
+}
+
+/** 同步归位也适用于 GSAP 时钟暂停；回收不遗留隐藏样式、光标状态或旧回调。 */
+export function resetSourcePanelMotion(dialog: HTMLDialogElement, restoreCursor = true): void {
+  killSourceTl();
+  dialog.removeAttribute("data-source-pointer");
+  dialog.removeAttribute("data-source-fade");
+  const elements = [...dialog.querySelectorAll<HTMLElement>(SOURCE_PART_SELECTOR)];
+  (window as MotionWindow).gsap?.killTweensOf(elements);
+  // clearProps 同时使 GSAP 的 transform 缓存失效；显式 progress(1) 不依赖父时钟（停钟场景）。
+  (window as MotionWindow).gsap?.timeline({ paused: true })
+    .to(elements, { clearProps: "transform,opacity,visibility,willChange", duration: 0.001 }).progress(1).kill();
+  elements.forEach((el) => {
+    for (const property of ["transform", "opacity", "visibility", "will-change"]) el.style.removeProperty(property);
+  });
+  if (restoreCursor) moveCursorBackFromTopLayer();
 }
 
 /* ---- 自定义光标（原型 initCursor，仅 pointer:fine） ----

@@ -59,6 +59,11 @@
 - 构建期由 `src/lib/snapshot.ts` 的 `loadSnapshot()` 读取快照：
   - 默认读 `fixtures/snapshot.json`（相对项目根解析）。
   - 设置环境变量 `SNAPSHOT_PATH`（绝对路径，或相对项目根路径）可注入其他快照文件。
+  - **路径限制（2026-10-20 安全加固）**：`SNAPSHOT_PATH` 属外部输入，解析后必须落在允许的根内，
+    否则构建直接失败并给出越界原因（`src/lib/path-guard.ts`，CWE-22 纵深防御）。
+    默认允许根 = 项目根 + 系统临时目录（后者用于既有单测在临时目录构造快照）。
+    部署侧可用 `SNAPSHOT_ROOTS`（多个根用系统路径分隔符 `;` / `:`）显式收窄，例如只允许项目根。
+- `scripts/build-snapshot.ts` 的 `--out` 同样受项目根限制：越界即非零退出，不写出任何文件。
 - 该模块仅在构建期（Node 环境）执行，不进入浏览器产物；页面本身不发起任何数据请求。
 - 文件缺失、JSON 非法或缺少必需字段时构建直接失败，不静默造数据（`tests/unit/snapshot.test.ts` 覆盖）。
 

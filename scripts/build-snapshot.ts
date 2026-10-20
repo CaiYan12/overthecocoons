@@ -21,6 +21,7 @@
  */
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import { PathOutsideRootError, resolveWithinRoot } from "../src/lib/path-guard.ts";
 import {
   type ItemsFile,
   type ManifestFile,
@@ -86,6 +87,20 @@ function readJsonFile(dir: string, filename: string): unknown {
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
 
+  // 安全加固（2026-10-20）：--out 来自命令行参数，属于外部输入。解析后必须落在项目根内
+  // （CI 用相对路径 .snapshot/snapshot.json；根内绝对路径同样允许），防止 ../ 穿越写文件（CWE-22）。
+  let outPath: string;
+  try {
+    outPath = resolveWithinRoot(args.out, process.cwd());
+  } catch (cause) {
+    if (cause instanceof PathOutsideRootError) {
+      console.error(`[build-snapshot] --out 路径越界，拒绝写出：${args.out}`);
+      console.error(`  要求：输出路径必须位于项目根 ${process.cwd()} 之内`);
+      process.exit(1);
+    }
+    throw cause;
+  }
+
   const state = readJsonFile(args.dataDir, STATE_FILENAME) as StateFile;
   const items = readJsonFile(args.dataDir, ITEMS_FILENAME) as ItemsFile;
   const manifest = readJsonFile(args.dataDir, MANIFEST_FILENAME) as ManifestFile;
@@ -100,8 +115,8 @@ function main(): void {
   }
 
   const snapshot = buildPublicSnapshot(state, items, state.stateTakenAt);
-  mkdirSync(dirname(args.out), { recursive: true });
-  writeFileSync(args.out, JSON.stringify(snapshot, null, 2) + "\n", "utf-8");
+  mkdirSync(dirname(outPath), { recursive: true });
+  writeFileSync(outPath, JSON.stringify(snapshot, null, 2) + "\n", "utf-8");
 
   console.log(
     `[build-snapshot] 快照已生成：entries=${snapshot.entries.length} quarantined=${snapshot.quarantined.length} ` +

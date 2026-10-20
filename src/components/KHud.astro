@@ -1,10 +1,16 @@
 ---
 // 右栏 Editorial HUD：来源 / 快照状态 / （时间线页）当前阅读位与阅读进度 / 项目入口。
 // NOW READING 与 READING PROGRESS 的动态行为属 Ticket 06，静态层输出初始值。
+//
+// 时间线变体（Issue #34）：SOURCE 段是「选择来源」入口——静态层默认全选六源，
+// 入口为通往来源说明页的真实链接（无 JS / 初始化失败的原生降级）；
+// 来源筛选初始化成功后由 src/client/source-filter.ts 原地替换为按钮并挂上面板。
+// 内容型变体（variant="content"）保持原来源说明用途，不加筛选入口。
 import { formatDateTime } from "../lib/timeline.ts";
 import { siteUrl } from "../lib/paths.ts";
 import { loadSnapshot } from "../lib/snapshot.ts";
-import { sourcePresentation } from "../lib/sources.ts";
+import { LEGACY_SOURCE_ID, sourcePresentation } from "../lib/sources.ts";
+import { SUBSCRIPTIONS, SUBSCRIPTION_IDS, selectionSummary, selectionTitle } from "../lib/source-filter.ts";
 
 interface Props {
   /** timeline=时间线页（含阅读进度）；content=长文/详情页（省略阅读区）。 */
@@ -19,15 +25,31 @@ const snapTime = formatDateTime(snapshotGeneratedAt);
 const totalText = String(total).padStart(2, "0");
 const sourceIds = [...new Set(loadSnapshot().sources.map(source => source.sourceId))];
 const sourceTitle = sourceIds.length === 1 ? sourcePresentation(sourceIds[0]).name : "多源聚合";
+// 时间线变体静态默认 = 全部来源（六订阅全选），与客户端首次进入口径一致
+const allSourceIds = SUBSCRIPTION_IDS;
 ---
 
 <div class="k-hud-boundary">
 <aside class="k-hud" aria-label="来源与数据状态" data-khud data-hud-timeline={variant === "timeline" ? "" : undefined}>
-  <div class="sec">
-    <p class="h">SOURCE</p>
-    <p class="big">{sourceTitle}</p>
-    <p class="dim">{sourceIds.length === 1 && sourceIds[0] === "baidu-aishort" ? "BAIDU HOT · 热点线索" : `${sourceIds.length} 个订阅源 · 热点与文章`}</p>
-  </div>
+  {
+    variant === "timeline" ? (
+      <div class="sec sec-source">
+        <p class="h">SOURCE</p>
+        {/* 无 JS / 初始化失败：真实链接通往来源说明页；aria-haspopup 只在客户端替换为按钮后添加。
+            静态层是文字链接，按 #32 统一 LINK 档；客户端接管为按钮后改用轻量可点击态。 */}
+        <a class="k-source-open" data-source-open data-cursor="LINK" href={siteUrl("/sources/")}>
+          <span class="k-source-title" data-source-title>{selectionTitle(allSourceIds)}</span>
+          <span class="k-source-dim" data-source-dim>{selectionSummary(allSourceIds)}</span>
+        </a>
+      </div>
+    ) : (
+      <div class="sec">
+        <p class="h">SOURCE</p>
+        <p class="big">{sourceTitle}</p>
+        <p class="dim">{sourceIds.length === 1 && sourceIds[0] === LEGACY_SOURCE_ID ? "BAIDU HOT · 热点线索" : `${sourceIds.length} 个订阅源 · 热点与文章`}</p>
+      </div>
+    )
+  }
   <div class="sec">
     <p class="h">STATUS</p>
     <p><span class="k-dot" aria-hidden="true"></span>快照 · 每日更新 · {snapTime}（北京时间）{isFixture && "（演示）"}</p>
@@ -62,4 +84,47 @@ const sourceTitle = sourceIds.length === 1 ? sourcePresentation(sourceIds[0]).na
     </p>
   </div>
 </aside>
+{
+  /* 来源多选面板（Issue #34）：仅时间线页渲染。静态层已含全部结构，无 JS 时 dialog 不打开，
+     入口保持为来源说明页链接；客户端初始化成功后才把它接管为模态面板。 */
+  variant === "timeline" && (
+    <dialog class="k-source" data-ksource aria-labelledby="k-source-heading">
+      <div class="k-source-surface">
+        <div class="k-source-head">
+          <h2 class="k-source-heading" id="k-source-heading">选择来源</h2>
+          <button class="k-source-close" type="button" data-ksource-close data-cursor-soft>关闭 ✕</button>
+        </div>
+        <div class="k-source-body">
+          <label class="k-source-all">
+            <input type="checkbox" data-ksource-all-input>
+            <span class="k-source-box" aria-hidden="true">
+              {/* 图标几何取自 Lucide v1.59.0（ISC）：check = "M20 6 9 17l-5-5"、minus = "M5 12h14"，
+                  24×24 viewBox / stroke-width 2 / round cap+join。由 CSS 按 checked / indeterminate 切换。 */}
+              <svg class="k-source-mark k-source-mark-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5" /></svg>
+              <svg class="k-source-mark k-source-mark-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14" /></svg>
+            </span>
+            <span class="k-source-label">全部来源</span>
+          </label>
+          <div class="k-source-options" data-ksource-options>
+            {SUBSCRIPTIONS.map((item) => (
+              <label class="k-source-option">
+                <input type="checkbox" class="k-source-input" value={item.id} checked />
+                <span class="k-source-box" aria-hidden="true">
+                  <svg class="k-source-mark k-source-mark-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5" /></svg>
+                  <svg class="k-source-mark k-source-mark-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14" /></svg>
+                </span>
+                <span class="k-source-label">{item.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <p class="k-source-note" data-ksource-note role="status" aria-live="polite">{selectionSummary(allSourceIds)}</p>
+        <div class="k-source-actions">
+          <button type="button" class="k-source-cancel" data-ksource-cancel data-cursor-soft>取消</button>
+          <button type="button" class="k-source-apply" data-ksource-apply data-cursor-soft>应用</button>
+        </div>
+      </div>
+    </dialog>
+  )
+}
 </div>

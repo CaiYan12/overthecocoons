@@ -480,6 +480,131 @@ html:has(dialog[data-kmenu][open]) [data-scrollbar=page] { visibility: hidden }
 /* 页面过渡面板样式已删除（T4，UI 票 #21）：客户端零驱动的死代码，P2 采用原生
    View Transition 跨页过渡（其样式见上方 data-vt 块），此面板不再保留结构占位。 */
 
+/* ============================================================
+   来源多选面板（Issue #34）
+   桌面居中纸面模态 / ≤767px 底部上拉；沿用 MENU 的同主题层次
+   （94% --paper + 6% --ink）与 4px 轻投影，不引入新配色或字体请求。
+   ============================================================ */
+
+/* 入口：时间线 HUD SOURCE 段的标题即入口（保留原字号，辅文说明已选数量）。 */
+.k-source-open { display: block; text-align: left; width: 100%; margin: 0; padding: 2px 0; min-height: 44px; color: inherit; cursor: pointer }
+.k-source-open .k-source-title { display: block; font: 600 22px/1.25 var(--serif); margin: 0 }
+.k-source-open .k-source-dim { display: block; color: var(--muted); margin: 2px 0 0; font-size: 13px }
+/* hover 只给精细指针（站点惯例）：触屏点击后不得遗留鼠标悬停视觉态。 */
+@media (hover: hover) and (pointer: fine) { .k-source-open:hover .k-source-title { color: var(--accent) } }
+.k-source-open:focus-visible .k-source-title { color: var(--accent) }
+
+/* 面板外壳：dialog 自身不参与 transform（顶层定位稳定），动效只作用在 .k-source-surface。 */
+dialog.k-source { border: 0; padding: 0; margin: 0; background: transparent; color: var(--ink); max-width: none; max-height: none; overflow: visible }
+dialog.k-source::backdrop { background: color-mix(in srgb, var(--ink) 38%, transparent) }
+.k-source-surface { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 22px 24px 20px;
+  background: color-mix(in srgb, var(--paper) 94%, var(--ink)); border: 1px solid var(--rule);
+  box-shadow: 0 1px 0 rgb(0 0 0 / .08), 0 18px 40px rgb(0 0 0 / .12); max-height: calc(100dvh - 48px) }
+.k-source-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--rule) }
+.k-source-heading { margin: 0; font: 600 20px/1.3 var(--serif); letter-spacing: .02em }
+.k-source-close { flex: 0 0 auto; font-size: 12px; letter-spacing: .18em; border: 1px solid var(--rule); padding: 8px 14px; min-height: 44px; color: var(--ink) }
+/* 所有新增 hover 只对精细指针生效（站点惯例，见 .k-top / .k-scrollbar）：
+   触屏点击后不得遗留鼠标悬停视觉态（规格 Implementation Decisions）。 */
+@media (hover: hover) and (pointer: fine) {
+  .k-source-close:hover { color: var(--accent); border-color: var(--accent) }
+}
+/* 短屏只让面板内容滚动：头部、提示与操作区常驻可见。 */
+.k-source-body { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: auto; padding: 2px }
+.k-source-all, .k-source-option { position: relative; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px;
+  border: 1px solid var(--rule); background: var(--surface); cursor: pointer; transition: border-color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out) }
+.k-source-all { border-style: dashed; margin-bottom: 4px }
+/* 真实 checkbox：视觉隐藏但保持可聚焦（不用 display:none / visibility:hidden）。 */
+.k-source-all input, .k-source-option input { position: absolute; left: 10px; top: 50%; width: 18px; height: 18px; margin: 0; transform: translateY(-50%); opacity: 0; pointer-events: none }
+.k-source-box { flex: 0 0 auto; position: relative; width: 16px; height: 16px; border: 1px solid var(--rule); background: transparent; transition: border-color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out) }
+/* 勾号/横条用内联 SVG 描边绘制（见 KHud.astro .k-source-mark）。选中不只靠颜色
+   （边框 + 底色 + 勾号三重表达）。
+   为什么不再用 border 拼：border 折角旋转后布局盒中心 ≠ 视觉重心，按「布局盒居中」
+   定位两次都得到肉眼可见的偏移（用户两次实看指出）。现采用 Lucide v1.59.0（ISC）的
+   官方几何：24×24 viewBox、stroke-width 2、round cap/join；path 本身在 viewBox 内
+   对称，等比缩放后几何中心与视觉重心一致。 */
+.k-source-mark { position: absolute; inset: 2px; width: auto; height: auto; display: block;
+  color: var(--paper); opacity: 0; transition: opacity var(--motion-fast) var(--ease-out) }
+.k-source-mark-dash { display: none }
+.k-source-option input:checked ~ .k-source-box,
+.k-source-all input:checked ~ .k-source-box { border-color: var(--accent); background: var(--accent) }
+.k-source-option input:checked ~ .k-source-box .k-source-mark-check,
+.k-source-all input:checked ~ .k-source-box .k-source-mark-check { opacity: 1 }
+.k-source-option input:indeterminate ~ .k-source-box,
+.k-source-all input:indeterminate ~ .k-source-box { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, transparent) }
+/* 部分选中：换成同一套 Lucide 「minus」横线（几何居中，无需另行定位）。 */
+.k-source-option input:indeterminate ~ .k-source-box .k-source-mark-check,
+.k-source-all input:indeterminate ~ .k-source-box .k-source-mark-check { display: none }
+.k-source-option input:indeterminate ~ .k-source-box .k-source-mark-dash,
+.k-source-all input:indeterminate ~ .k-source-box .k-source-mark-dash { display: block; opacity: 1; color: var(--accent) }
+.k-source-label { flex: 1 1 auto; min-width: 0; font-size: 14.5px; line-height: 1.35; overflow-wrap: anywhere }
+.k-source-option:has(input:checked), .k-source-all:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)) }
+@media (hover: hover) and (pointer: fine) {
+  .k-source-option:hover, .k-source-all:hover { border-color: var(--accent) }
+}
+/* 键盘焦点环走 :has()：真实 input 不可见但可聚焦，焦点态必须落在整行上。 */
+.k-source-option:has(input:focus-visible), .k-source-all:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px }
+.k-source-options { display: flex; flex-wrap: wrap; gap: 8px }
+.k-source-options .k-source-option { flex: 1 1 210px }
+.k-source-note { margin: 0; font-size: 12.5px; letter-spacing: .06em; color: var(--muted); min-height: 1.5em }
+.k-source-note[data-invalid] { color: var(--accent) }
+.k-source-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px }
+.k-source-cancel, .k-source-apply { min-height: 44px; padding: 10px 20px; border: 1px solid var(--rule); font-size: 13px; letter-spacing: .12em; background: var(--surface); color: var(--ink) }
+.k-source-apply { border-color: var(--accent); color: var(--accent); font-weight: 600 }
+@media (hover: hover) and (pointer: fine) {
+  .k-source-cancel:hover { border-color: var(--ink) }
+  .k-source-apply:hover { background: color-mix(in srgb, var(--accent) 8%, var(--surface)) }
+}
+.k-source-apply:disabled { opacity: .42; border-color: var(--rule); color: var(--muted); cursor: not-allowed; background: var(--surface) }
+/* 桌面：居中纸面模态。 */
+@media (min-width: 768px) {
+  dialog.k-source { position: fixed; inset: 0; width: min(560px, calc(100vw - 48px)); height: fit-content; margin: auto }
+}
+/* ≤767px：底部上拉，宽度占满、内容区按需滚动。 */
+@media (max-width: 767px) {
+  dialog.k-source { position: fixed; inset: auto 0 0 0; width: 100vw; height: auto; margin: 0 }
+  .k-source-surface { max-height: min(86dvh, calc(100dvh - 16px)); padding: 18px 16px calc(16px + env(safe-area-inset-bottom)); border-left: 0; border-right: 0; border-bottom: 0 }
+  .k-source-options .k-source-option { flex: 1 1 100% }
+  .k-source-actions { flex-direction: column-reverse }
+  .k-source-cancel, .k-source-apply { width: 100% }
+}
+/* 减弱动态：取消空间位移与错峰，保留 160ms 轻淡入淡出（只动 opacity，不得有 transform 过渡）。
+   动效函数侧不创建任何位移时间线（motion.ts 的 sourcePanelFadeMotion 只挂 data-source-fade）。
+   用 keyframes 而非 inline opacity + transition：dialog 在 showModal 前不参与渲染，
+   同帧改内联 opacity 拿不到可过渡的起点（实测 0 个中间帧）。 */
+@media (prefers-reduced-motion: reduce) {
+  [data-ksource][data-source-fade="in"] .k-source-surface,
+  [data-ksource][data-source-fade="in"] .k-source-head,
+  [data-ksource][data-source-fade="in"] .k-source-all,
+  [data-ksource][data-source-fade="in"] .k-source-option,
+  [data-ksource][data-source-fade="in"] .k-source-note,
+  [data-ksource][data-source-fade="in"] .k-source-actions {
+    animation: k-source-fade-in var(--motion-fast) var(--ease-out) both
+  }
+  [data-ksource][data-source-fade="out"] .k-source-surface,
+  [data-ksource][data-source-fade="out"] .k-source-head,
+  [data-ksource][data-source-fade="out"] .k-source-all,
+  [data-ksource][data-source-fade="out"] .k-source-option,
+  [data-ksource][data-source-fade="out"] .k-source-note,
+  [data-ksource][data-source-fade="out"] .k-source-actions {
+    animation: k-source-fade-out var(--motion-fast) var(--ease-out) both
+  }
+  /* 勾号淡入属轻反馈，减弱动态下即时到位（面板淡入淡出不受影响）。 */
+  .k-source-box, .k-source-mark { transition-duration: 0s }
+}
+@keyframes k-source-fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes k-source-fade-out { from { opacity: 1 } to { opacity: 0 } }
+
+/* 面板光标可读性（复审 B9，与 MENU 的 data-menu-pointer 等价）：
+   面板是透明 dialog，位于 top layer，无法与面板外的纸面反相混合——指针落到面板之外时
+   改用当前主题墨色。属性由 source-filter.ts 按 surface 边界写入，关闭时回收。 */
+[data-ksource][data-source-pointer=exposed] .k-cursor { mix-blend-mode: normal }
+[data-ksource][data-source-pointer=exposed] .k-cursor-dot { background: var(--ink) }
+[data-ksource][data-source-pointer=exposed] .k-cursor-ring-shape { border-color: var(--ink) }
+
+/* 空态放宽操作（Issue #34）：来源/主题各自放宽，与「查看全部」并排换行。 */
+.k-empty-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center }
+
+
 /* 自定义光标（驱动属 Ticket 06；保留结构占位，静态层不可见） */
 /* UI 票 #14：反相混合作用在容器上。容器自身是固定定位的堆叠上下文（= 隔离组），写在子元素上的
    difference 只能与组内透明背景混合、看不到页面，实测渲染为原始白色（浅色纸面 1.09:1）；
