@@ -22,7 +22,8 @@
 
 | 命令 | 用途 |
 | --- | --- |
-| `pnpm test:node` | 只跑 Node 单元测试（数据规则、编排、工作流定义 lint） |
+| `pnpm test:node` | 只跑 Node 单元测试（数据规则、编排、工作流定义 lint）。**不先构建**：其中产物断言读的是既有 `dist/`，源码改动后可能对该改动静默开绿灯；需要产物与源码一致的保证时用下一条 |
+| `pnpm test:artifacts` | 只跑构建产物断言（`tests/unit/render.test.ts`）：**先 `build` 再测**，构建失败即停，故 `dist/` 必定来自当前源码；默认走 `fixtures/snapshot.json` 固定夹具，断言的是夹具产物而非生产数据产物 |
 | `pnpm test:e2e` | 只跑 e2e 的 chromium project（本机日常检测口径，50 用例） |
 | `pnpm test:e2e:matrix` | 跑全部 5 个 e2e project（chromium/firefox/webkit/mobile-chrome/mobile-safari，需另装 firefox/webkit） |
 | `pnpm smoke:source` | 首源只读烟测：发起真实网络读取，不写任何文件；结果为单机单次口径，不构成对源的可用性证明 |

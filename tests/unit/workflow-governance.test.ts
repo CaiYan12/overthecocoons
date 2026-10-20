@@ -276,6 +276,97 @@ describe("build-deploy 工作流定义（Ticket 08：main 只读构建 + Pages �
     assert.match(yaml, /pnpm\/action-setup@[0-9a-f]{40} # v6\.1\.0/);
     assert.match(yaml, /pnpm install --frozen-lockfile/, "依赖严格按锁文件");
   });
+});
+
+/**
+ * 发布前门禁（2026-10-20）：完整检查与发布之间的阻断关系。
+ *
+ * 背景：此前 build-deploy 只跑 install + build，从不跑 check/test，CI 绿灯只证明「能构建」。
+ * 这些断言把「门禁存在且位于发布之前」固化为机械检查，防止后人删改后无人察觉。
+ */
+describe("build-deploy 发布前门禁（检查失败必须阻止部署）", () => {
+  const yaml = readRepoFile(".github/workflows/build-deploy.yml");
+  const lines = yaml.split("\n");
+  /** 返回某一行在文件中的下标，找不到即断言失败（避免 substring 位置比较的边界歧义）。 */
+  const lineOf = (needle: RegExp, label: string): number => {
+    const index = lines.findIndex(line => needle.test(line));
+    assert.notEqual(index, -1, `未找到：${label}`);
+    return index;
+  };
+
+  const uploadIdx = lineOf(/^\s+- name: Upload Pages artifact\s*$/, "Upload Pages artifact 步骤");
+  const generateIdx = lineOf(/^\s+- name: Generate public snapshot from data branch\s*$/, "生产快照生成步骤");
+  const checkIdx = lineOf(/^\s+- name: Check types/, "Check types 门禁步骤");
+  const fixtureBuildIdx = lineOf(/^\s+- name: Build with fixtures for tests/, "夹具构建步骤");
+  const unitIdx = lineOf(/^\s+- name: Unit \+ artifact tests/, "单元与产物测试步骤");
+  const e2eIdx = lineOf(/^\s+- name: E2E tests/, "e2e 测试步骤");
+
+  it("四项门禁都存在：check / 夹具 build / test:node / test:e2e", () => {
+    assert.match(yaml, /run: pnpm run check/, "必须有类型检查");
+    assert.match(yaml, /run: pnpm run test:node/, "必须有单元与产物测试");
+    assert.match(yaml, /run: pnpm run test:e2e/, "必须有 e2e");
+    assert.match(yaml, /playwright install --with-deps chromium/, "e2e 前须安装 chromium");
+  });
+
+  it("门禁全部位于 upload-pages-artifact 之前（失败即 build 失败，deploy 不被调度）", () => {
+    for (const [idx, name] of [
+      [checkIdx, "Check types"],
+      [fixtureBuildIdx, "Build with fixtures"],
+      [unitIdx, "Unit + artifact tests"],
+      [e2eIdx, "E2E tests"],
+    ] as const) {
+      assert.ok(idx < uploadIdx, `${name} 必须在上传产物之前，否则失败也可能已发布`);
+    }
+    // 顺序也须成立：check → 夹具 build → 单元/产物 → e2e。
+    assert.ok(checkIdx < fixtureBuildIdx, "check 应在构建前");
+    assert.ok(fixtureBuildIdx < unitIdx, "产物断言依赖夹具构建，构建须在前");
+    assert.ok(unitIdx < e2eIdx, "e2e 较慢，放在单元测试之后");
+  });
+
+  it("夹具构建与生产构建相互隔离：测试构建不得注入 SNAPSHOT_PATH", () => {
+    // 夹具构建步骤的**可执行部分** = 从该 name 到下一个 `- name:`，且排除注释行
+    // （注释允许解释该约束本身，与本文件既有口径一致）。
+    const nextStep = lines.findIndex((line, i) => i > fixtureBuildIdx && /^\s+- name: /.test(line));
+    assert.notEqual(nextStep, -1, "夹具构建步骤后应还有步骤");
+    const fixtureBlock = lines
+      .slice(fixtureBuildIdx, nextStep)
+      .filter(line => !line.trimStart().startsWith("#"))
+      .join("\n");
+    assert.doesNotMatch(fixtureBlock, /SNAPSHOT_PATH/, "夹具构建不得注入生产快照，否则产物断言测的就不是夹具");
+    // 生产构建仍必须注入真实快照（既有约束，重复断言以防被误伤）。
+    assert.match(yaml, /SNAPSHOT_PATH: \.snapshot\/snapshot\.json/, "生产构建须注入 data 生成的快照");
+  });
+
+  it("门禁不得被移到部署之后，也不得改成并行工作流（并行无先后保证）", () => {
+    assert.ok(generateIdx > uploadIdx || generateIdx > unitIdx, "生产快照生成应位于门禁之后");
+    assert.match(yaml, /needs:\s*build\s*$/m, "deploy 必须依赖 build 成功——这是阻断生效的机制");
+    // 阻断依赖 needs:build，若改成 always() 或增加 always() 条件的 deploy 就会绕过门禁。
+    assert.doesNotMatch(yaml, /if:\s*always\(\)/, "不得用 always() 绕过门禁");
+  });
+
+  it("分层门禁：data 更新（repository_dispatch）跳过 e2e，但代码推送必须跑全量", () => {
+    // 用户裁定（2026-10-20）：data 更新不改代码，同一 commit 重复跑 e2e 无新信息。
+    // 该豁免必须**只**针对 repository_dispatch，不得扩大到 push/workflow_dispatch。
+    const nextStep = lines.findIndex((line, i) => i > e2eIdx && /^\s+- name: /.test(line));
+    assert.notEqual(nextStep, -1, "E2E 步骤后应还有生产构建步骤");
+    const e2eBlock = lines.slice(e2eIdx, nextStep).join("\n");
+    assert.match(
+      e2eBlock,
+      /if:\s*github\.event_name != 'repository_dispatch'/,
+      "e2e 豁免条件必须精确为 repository_dispatch（不得遗漏，也不得放宽到其它事件）",
+    );
+    // install 步骤同样跳过，避免为不跑的 e2e 白装浏览器。
+    const pwIdx = lineOf(/^\s+- name: Install Playwright browsers/, "Playwright 安装步骤");
+    const pwNext = lines.findIndex((line, i) => i > pwIdx && /^\s+- name: /.test(line));
+    const pwBlock = lines.slice(pwIdx, pwNext).join("\n");
+    assert.match(pwBlock, /if:\s*github\.event_name != 'repository_dispatch'/, "浏览器安装应随 e2e 一同跳过");
+    // check / build / test:node 三个秒级门禁**不得**带事件豁免——它们对真实数据变化仍有意义。
+    for (const [label, idx] of [["Check types", checkIdx], ["Build with fixtures", fixtureBuildIdx], ["Unit + artifact tests", unitIdx]] as const) {
+      const next = lines.findIndex((line, i) => i > idx && /^\s+- name: /.test(line));
+      const block = lines.slice(idx, next).join("\n");
+      assert.doesNotMatch(block, /if:\s*/, `${label} 不得带事件豁免条件`);
+    }
+  });
 
   it("快照 CLI 损坏即拒绝：build-snapshot.ts 调用 verifyManifest，失败退出 1", () => {
     const cli = readRepoFile("scripts/build-snapshot.ts");

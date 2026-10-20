@@ -76,6 +76,15 @@
 - BFCache 命中路径：headless 拿不到 `pageshow.persisted`（五配置显式 skip 并记录），最终用 headful（窗口移出屏幕外）一次性确认 `persisted === true` 时来源/页码/阅读位置均恢复。**headless 自动化仍未覆盖该路径**，不得据一次人工确认宣称自动化已覆盖。
 - 仍未验证：新真机、FPS、线上部署；移动配置为设备模拟。未推送、未部署。实施票 #34/#35 已按验收闭环，父规格 #33 保持 OPEN。
 
+## 测试入口与产物契约（2026-10-20）
+
+- `pnpm test` = `check` → `build` → `test:node` → `test:e2e`；**顺序承载依赖**（e2e 的 webServer 与产物断言都依赖 `dist`），不要拆散重排。
+- **`test:node` 不先构建**：`tests/unit/render.test.ts` 读既有 `dist/`。已实测「改源码不重建 → 346 项全绿」的静默漏检，故需要「源码与产物一致」的硬保证时用 `pnpm run test:artifacts`（先 build、失败即停）。这是入口选择问题，不是测试缺陷，但仍不得用 `test:node` 的绿色声称产物正确。
+- **产物测试测的是夹具，不是生产数据**：`test:artifacts` 与本地 `build` 默认走 `fixtures/snapshot.json`（`src/lib/snapshot.ts` 的 `DEFAULT_SNAPSHOT_PATH`），除非显式注入 `SNAPSHOT_PATH`。生产真实数据产物另由 `build-deploy.yml` 的 `SNAPSHOT_PATH=.snapshot/snapshot.json` 构建，两者不得混为一谈。
+- CI 门禁在 `build-deploy.yml` 的 `build` job 内、`upload-pages-artifact` **之前**：`check` + 夹具 `build` + `test:node` + `test:e2e`。任一失败 → `build` 失败 → `deploy`（`needs: build`）不被调度，对 push / workflow_dispatch / repository_dispatch 三种触发同时生效。禁止把这些步骤移到部署之后或另建工作流并联（并联无先后保证，e2e 失败时代码可能已上线）。
+- **分层豁免**：`repository_dispatch`（data 更新，代码零改动）跳过 `playwright install` 与 `test:e2e`；`check` / 夹具 `build` / `test:node` 仍跑。该豁免**只**针对 `repository_dispatch`，不得扩大到 push / workflow_dispatch（治理测试已钉住）。实测净增工时由 3.6 小时/月降到约 1.9 小时/月。
+- 光标形变测试有**两条路径**，都要保留：正常路径断言真实形变与渲染；超时路径主动延迟 `vt.ready` 越过 250ms 看门狗，断言正确降级（无形变、无残影、后续交互可用）。**不得放大 250ms 看门狗、放宽 ratio 阈值、加 retry 或排除用例**来换取通过——重负载下形变被跳看门狗主动跳过属设计内降级，不是 bug。
+
 ## 2026-10-20 六源真实上线 + 定时任务陈旧 SHA 缺陷
 
 - **线上已从单源变为六源**（2026-10-20 20:00 起）：data `8a4c6fbf`、**865 条**、六源全绿（百度 745 / 中新网社会 30 / 国际 30 / 极客公园 30 / Solidot 20 / 东西问 10）。此前线上长期只有 `baidu-aishort` 一个来源，多选功能无法在真实数据上验收。

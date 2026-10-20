@@ -84,6 +84,39 @@ jobs:
       - name: Install dependencies（严格按锁文件）
         run: pnpm install --frozen-lockfile
 
+      # ---- 发布前门禁（2026-10-20）----
+      # 位置约束：必须在 upload-pages-artifact 之前。deploy 有 needs: build，
+      # 因此下列任一步骤失败 → build 失败 → deploy 连调度都不会发生。
+      # 本工作流由 push(main) / workflow_dispatch / repository_dispatch 三种形态触发，
+      # 门禁在同一条 build job 内，故三种形态同时受约束；不另建并联工作流——
+      # 并联的两个运行彼此无先后保证，e2e 失败时代码可能已经上线。
+      # 注意：下方测试构建使用**固定夹具**（不设 SNAPSHOT_PATH → 走默认演示快照），
+      # 与紧随其后的生产构建（SNAPSHOT_PATH=.snapshot/snapshot.json）是两次独立构建，
+      # 互不污染：产物断言测夹具，部署产物测真实数据。
+      - name: Check types（astro check）
+        run: pnpm run check
+
+      - name: Build with fixtures for tests（不注入生产快照，故走默认演示快照）
+        run: pnpm run build
+
+      - name: Unit + artifact tests（产物断言针对上面这次夹具构建）
+        run: pnpm run test:node
+
+      - name: Install Playwright browsers（仅 chromium，与 test:e2e 口径一致）
+        if: github.event_name != 'repository_dispatch'
+        run: pnpm exec playwright install --with-deps chromium
+
+      # 分层（2026-10-20 用户裁定）：repository_dispatch 由 data 更新触发，**代码零改动**，
+      # 同一 commit 重复跑 e2e 不产生新信息（实测近 30 天 17/47 次运行属此类，约占 76 分钟/月）。
+      # 代码推送（push / workflow_dispatch）仍跑全量 e2e——那才是 e2e 该保护的对象。
+      # 保留 check / build / test:node：它们只需秒级，且真实数据变化可能暴露契约问题。
+      # 已知取舍：data 更新导致「代码未改但真实数据渲染崩坏」这类问题 e2e 抓不到（e2e 跑夹具）；
+      # 该风险由随后的生产 Build site 承担——它会真实构建 .snapshot/snapshot.json，失败即阻断发布。
+      - name: E2E tests（chromium project；webServer 复用上面已构建的 dist）
+        if: github.event_name != 'repository_dispatch'
+        run: pnpm run test:e2e
+      # ---- 门禁结束；以下为生产构建与发布 ----
+
       # data 三文件 → 摘要校验（损坏即失败）→ 7 天窗口公开快照（只读转换，不触网）。
       - name: Generate public snapshot from data branch
         run: >

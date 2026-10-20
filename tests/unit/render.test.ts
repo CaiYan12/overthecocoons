@@ -3,7 +3,13 @@
  * 空主题真实空态、详情页与 404、长文页目录、来源页、隐私约束（无统计/广告/外部字体；
  * 脚本仅限本地打包模块与 JSON 数据岛）。
  *
- * 前置条件：先运行 `pnpm build`（`pnpm test` 的脚本顺序已保证 build 在 test:node 之前）。
+ * 前置条件：必须针对**当前源码**构建出的 dist 运行。两种正确用法：
+ *   - `pnpm run test:artifacts` —— 先 build 再跑本文件，构建失败即停，dist 必定新鲜（推荐，单跑用这个）；
+ *   - `pnpm test` —— 脚本顺序 check → build → test:node，build 已在本文件之前。
+ * 直接跑 `pnpm run test:node` 不会先构建：它读的是既有 dist，源码改动后可能对该改动**静默开绿灯**
+ * （已实测：改源不重建时 346 项全绿）。需要一个"源码与产物一致性"的硬保证时不要用这条入口。
+ * 构建默认使用 `fixtures/snapshot.json` 固定夹具（`src/lib/snapshot.ts` 的 DEFAULT_SNAPSHOT_PATH），
+ * 除非显式注入 `SNAPSHOT_PATH`——所以本文件断言的是**夹具产物**，不是生产真实数据产物。
  * 本测试不启动服务器、不访问网络；GitHub Pages 线上行为另行验收，不在此冒充。
  */
 import assert from "node:assert/strict";
@@ -19,7 +25,7 @@ const DIST = join(process.cwd(), "dist");
 const BASE = "/overthecocoons";
 
 if (!existsSync(join(DIST, "index.html"))) {
-  throw new Error("dist/index.html 不存在：请先运行 pnpm build 再运行产物断言测试");
+  throw new Error("dist/index.html 不存在：请运行 pnpm run test:artifacts（会先构建），或先 pnpm run build 再运行本测试");
 }
 
 /** 递归收集 dist 下指定后缀文件（相对 dist 的斜杠路径）。 */
