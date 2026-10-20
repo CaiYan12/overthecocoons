@@ -12,18 +12,65 @@ const WATCHDOG_MS = 250;
  * scaleX/scaleY = 1.14/0.86 的外接盒宽高比为 1.2000（不是裸的 1.14/0.86 = 1.3256）。 */
 const DOM_RATIO_CEILING = 1.2;
 
+/**
+ * 按压段只有 100ms（motion.ts: press = min(0.1, duration/2)）。并发下从 ready 到首个 GSAP tick
+ * 已实测推进 60–83ms，首帧就可能落在峰值之后（实测采样到 1.0855 / 1.1000 / 1.1258），
+ * 于是「某一帧达到 1.14」这类断言会随负载随机失败——这是采样不确定，不是动效异常。
+ * 用 GSAP 自身的 timeScale 放慢补间以获得确定性采样，是本文件既有做法
+ * （见第 3 条用例对浏览器快照动画设 playbackRate = 0.02）。仅测试期生效，结束即还原。
+ *
+ * 放慢上限受 motion.ts:1076 的**真实时间**兜底约束：`setTimeout(resetThemeMorph, 1000)`
+ * 不受 timeScale 影响，放慢过度会让兜底定时器在补间跑完前 kill 掉时间线
+ * （实测 0.12 倍 → 总时长 2333ms 必被砍断，导致回弹过冲采不到）。故取 0.4 倍：
+ * 补间 700ms < 1000ms 兜底，且按压段被拉长到 250ms，足以让并发的首个 tick 落在峰值之前。
+ */
+const MORPH_SLOWDOWN = 0.4;
+
 test("显示切换光标压扁旋转再回弹，绘制帧不偏离跟随中心（正常路径）", async ({ page, isMobile }) => {
   test.skip(isMobile === true, "自定义光标仅用于 fine pointer");
   await page.goto("/overthecocoons/about/");
   await page.waitForSelector('html[data-oct-motion="on"]');
   await page.locator("[data-mode]").hover();
   await expect(page.locator("[data-kcursor]")).toHaveCSS("opacity", "1");
-  await page.evaluate((watchdogMs) => {
+  await page.evaluate((slowdown) => {
     const native = document.startViewTransition.bind(document);
-    const samples: Array<{ ratio: number; offset: number; frame: boolean; sx: number; sy: number; rot: number }> = [];
+    const samples: Array<{ ratio: number; offset: number; frame: boolean }> = [];
     (window as unknown as { morphFrames: typeof samples }).morphFrames = samples;
-    const gsapGet = (el: Element, prop: string) =>
-      Number((window as unknown as { gsap?: { getProperty(e: Element, p: string): string } }).gsap?.getProperty(el, prop) ?? "1");
+    const peaks = { sx: 1, sy: 1, rot: 0 };
+    (window as unknown as { morphPeaks: typeof peaks }).morphPeaks = peaks;
+    const gsap = (window as unknown as {
+      gsap?: {
+        getProperty(e: Element, p: string): string;
+        globalTimeline: { timeScale(v?: number): number };
+        ticker: { add(cb: () => void): void; remove(cb: () => void): void };
+      };
+    }).gsap;
+    let tracking = false;
+    const track = () => {
+      const el = document.querySelector<HTMLElement>("[data-kcursor-shape]");
+      if (!el || !gsap) return;
+      const sx = Number(gsap.getProperty(el, "scaleX"));
+      const sy = Number(gsap.getProperty(el, "scaleY"));
+      const rot = Math.abs(Number(gsap.getProperty(el, "rotation")));
+      if (sx > peaks.sx) peaks.sx = sx;
+      if (sy < peaks.sy) peaks.sy = sy;
+      if (rot > peaks.rot) peaks.rot = rot;
+    };
+    const startTracking = () => {
+      if (!gsap || tracking) return;
+      tracking = true;
+      gsap.ticker.add(track);
+    };
+    (window as unknown as { stopPeakTracking: () => void }).stopPeakTracking = () => {
+      if (!gsap || !tracking) return;
+      tracking = false;
+      gsap.ticker.remove(track);
+    };
+    // 放慢补间以获得确定性采样：按压段 100ms 太短，并发下首个 tick 就可能越过峰值。
+    // 只改播放速度，不改任何目标值，断言口径不变；结束即还原。
+    gsap?.globalTimeline.timeScale(slowdown);
+    // 点击前即开始跟踪（覆盖补间从头到尾，含 clearProps 回收前的终态帧）。
+    startTracking();
     document.startViewTransition = cb => {
       const started = performance.now();
       const vt = native(cb);
@@ -32,31 +79,43 @@ test("显示切换光标压扁旋转再回弹，绘制帧不偏离跟随中心�
         // 而不是让断言以「ratio 不足」这种误导性消息失败。
         (document.documentElement as HTMLElement).dataset.morphReadyMs = String(Math.round(performance.now() - started));
         const start = performance.now();
-        const endAt = start + 800;
-        const shapeEl = document.querySelector<HTMLElement>("[data-kcursor-shape]");
+        // 采样窗口覆盖「整个补间 + 少量余量」即可。补间时长取自 --motion-normal（280ms），
+        // 放慢后按倍数拉长；不要过度拉长——补间结束后 clearProps 会移除 transform，
+        // 继续采样只会采到无意义的终态，反而让「回弹」断言误判。
+        // 注意 token 定义在 .v-kinetic 上（不是 :root），读 documentElement 会拿到空串；
+        // 单位必须显式判断，否则 "280ms" 解析成 280 再乘 1000 会得到 280000ms 的荒谬窗口。
+        const rootEl = document.querySelector<HTMLElement>(".v-kinetic") ?? document.documentElement;
+        const raw = getComputedStyle(rootEl).getPropertyValue("--motion-normal").trim();
+        const parsed = Number.parseFloat(raw);
+        const motionMs = Number.isFinite(parsed) && parsed > 0
+          ? parsed * (raw.endsWith("ms") ? 1 : 1000)
+          : 280;
+        const endAt = start + (motionMs * 1.6) / slowdown;
         const sample = () => {
+          // 只采 DOM 外接盒与绘制帧（真实渲染）；GSAP 姿态走上面的 ticker。
           const ring = document.querySelector("[data-kcursor-ring]")!.getBoundingClientRect();
           const shape = document.querySelector("[data-kcursor-shape]")?.getBoundingClientRect() ?? ring;
           samples.push({
             ratio: shape.width / shape.height,
             offset: Math.hypot(shape.x + shape.width / 2 - ring.x - ring.width / 2, shape.y + shape.height / 2 - ring.y - ring.height / 2),
             frame: document.documentElement.style.getPropertyValue("--vt-cursor-frame").includes("%20matrix("),
-            // GSAP 侧真实姿态：补间结束后 inline transform 会被 clearProps 回收，只能在采样窗口内取。
-            sx: shapeEl ? gsapGet(shapeEl, "scaleX") : 1,
-            sy: shapeEl ? gsapGet(shapeEl, "scaleY") : 1,
-            rot: shapeEl ? gsapGet(shapeEl, "rotation") : 0,
           });
           if (performance.now() < endAt) requestAnimationFrame(sample);
-          else document.documentElement.dataset.morphSample = "done";
+          else {
+            (window as unknown as { stopPeakTracking: () => void }).stopPeakTracking();
+            gsap?.globalTimeline.timeScale(1);
+            document.documentElement.dataset.morphSample = "done";
+          }
         };
         requestAnimationFrame(sample);
       });
       return vt;
     };
-  }, WATCHDOG_MS);
+  }, MORPH_SLOWDOWN);
   await page.locator("[data-mode]").click();
   await page.waitForSelector('html[data-morph-sample="done"]');
-  const frames = await page.evaluate(() => (window as unknown as { morphFrames: Array<{ ratio: number; offset: number; frame: boolean; sx: number; sy: number; rot: number }> }).morphFrames);
+  const frames = await page.evaluate(() => (window as unknown as { morphFrames: Array<{ ratio: number; offset: number; frame: boolean }> }).morphFrames);
+  const peaks = await page.evaluate(() => (window as unknown as { morphPeaks: { sx: number; sy: number; rot: number } }).morphPeaks);
 
   // 前置判定：本次是否真的走了正常路径。超出看门狗即形变被跳过，直接以可读原因失败。
   const readyMs = Number(await page.evaluate(() => document.documentElement.dataset.morphReadyMs));
@@ -64,12 +123,9 @@ test("显示切换光标压扁旋转再回弹，绘制帧不偏离跟随中心�
 
   // 动画逻辑：GSAP 侧真实极值（目标 scaleX 1.14 / scaleY 0.86 / rotation 12°）。
   // 这些值证明「补间确实按设计播放」，与下面的 DOM 外接盒断言互补：属性对但渲染错会被后面抓到。
-  const maxSx = Math.max(...frames.map(f => f.sx));
-  const minSy = Math.min(...frames.map(f => f.sy));
-  const maxRot = Math.max(...frames.map(f => Math.abs(f.rot)));
-  expect(maxSx, "压扁峰值 scaleX 应达到设计值 1.14").toBeGreaterThanOrEqual(1.13);
-  expect(minSy, "压扁峰值 scaleY 应达到设计值 0.86").toBeLessThanOrEqual(0.87);
-  expect(maxRot, "应带 12° 旋转（暗色 -12°）").toBeGreaterThanOrEqual(11);
+  expect(peaks.sx, "压扁峰值 scaleX 应达到设计值 1.14").toBeGreaterThanOrEqual(1.13);
+  expect(peaks.sy, "压扁峰值 scaleY 应达到设计值 0.86").toBeLessThanOrEqual(0.87);
+  expect(peaks.rot, "应带 12° 旋转（暗色 -12°）").toBeGreaterThanOrEqual(11);
 
   // 实际渲染：外接盒峰值比值（理论上限 1.2，实测 1.1999）。
   const maxRatio = Math.max(...frames.map(f => f.ratio));
