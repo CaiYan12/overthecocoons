@@ -69,3 +69,14 @@
 `focusEntryButton` 现将可见性定位排到同一轮目录更新之后的微任务，仍采用即时 nearest；仅当入口仍连接且持有焦点时执行。新增五日期夹具回归已在旧代码转红，修复后桌面／手机焦点、目录增高与取消不滚动的五配置专项 20/20；补强后 check 0 error / 0 warning / 2 hints、Node 352/352、夹具 66 页及真实 1355 页构建通过。
 
 真实快照的本地补充验收为 3/3（锚点、手机焦点、详情返回）。返回验收先通过真实滚动确认离页前 readId，再验证返回；生产恢复函数不变。该项为本地真实数据证据，补强版本的 CI 和线上结果在实际执行后补记。
+
+## 2026-10-25 发布验收完成
+
+- 补强实现提交 `98501d1d58bc5e5d0c5a62305237ec76685e3519` 已上线；[build-deploy 40191700961](https://github.com/CaiYan12/overthecocoons/actions/runs/40191700961) 的 build / deploy 均成功。CI 完整门禁：Node 352/352、Chromium 250 passed + 3 skipped（增加一条多日期焦点回归），生产构建 1355 页；data SHA 仍为 `a2d7239d24e4a5144c4149fd92ea2035b17533d4`。
+- 在该补强实现的真实线上数据上重新执行：分页五配置 10/10、Chromium 补充场景 3/3（关于页片段、390×664 来源焦点、真实详情返回来源／页码／阅读位置）、原反馈回路 4/4。回路显示翻页后 `25`，回顶 Hero transform 为 0、下滚后为 46.4994px，进度 0%→15%，console/page errors 无。
+- [线上主页](https://caiyan12.github.io/overthecocoons/) 为非演示数据，1220 条／六订阅。客户端 JS、CSS 与两份 vendor 文件均与补强后的本地产物逐字节一致；JS 为 67479 B，SHA-256 `46a4364e3fba0de4ddf1dd6492982231c7d2bb83f1e4ddb33280ca6c3bd4e3ff`。
+- 新验收脚本在摘除守卫的隔离产物上仍两条转红，保留了原缺陷判别力；真实日期目录焦点回归也完成旧红／新绿。最终线上补充脚本已移除临时几何读取探针。
+
+证据在忽略目录 `.snapshot/debug-pager-hud/`：`ci-followup-run.log`、`live-final-pager.log`、`live-final-extra.log`、`live-original-final.log`、`live-assets.json`、`toc-focus-red.log`、`toc-focus-matrix.log`、`red-user-scroll.log`。早期失败与定位日志保留，未混算成同一轮通过。
+
+本节仅同步验收记录，不含应用代码变更。移动配置为设备模拟，仍无新手机实机或 FPS 验收；未执行全站全部用例的五配置矩阵。分页焦点／滚动落点的既有规则未调整，`start.bat` 仍不纳入提交。
