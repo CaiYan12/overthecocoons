@@ -32,8 +32,16 @@ async function heroTransform(page: Page): Promise<string> {
 }
 
 async function scrollToTop(page: Page): Promise<void> {
-  // Firefox 不保证单次大滚轮输入就到顶，使用即时定位建立共同的顶部前置条件。
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  // 用户滚动回顶：按实际位置收敛，避免把单次脚本定位后的滚动锚定当成已经到顶。
+  // Firefox 单次 wheel 不保证到顶；移动 WebKit 由 wheelBy 使用滚动键。
+  await page.evaluate(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+  });
+  for (let step = 0; step < 16; step++) {
+    await wheelBy(page, -2400);
+    await page.waitForTimeout(250);
+    if (await page.evaluate(() => scrollY === 0)) break;
+  }
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   await page.waitForTimeout(700); // scrub 收尾后再取样
 }
@@ -60,8 +68,8 @@ test.describe("分页跳转后的滚动动效", () => {
     await page.waitForTimeout(500);
     await expectCurrentReading(page);
 
-    // 客户端分页跳转到第 2 页（增强路径：点击页码链接；页码与「下一页」同 data-page，按 aria-label 区分）
-    await page.locator('[data-pager] a[data-page="2"][aria-label="第 2 页"]').click();
+    // 窄栏大页数时数字 2 按分页窗口规则隐藏，使用仍可见的「下一页」入口。
+    await page.locator('[data-pager] a[data-page="2"]:visible').first().click();
     await page.waitForSelector('[data-pager] [aria-current="page"][data-page="2"]');
     await page.waitForTimeout(600); // 渲染 + ScrollTrigger.refresh + 回顶滚动启动
 

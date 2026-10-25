@@ -13,6 +13,11 @@ export function focusEntryButton(
   if (!entry) return;
   entry.focus({ preventScroll: true });
   if (options.ensureVisible) {
-    entry.scrollIntoView({ behavior: "instant", block: "nearest", inline: "nearest" });
+    // 列表替换后，日期目录由 MutationObserver 重建；手机上它位于 HUD 之前。
+    // 等这轮目录更新结束再量位置，避免新增日期行把已定位的焦点推出视口。
+    queueMicrotask(() => {
+      if (document.activeElement !== entry || !entry.isConnected) return;
+      entry.scrollIntoView({ behavior: "instant", block: "nearest", inline: "nearest" });
+    });
   }
 }

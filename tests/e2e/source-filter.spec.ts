@@ -504,6 +504,40 @@ test.describe("键盘与焦点", () => {
     expect(geometry.bottom, "焦点元素在视口内").toBeLessThanOrEqual(geometry.viewport + 1);
   });
 
+  test("手机：来源改变日期目录高度后，焦点仍完整可见", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 664 });
+    const sourceEntries = snapshot.entries.filter(entry => entry.sourceId === "solidot");
+    const latest = Math.max(...snapshot.entries.map(entry => Date.parse(entry.firstSeenAt)));
+    await page.route(`${SOURCES_BASE}${BASE}`, async (route) => {
+      const response = await route.fetch();
+      const body = (await response.text()).replace(
+        /(<script type="application\/json" data-kdata[^>]*>)([\s\S]*?)(<\/script>)/,
+        (_match, open: string, json: string, close: string) => {
+          const data = JSON.parse(json) as { entries: PublicEntry[] };
+          let day = 0;
+          for (const entry of data.entries) {
+            if (entry.sourceId === "solidot") {
+              entry.firstSeenAt = new Date(latest - day++ * 86_400_000).toISOString();
+            }
+          }
+          return open + JSON.stringify(data).replaceAll("<", "\\u003c") + close;
+        },
+      );
+      await route.fulfill({ response, body });
+    });
+    await ready(page);
+    const before = await page.locator("[data-timeline-toc] li").count();
+    expect(sourceEntries.length).toBeGreaterThan(before);
+    await applySources(page, ["solidot"]);
+    await expect(page.locator("[data-timeline-toc] li")).toHaveCount(sourceEntries.length);
+    await expect(entryButton(page)).toBeFocused();
+    await expect.poll(() => page.evaluate(() => {
+      const box = document.querySelector("button[data-source-open]")!.getBoundingClientRect();
+      const header = document.querySelector("[data-kheader]")!.getBoundingClientRect();
+      return box.top >= header.bottom - 1 && box.bottom <= innerHeight + 1;
+    })).toBe(true);
+  });
+
   test("取消不改变原滚动位置（打开 → 取消 → scrollY 不变）", async ({ page }) => {
     await ready(page);
     // 用用户手势语义滚动到中部（站点只把用户手势滚动记入阅读位置，不影响本断言）
