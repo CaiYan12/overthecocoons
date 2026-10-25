@@ -416,7 +416,12 @@ function renderView(
     samplingState.paused = true;
     // 同 scrollToEntry：CSS 的 scroll-behavior:smooth 会让 "auto" 变成平滑滚动，
     // 恢复路径（含目标失效回退）必须即时到位，不叠加一次无意义的滚动动效。
-    window.scrollTo({ top: 0, behavior: options?.instantRestore ? "instant" : "auto" });
+    // 应用来源后紧接着恢复可见焦点：先即时完成回顶，避免 nearest 按旧位置判定
+    // 「入口已可见」，随后尚未完成的平滑回顶又把入口带到视口之外。
+    window.scrollTo({
+      top: 0,
+      behavior: options?.instantRestore || options?.focusSourceEntry ? "instant" : "auto",
+    });
     if (decision.mode === "fallback" && filtered.length > 0 && nextTopic !== previousTopic) {
       // 回退提示仅限主题变化时播报（T05 收尾项）：主题切换后记忆条目不在当前列表，
       // 同主题后续翻页属既有状态，不得重复播报「内容已变化」。记忆保留——

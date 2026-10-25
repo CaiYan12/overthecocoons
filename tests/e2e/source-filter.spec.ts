@@ -107,6 +107,8 @@ test.describe("入口与面板结构", () => {
     // 本用例同时钉住「用的是真图标几何」和「墨迹真的居中」两件事。
     await ready(page);
     await openPanel(page);
+    // 几何与像素必须取自同一稳定位置，不能混用面板入场的缩放/位移中间帧。
+    await panelSettled(page);
 
     const info = await dialog(page)
       .locator(".k-source-option .k-source-box")
@@ -152,10 +154,18 @@ test.describe("入口与面板结构", () => {
     // 3) 墨迹居中：截方框内部像素（内缩 2px 排除边框与外部背景），
     //    统计亮色（勾号）包围盒中心，与方框中心偏差不超过 2 个设备像素。
     //    容差按设备像素算的理由：DPR=1 时 16px 方框只有约 7 个墨迹像素（实测），
-    //    量化误差本身就有 ±0.5px，用固定 1px 会误报；实测各 DPR 真实偏移为 0～0.25px。
+    //    量化误差本身就有 ±0.5px，用固定 1px 会误报。
     const box = await dialog(page).locator(".k-source-option .k-source-box").first().boundingBox();
-    const buf = await page.screenshot({ clip: box! });
-    const ink = await page.evaluate(async ({ b64, cssW, cssH }) => {
+    // 截图裁切会对分数坐标取整；使用整数边界并保留方框在截图内的偏移，
+    // 避免把裁图原点误差计为图标偏移（移动 WebKit / DPR=3 尤其明显）。
+    const clip = {
+      x: Math.floor(box!.x),
+      y: Math.floor(box!.y),
+      width: Math.ceil(box!.x + box!.width) - Math.floor(box!.x),
+      height: Math.ceil(box!.y + box!.height) - Math.floor(box!.y),
+    };
+    const buf = await page.screenshot({ clip });
+    const ink = await page.evaluate(async ({ b64, cssW, cssH, offsetX, offsetY, boxW, boxH }) => {
       const img = new Image();
       img.src = "data:image/png;base64," + b64;
       await img.decode();
@@ -167,10 +177,12 @@ test.describe("入口与面板结构", () => {
       const d = g.getImageData(0, 0, img.width, img.height).data;
       const sx = img.width / cssW;
       const sy = img.height / cssH;
-      const inset = Math.ceil(2 * sx);
       let minX = 1e9, maxX = -1, minY = 1e9, maxY = -1, n = 0;
-      for (let y = inset; y < img.height - inset; y++) {
-        for (let x = inset; x < img.width - inset; x++) {
+      for (let y = 0; y < img.height; y++) {
+        for (let x = 0; x < img.width; x++) {
+          const localX = (x + 0.5) / sx - offsetX;
+          const localY = (y + 0.5) / sy - offsetY;
+          if (localX < 2 || localX >= boxW - 2 || localY < 2 || localY >= boxH - 2) continue;
           const i = (y * img.width + x) * 4;
           const lum = 0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]!;
           if (lum > 140) {
@@ -183,10 +195,13 @@ test.describe("入口与面板结构", () => {
         }
       }
       if (!n) return null;
-      return { cx: (minX + maxX + 1) / 2 / sx, cy: (minY + maxY + 1) / 2 / sy, n, deviceW: img.width };
-    }, { b64: buf.toString("base64"), cssW: box!.width, cssH: box!.height });
+      return { cx: (minX + maxX + 1) / 2 / sx - offsetX, cy: (minY + maxY + 1) / 2 / sy - offsetY, n, scale: sx };
+    }, {
+      b64: buf.toString("base64"), cssW: clip.width, cssH: clip.height,
+      offsetX: box!.x - clip.x, offsetY: box!.y - clip.y, boxW: box!.width, boxH: box!.height,
+    });
     expect(ink, "勾号必须实际渲染出可见描边").not.toBeNull();
-    const tolerance = 2 / (ink!.deviceW / box!.width);
+    const tolerance = 2 / ink!.scale;
     expect(Math.abs(ink!.cx - info.boxW / 2), `墨迹水平居中（容差 ${tolerance.toFixed(2)}px）`).toBeLessThanOrEqual(tolerance);
     expect(Math.abs(ink!.cy - info.boxH / 2), `墨迹垂直居中（容差 ${tolerance.toFixed(2)}px）`).toBeLessThanOrEqual(tolerance);
 

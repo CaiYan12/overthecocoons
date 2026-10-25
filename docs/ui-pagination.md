@@ -24,3 +24,36 @@
 - 独立浏览器访问 [线上网站](https://caiyan12.github.io/overthecocoons/)：40页首页44px高；回车跳20后20条条目、所有可见页码同一行；跳40后下一页禁用；输入41被范围校验拒绝且仍在20页。320/390/768/1024/1440px均44px高，分页横溢出0、整页无横溢出；浅深色外观已检查，浏览器错误日志为空。
 - 可见线上浅色分页截图：`C:/Users/Einn Tzai/AppData/Local/Temp/otc-pagination-live-light.jpg`；深色截图：`C:/Users/Einn Tzai/AppData/Local/Temp/otc-pagination-live-dark.jpg`。截图未加入仓库。
 - CI/CD工作流执行真实数据构建和部署，不包含Node或E2E测试；本地304／30是独立证据。移动宽度为浏览器模拟，不代替手机实机。
+
+## 2026-10-25 分页后 HUD 与 Hero 滚动响应修复（本地）
+
+症状：客户端点击页码或输入跳转后，NOW READING 不再指向正在阅读的条目，回到顶部再滚动时 Hero 视差冻结。
+
+`html { scroll-behavior: smooth }` 与 ScrollTrigger 3.13.0 的全局刷新测量发生冲突：库临时写入内联 `auto` 后立即滚到 0，Chromium 尚未刷新样式，仍执行异步平滑滚动；测量位置与库缓存的滚动值不一致，元素触发器的 start/end 因此偏移。首轮诊断与微实验保存在 `.snapshot/debug-pager-hud/`。
+
+`src/client/motion.ts` 的 `guardScrollTriggerMeasure()` 通过 [GSAP 刷新事件](https://gsap.com/docs/v3/Plugins/ScrollTrigger/static.refresh%28%29) 在 `refreshInit` 写入 `auto` 并读取 `offsetHeight`，先完成样式刷新；`refresh` 对称清理。滚动位置为 0 时不写入、不清空样式，避免取消尚未执行的 URL 片段定位；回收时移除两个监听器，只清理尚未收尾的守卫写入。CSS 平滑滚动与 vendor 文件保持原有配置。
+
+### 收尾中确认的另外两项原因
+
+- 手机来源焦点用例并非单纯负载偶发：回顶平滑滚动未完成时，`nearest` 根据旧位置判断入口已可见，随后回顶又把入口带出视口。应用来源的回顶与可见焦点定位改为即时完成，保留既有列表切换动效；取消路径仍只恢复焦点。
+- 详情返回失败时，离页前记录的已是前一条。采样瞬间目标条目顶部为 102.828px，未越过 100px 读线，随后才移到 91.938px。`readAt` 现在一次调用完成测量与滚动，将目标条目中部放到读线，并新增离页前 `readId` 检查；返回位置原断言保留，生产恢复函数未作修改。
+
+交接中把两项归为「负载敏感偶发」的结论已被上述实证取代。
+
+### 验证记录
+
+| 范围 | 本轮结果 |
+| --- | --- |
+| 最终 `pnpm test` | check：122 文件、0 error / 0 warning / 2 既有 hints；夹具 build：66 页；Node：352/352；Chromium：249 passed + 3 skipped；退出码 0 |
+| 分页五配置专项 | `pnpm exec playwright test tests/e2e/pager-motion.spec.ts`：10/10；HUD 对应当前可见激活条目，点击与输入两条路径均检查 Hero 响应 |
+| 关联五配置首轮 | 90 项中 79 passed / 5 skipped / 6 failed；6 项均在新增分页 spec（Firefox 单次大滚轮未到顶、手机英文背景按 CSS 隐藏）。修正测试前置并改测各布局可见的日期层后，分页专项 10/10；未重跑整轮 90 项。非分页 75 passed + 5 BFCache 未命中跳过为首轮证据 |
+| 回归测试判别力 | 仅在独立构建中移除守卫调用，两条分页用例均在 HUD 断言转红；修复源码保持冻结，最终完整门禁再验证转绿 |
+| 交接保存的真实快照 | 1220 条，本轮隔离重建 1355 页；原反馈回路最终 4/4，翻页后滚动显示 `25`、Hero transform 随滚动变化、控制台无错误。首轮脚本 S2 实际未滚动（scrollY=0），补齐回顶及指针移回正文的前置后重新验证 |
+
+完整门禁首轮为 247 passed / 2 failed / 3 skipped；修复两项收尾问题后，第二轮为 248 passed / 1 failed / 3 skipped，失败项是勾号像素取样。该用例补齐已有 `panelSettled` 等待，并以整数截图边界和方框相对偏移校准像素坐标，保留 2 个设备像素容差及原 SVG 几何；只补等待时五配置为 4/5，坐标校准后专项 5/5，最终完整门禁为上表结果。完整日志保存在忽略目录 `.snapshot/debug-pager-hud/`，最终门禁日志为 `release-ready-gate.log`。
+
+### 发布边界
+
+尚未提交、推送或部署；本轮没有新手机实机、FPS 或线上验收，也没有执行全站全部用例的五配置矩阵。真实快照为交接保留数据，本轮未重新采集。分页当前页控件的焦点／滚动落点是交接列出的独立议题，本轮未调整其规则；`start.bat` 为既有无关文件，未纳入修复。
+
+2026-10-25：用户确认「本地验收正常，上线测试」，已授权本次提交、推送及发布验证；实际发布结果另行补记。

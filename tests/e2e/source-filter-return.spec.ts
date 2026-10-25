@@ -52,16 +52,16 @@ const READ_LINE = 100;
  * 使滚动落在站点 200ms 输入采样窗口内，阅读位置被写入 history.state）。
  */
 async function readAt(page: Page, gi: number): Promise<void> {
-  const box = await page.locator(`[data-gi="${gi}"]`).boundingBox();
-  expect(box, `条目 gi=${gi} 应存在`).not.toBeNull();
-  const scrollY = await page.evaluate(() => window.scrollY);
-  const target = Math.max(0, scrollY + box!.y - (READ_LINE - 4));
-  await page.evaluate((top) => {
+  // 分页后的滚动与条目揭示仍可能改变几何。一次调用完成测量与定位，并把目标条目
+  // 中部放到读线，避免只越过 4px 时下一帧的位置变化让实际采样仍落在前一条。
+  await page.locator(`[data-gi="${gi}"]`).evaluate((element, readLine) => {
+    const box = element.getBoundingClientRect();
+    const top = Math.max(0, window.scrollY + box.top + box.height / 2 - readLine);
     window.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true }),
     );
     window.scrollTo({ top, behavior: "instant" });
-  }, target);
+  }, READ_LINE);
   await page.waitForTimeout(300);
 }
 
@@ -82,6 +82,7 @@ test.describe("非 BFCache 跨文档返回（主要验收路径）", () => {
     // 第 2 页读 gi=21（页面内第二条）
     await readAt(page, 21);
     const readId = expected[21]!.id;
+    expect(await filterState(page), "离页前已记录本次实际阅读的条目").toMatchObject({ readId });
 
     await openFirstDetail(page);
     // 快照写在时间线那条历史条目上，进详情后是另一条历史条目

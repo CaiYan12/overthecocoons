@@ -77,6 +77,8 @@ interface ScrollTriggerPlugin {
   create(vars: TweenVars): unknown;
   getAll(): unknown[];
   refresh(): void;
+  addEventListener(type: string, listener: () => void): void;
+  removeEventListener(type: string, listener: () => void): void;
 }
 interface MotionWindow extends Window {
   gsap?: Gsap;
@@ -228,6 +230,53 @@ function degradeToStatic(): void {
   startFallbackProgress();
 }
 
+/**
+ * ScrollTrigger 测量舞步的 scroll-behavior 守卫（2026-10-25 线上缺陷回归修复）。
+ *
+ * 根因（实测复现）：kinetic.css 置 `html{scroll-behavior:smooth}` 后，ScrollTrigger
+ * `_refreshAll` 的「写内联 scroll-behavior:auto → 滚到 0 → 测量全部触发器位置 → 恢复」
+ * 在 Chromium 上失效——内联样式写入未经样式刷新即被紧随的 scrollTo 解析，浏览器仍按
+ * smooth 异步动画执行；同步测量因此发生在旧滚动位置而缓存滚动值已写 0，所有元素位置
+ * 触发器的 start/end 整体偏移 −(刷新时的滚动值)。任何滚动 ≠ 0 时的 refresh（客户端
+ * 翻页/切主题/来源筛选的 onListRendered、窗口 resize）都会损坏，表现为 NOW READING
+ * 不再更新、Hero 视差冻结在跳页瞬间的中间值。
+ *
+ * 修复：refreshInit（_refreshAll 起点事件）先落内联 auto 并强制一次布局 flush
+ * （读取 offsetHeight），使 ScrollTrigger 内部 scrollTo 真正瞬时；refresh（收尾事件）
+ * 清空守卫写入的内联值。事件挂在 ScrollTrigger 全局，覆盖 st.refresh() 与 resize
+ * 等全部 _refreshAll 入口。
+ *
+ * 滚动位置为 0 时整轮跳过（对称：本轮不落值则收尾不清理）：此时舞步测得值本就是
+ * 文档坐标（无缺陷），且加载窗口内对 html 内联 scrollBehavior 的任何写入——包括
+ * 写回空串——都会取消浏览器待执行的片段滚动（实测 /about/#submit 锚点导航被整体
+ * 取消、页面停在顶部）。收尾不做 rAF 延迟清理：ScrollTrigger 自身的 rAF 恢复
+ * （obj.smooth 时写回 inline "smooth"）与 CSS 同值，稳态与无守卫时一致。
+ */
+function guardScrollTriggerMeasure(): void {
+  const stl = st;
+  if (!stl) return;
+  const html = document.documentElement;
+  let active = false;
+  const onRefreshInit = () => {
+    if (window.scrollY === 0) return;
+    html.style.scrollBehavior = "auto";
+    void html.offsetHeight;
+    active = true;
+  };
+  const onRefresh = () => {
+    if (!active) return;
+    active = false;
+    html.style.scrollBehavior = "";
+  };
+  stl.addEventListener("refreshInit", onRefreshInit);
+  stl.addEventListener("refresh", onRefresh);
+  cleanups.push(() => {
+    stl.removeEventListener("refreshInit", onRefreshInit);
+    stl.removeEventListener("refresh", onRefresh);
+    if (active) html.style.scrollBehavior = "";
+  });
+}
+
 function initMotionOn(root: HTMLElement): void {
   const html = document.documentElement;
   gsap!.registerPlugin(st);
@@ -241,6 +290,7 @@ function initMotionOn(root: HTMLElement): void {
     initMagnetic(root);
   }, root);
   initResize(root);
+  guardScrollTriggerMeasure();
   onListRendered(false);
   // 预绘制遮蔽解除移交（T12 字体就绪等待，UI 票 #29）：intro 播放页由 scheduleIntro
   // 在「字体就绪 → 拆字与全部隐藏初态就位」后解除（避免「先画静态层 → JS 再隐藏 →
