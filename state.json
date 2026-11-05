@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "stateTakenAt": "2026-11-04T04:51:42.444Z",
-  "publicContentVersion": 112,
-  "publicContentDigest": "443c49b0c9b05131e199db544e17ff3d4e752cfe60ea72b76ed786e5258885a1",
+  "stateTakenAt": "2026-11-05T05:08:43.984Z",
+  "publicContentVersion": 118,
+  "publicContentDigest": "763162da3744289aeffb2f9521579cc8783487dc6b0b2f8cc6e8db277f24dbb3",
   "identities": [
     {
       "stableId": "51ef84820b12549c057fd31599464c2bc962db5d5955e7e78ac2a2da188bc496",
@@ -35603,49 +35603,1441 @@
       "firstSeenAt": "2026-11-04T04:51:42.444Z",
       "wdFingerprint": "",
       "wdMissing": true
+    },
+    {
+      "stableId": "51c943d06ca9347d2fe224f4710babb4347b4f385614284618a668b6d2abf6b8",
+      "sourceId": "baidu-aishort",
+      "guid": "2270599",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "“字节时间”之争的五个追问",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c188a8d00bb340f7359f92154a4c95568d88c1131a0e366ed1b2686601166764",
+      "sourceId": "baidu-aishort",
+      "guid": "2270598",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "杨坤自曝患抑郁症吃药二十年",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b06ca5252d659e307bb81b10ba7d8cfccc5f48fbbd54bf7e2de8a09a78134c26",
+      "sourceId": "baidu-aishort",
+      "guid": "2270596",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "特朗普称不后悔对伊动武",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d870e7edbeebaee9a55c7d1cac8e63eb7991f04b86fcd25b6d00269c164628fe",
+      "sourceId": "baidu-aishort",
+      "guid": "2270594",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "泽连斯基前新闻秘书被控叛国",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b75107194e1821c94d126a7ce6cf8a3cffd1e1e10e5078c96a9bcb73b28acd77",
+      "sourceId": "baidu-aishort",
+      "guid": "2270593",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "女生称刷视频找到失散姐妹 律师分析",
+      "wdMissing": false
+    },
+    {
+      "stableId": "070045789fa55dbf9eaf45fc2801a62d42a6fddf7a905d3790f840276abb190c",
+      "sourceId": "baidu-aishort",
+      "guid": "2270591",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "小心睡前这个习惯 严重可致盲",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6b79f72b7a668e97c5de804b3a78fe5d6939c553ca2d01335ebeb8c1cbd4212b",
+      "sourceId": "baidu-aishort",
+      "guid": "2270590",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "美股科技上演“次贷危机”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "29b6d5c46a236e96a884625819c631398c87985aedb2496dc41528e6b6291ccf",
+      "sourceId": "baidu-aishort",
+      "guid": "2270588",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "福建舰战斗力到了哪一步",
+      "wdMissing": false
+    },
+    {
+      "stableId": "31f8026d2eb3d2a7de88d5e8b3afe3406413b65a2ca90f8fc01abd8d87fde6ab",
+      "sourceId": "baidu-aishort",
+      "guid": "2270587",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "以为等到缘分 却被备注成“删傻子”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "90ba157f6130d7c266cde59dec9fd4cd5f93e7fc8b8e639e01cc98a51f87ee40",
+      "sourceId": "baidu-aishort",
+      "guid": "2270586",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "全年少有的购票窗口期来了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4084a5d8fbe8b70fbe46c2e29442eea394643cabd1c5b82684228f822c8f7297",
+      "sourceId": "baidu-aishort",
+      "guid": "2270584",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "爸爸因晚接孩子道歉 孩子懂事回应",
+      "wdMissing": false
+    },
+    {
+      "stableId": "fdd8a96f35d75622fe4f669eb3c800429a4371c25288cd17606ff39c643f1844",
+      "sourceId": "baidu-aishort",
+      "guid": "2270583",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "无论走到哪都被精准跟踪 原因竟是它",
+      "wdMissing": false
+    },
+    {
+      "stableId": "edb926e94ad366d0bd0dac4b83ed367ff65e639dc7f302f9d3789c29a082462d",
+      "sourceId": "baidu-aishort",
+      "guid": "2270582",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "福建舰的这一“弹” 到底有多猛",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b93994429cd5395e0f48e7d5df329d649db1427652095cebeaa22b2fa8f453bc",
+      "sourceId": "baidu-aishort",
+      "guid": "2270581",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "大巴黎6-0完胜 开场17分钟狂轰4球",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e520ba6dd4e2f3e0fc6fa9e21d4e026280ceaddd561edbcc997aaea89f58cc41",
+      "sourceId": "baidu-aishort",
+      "guid": "2270580",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "“结婚录像迎来了它真正的观众”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d6f528c31240234606ce5422f60837fb53490aa008c035f4ac6279f23fbbd103",
+      "sourceId": "baidu-aishort",
+      "guid": "2270579",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "退休教师承包校印刷厂被控贪污行贿罪",
+      "wdMissing": false
+    },
+    {
+      "stableId": "db394e6a363685533514506a9e09b6ebb9f148664c44dcf71709787b6d04793b",
+      "sourceId": "baidu-aishort",
+      "guid": "2270577",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "人民日报评AI歌曲《过来人》出圈",
+      "wdMissing": false
+    },
+    {
+      "stableId": "890574019d0443cdaebad949aa09cfe9f50946c13931e466d6a56bd2feceb08a",
+      "sourceId": "baidu-aishort",
+      "guid": "2270570",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "咱家潜艇一出场 压迫感就来了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "61b39eea39bb5232c7b2ff8a50c59513e60c14b13a21c574207417a5b0181fc3",
+      "sourceId": "baidu-aishort",
+      "guid": "2270562",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "“上头”烟弹竟是兽用麻醉剂",
+      "wdMissing": false
+    },
+    {
+      "stableId": "34a78c38adb21b60b3c1f89726e2dd25793ceaec165c8912926df418e099b4b2",
+      "sourceId": "baidu-aishort",
+      "guid": "2270561",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "特朗普中期选举失利后首次露面",
+      "wdMissing": false
+    },
+    {
+      "stableId": "97f8f8f9fd831ec29eadff096568b69c4068769f630599171c46d41e60987e00",
+      "sourceId": "baidu-aishort",
+      "guid": "2270560",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "美国中期选举的四个“意外”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ba8af9f895e4af87661a56f7e02ae14e5c506fa8069eed6937ff09fe6131bd3c",
+      "sourceId": "baidu-aishort",
+      "guid": "2270559",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "广东明确：手机、电话手表不得带入校",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0c76ded17d0fb12d9508e69ddee6234de54cd2782eeaf58dbc26f95099a80436",
+      "sourceId": "baidu-aishort",
+      "guid": "2270558",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "郭士强：全力拿下沙特和黎巴嫩",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a6324bc549b458ebf455f9c1b5203f688fc129eaed5a655bc95f7d32725aa986",
+      "sourceId": "baidu-aishort",
+      "guid": "2270557",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "《嫁金钗》忘删AI水印",
+      "wdMissing": false
+    },
+    {
+      "stableId": "71da72cd2409ab1494bac92f68c99e022e0909578b0499705758fc0daccbfb27",
+      "sourceId": "baidu-aishort",
+      "guid": "2270556",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "美股收盘 中国资产爆发",
+      "wdMissing": false
+    },
+    {
+      "stableId": "105f06b031dbdd50ee8e0c2f5cf8610e8af1285d2d786671210badf4ead710a0",
+      "sourceId": "baidu-aishort",
+      "guid": "2270555",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "创业板指翻红",
+      "wdMissing": false
+    },
+    {
+      "stableId": "43df344330cb7a6674390ad551e92af959db647c1bb1b690a3c0f165b220f602",
+      "sourceId": "baidu-aishort",
+      "guid": "2270554",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "大额存单密集重启！多家银行已售罄",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d722a3746017be151159867d92f553f5a3713f7813d2df72594b0bcf1004931e",
+      "sourceId": "baidu-aishort",
+      "guid": "2270553",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "男子违停 车被贴55张“禁停”贴纸",
+      "wdMissing": false
+    },
+    {
+      "stableId": "41c5b986c6566e40e6bae325e5dbc5063313782fba1f79a26fc05cd61bc2fbb8",
+      "sourceId": "baidu-aishort",
+      "guid": "2270552",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "陕西商南重大刑案3死2伤：有民警受伤",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d6ef8a39891a030c7681a2f435c7a5f1a39608bad055d9d49e7fc47a9297c83e",
+      "sourceId": "baidu-aishort",
+      "guid": "2270551",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "厉娜简介删掉经纪人吴立琪联系方式",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a1b08482500e4ecc361bb212ab98dd2cc3c3865b5566a58e1decd7040ba6ee9f",
+      "sourceId": "baidu-aishort",
+      "guid": "2270550",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "GEN完胜LYON Chovy：感觉自己不一样了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0a1a3424148c6d51131ee73a894f8143aad73c3c73eb13f927d6f83159861b6f",
+      "sourceId": "baidu-aishort",
+      "guid": "2270549",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "丁俊晖世界排名再度跌出前16",
+      "wdMissing": false
+    },
+    {
+      "stableId": "fbc3138dea2b3435e0697a75f7ae92fb91124a69858094acc33df53cfc225d5e",
+      "sourceId": "baidu-aishort",
+      "guid": "2270548",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "男子花光积蓄买7斤黄金亏了114万",
+      "wdMissing": false
+    },
+    {
+      "stableId": "0977f09025e0d025584e017c0b3e79dba1934ba1764998a3f2029f3e4d15adc1",
+      "sourceId": "baidu-aishort",
+      "guid": "2270547",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "女子花1200万买商铺 开门营业时傻眼",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b97eb82255a6f6939a75bc9b900d93326356155c3a40b43690f7ec42f78b4078",
+      "sourceId": "baidu-aishort",
+      "guid": "2270546",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "谁把高校教师逼成了“业务员”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c478c929a1f779166440c3a1eefae7ecedc500012d8e080b6a7720eda7e8c51a",
+      "sourceId": "baidu-aishort",
+      "guid": "2270545",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "沃尔沃XC70落地不到20万",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d6d601957481373202b612c804ab7e7c5923e435a5391042e7dcd9c16fb11edb",
+      "sourceId": "baidu-aishort",
+      "guid": "2270544",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "“偷拍黑产”调查：约14万女性被偷拍",
+      "wdMissing": false
+    },
+    {
+      "stableId": "364fdc2e98dbcdf87158cf8630f87931835d60a09e26815c09c1b4739b297251",
+      "sourceId": "baidu-aishort",
+      "guid": "2270218",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "广交会境外采购商创新高",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f4deea5c0d0f2d2fd0c852a03b4dc833e3df16b034eb9bf019337b41ea975378",
+      "sourceId": "baidu-aishort",
+      "guid": "2270217",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "IG时隔2566天重返S赛四强",
+      "wdMissing": false
+    },
+    {
+      "stableId": "99c52484b26bbdc9f612c1a8fc588303f6fd10943aada599bda8e9a485e46f1c",
+      "sourceId": "baidu-aishort",
+      "guid": "2270216",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "方浩明以亲身经历感知中国",
+      "wdMissing": false
+    },
+    {
+      "stableId": "729ecc328f4ef7b9959041f6becf7023418ff1cc36fd5d2caed9962a01d9c637",
+      "sourceId": "baidu-aishort",
+      "guid": "2270215",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "红利基金年内分红超80亿",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6f238766547dd422f8e9eba1864a7f86831ac137fdcd06a537d87ea6452fec24",
+      "sourceId": "baidu-aishort",
+      "guid": "2270214",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "《影之刃零》发售后首个补丁更新上线",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4730eb790031111796fa7e52a9f8a679bfdc41626201cbfa51ef94b77a8f3160",
+      "sourceId": "baidu-aishort",
+      "guid": "2270213",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "团伙售卖3000余名艺人网红隐私信息",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e909b39f3a45787144490ff147604a3a3385cd66dd8a1c0eb091599ca136ef93",
+      "sourceId": "baidu-aishort",
+      "guid": "2270212",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "月子中心艾灸致产妇三度烫伤",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d088db3e4b6ce5647a47dde79e98861d53ab6701a6b648de660c533641d6b73b",
+      "sourceId": "baidu-aishort",
+      "guid": "2270211",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "糖友冬天别乱泡脚 小心糖尿病足",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1947e70a74366987d6b15f12cc4b3e0b6f240c5d6369756c4748aaf9a82ceacc",
+      "sourceId": "baidu-aishort",
+      "guid": "2270210",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "拜仁2-0马竞",
+      "wdMissing": false
+    },
+    {
+      "stableId": "cc27e708faaf35d6958d5866dcb1eb50d059a6dd69d8f327dd8916678ee18813",
+      "sourceId": "baidu-aishort",
+      "guid": "2270209",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "男子求复合失败醉驾撞护栏还逃逸",
+      "wdMissing": false
+    },
+    {
+      "stableId": "8cb7e63fa598d981e141a7b6c67a835fe38a9d9125fb43b2fe0903ea666d3941",
+      "sourceId": "baidu-aishort",
+      "guid": "2270208",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "秋假模式开启 各地文旅坐不住了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "79ec036e73ace3ae3ee16e7de06eedb00744e8b65faf05e11bfe75f1cc4ca336",
+      "sourceId": "baidu-aishort",
+      "guid": "2270207",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "多省份发文推进落实带薪休假",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c2de394a9d250f42932e333ea597da752eb83efa8f424aefe270708624c20b97",
+      "sourceId": "baidu-aishort",
+      "guid": "2270206",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "曼联3-2逆转罗马",
+      "wdMissing": false
+    },
+    {
+      "stableId": "923abed9a92889446d97dcd251f0a1baac2103cf1eaabbfdd6299aa7ad199ef9",
+      "sourceId": "baidu-aishort",
+      "guid": "2270205",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "“花坛藏尸案”将于本月10日一审宣判",
+      "wdMissing": false
+    },
+    {
+      "stableId": "af7f7303a4c9d0d22169f9fa7294c3c44b2ae2e5581ac34d456145dc1ea9ed9d",
+      "sourceId": "baidu-aishort",
+      "guid": "2270204",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "丁俊晖4比6威尔逊止步8强",
+      "wdMissing": false
+    },
+    {
+      "stableId": "2054b75fe3eac1960d9445d002c76dbd8eeb3e901b8871137914af8046b0bd48",
+      "sourceId": "baidu-aishort",
+      "guid": "2269935",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "泽连斯基：想和普京面对面会晤",
+      "wdMissing": false
+    },
+    {
+      "stableId": "67345b790e8036f92d8b5395ff48d0c56e22b2b18c8f9402ce1e8a93f4185754",
+      "sourceId": "baidu-aishort",
+      "guid": "2269934",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "赵心童3比6常冰玉 无缘四强",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f9bbdacdaa8c49525ffe4a9c3afc52b0d49cf508e28ef9c251a38193fdc4b353",
+      "sourceId": "baidu-aishort",
+      "guid": "2269933",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "西南交大通报一硕士论文被指抄袭",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6e9c18a01b0d33c14a1aa1ee5cc41559f81320f20227c5c3d39870352a831313",
+      "sourceId": "baidu-aishort",
+      "guid": "2269932",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "中国男篮公布世预赛集训名单",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d32698b3986dbe75ce1848e79d37451ef7faf349771ad7f814ce6f2a5bf8f663",
+      "sourceId": "baidu-aishort",
+      "guid": "2269930",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "张颂文称文明是自由而不是越界",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6e402edd14c339b8d008838c8a1859a737fe6e019185f5069d506b7858299284",
+      "sourceId": "baidu-aishort",
+      "guid": "2269919",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "宝马预计汽车利润率逼近零",
+      "wdMissing": false
+    },
+    {
+      "stableId": "d4c184d5686269f0ad6bda26a478582d5fa0d58168be5a7bc828b6430b3db3cb",
+      "sourceId": "baidu-aishort",
+      "guid": "2269918",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "马斯克：AI算力将100%搬上太空",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9a9b257d1faefa8e0539770eb68dd6ee6c2df8eac0a511b65a1e3ab0fdd042b9",
+      "sourceId": "baidu-aishort",
+      "guid": "2269916",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "“我的富商男友竟是电诈嫌犯”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "ac2e1f7f29b83aa74a09b8b3593a8f1cd30fb01a5770c17682b1abd0bfab7ff1",
+      "sourceId": "baidu-aishort",
+      "guid": "2269915",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "网民拍医院照片修成火灾现场被查",
+      "wdMissing": false
+    },
+    {
+      "stableId": "67f3a735bbd91e316e738027f57306ffee3d4cadf27f6a3dc10e99aff0aa57df",
+      "sourceId": "baidu-aishort",
+      "guid": "2269914",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "最高50亿元！长鑫科技加码回购创纪录",
+      "wdMissing": false
+    },
+    {
+      "stableId": "bcf06cc547756885855ef7bbe411be2b0950286e2ac9cc04754fe1d2b4eb85bf",
+      "sourceId": "baidu-aishort",
+      "guid": "2269909",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "2027QS亚洲大学排名揭晓",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a994483022d8d495ff7d937516214a2b7391b937a9168f7ed4d0211eb40d2e25",
+      "sourceId": "baidu-aishort",
+      "guid": "2269899",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "你的下一辆车 机器人手搓的",
+      "wdMissing": false
+    },
+    {
+      "stableId": "f964c5535db6d5ec199c39d1993cb012425e65f0a68dfbea2cf4acd06662ef7a",
+      "sourceId": "baidu-aishort",
+      "guid": "2269896",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "河南一超市卫生巾被曝有蛆虫",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c1f9e60a3278c372320cf08726548f1296925d678a092c447f32af668c7dd602",
+      "sourceId": "baidu-aishort",
+      "guid": "2269892",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "老人半年种出14.5斤大红薯",
+      "wdMissing": false
+    },
+    {
+      "stableId": "5a662b695943c3a76f6cbbecf609c9b03089cffaaa12ffb0ddf446f5a27eaf18",
+      "sourceId": "baidu-aishort",
+      "guid": "2269889",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "陪诊护士来了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1e49916ed4246b88b60b227fd4f94458926df841222462f32f11b8dfc2ccb8e9",
+      "sourceId": "baidu-aishort",
+      "guid": "2269885",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "大众在华召回超58万辆汽车",
+      "wdMissing": false
+    },
+    {
+      "stableId": "e385e8b193f736297ee8f8f15d4c64180325ad0f11c0c2b355a78e8ca7eb2d57",
+      "sourceId": "baidu-aishort",
+      "guid": "2269884",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "外国小伙体验打糍粑一出手把木槌打断",
+      "wdMissing": false
+    },
+    {
+      "stableId": "671e7a985d5d813c76a72757e8f823b627b31fe86755ca83225b7ef7c5b36f07",
+      "sourceId": "baidu-aishort",
+      "guid": "2269883",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "字节AI开发平台“扣子”企业版下架",
+      "wdMissing": false
+    },
+    {
+      "stableId": "87c33b7ae9690082ff18292e4d624099db8ac053db500935cc2d9e279e2af5ba",
+      "sourceId": "baidu-aishort",
+      "guid": "2269882",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "72岁老农自学雕塑 家门口造小景观",
+      "wdMissing": false
+    },
+    {
+      "stableId": "29c55317564cabcc5cdc606879922a7f85aa08ca47b5420f6c9404c8f470a9fd",
+      "sourceId": "baidu-aishort",
+      "guid": "2269881",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "董宇辉官宣新品牌",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7073fc262a43f52455df2395649756f4b06d97a2e71164e2030318a0bf26238d",
+      "sourceId": "baidu-aishort",
+      "guid": "2269880",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "陕西教育厅通报“延安大学教师离世”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "329406a9ed7b5734d05ddfb1960983dab0cea7eefe58d5e3389676e7d0eb1d4f",
+      "sourceId": "baidu-aishort",
+      "guid": "2269879",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "高市早苗面见日本天皇姿势被批丢人",
+      "wdMissing": false
+    },
+    {
+      "stableId": "bfda46264833c0c3bb4b982bc5090731c193c986a481d1810033f0ce80072c69",
+      "sourceId": "baidu-aishort",
+      "guid": "2269878",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "特斯拉、SpaceX股价大跌",
+      "wdMissing": false
+    },
+    {
+      "stableId": "929dba2867bfca7ba59130d4cd76be9068057940e9df73dd12f9ce9b2a8e905b",
+      "sourceId": "baidu-aishort",
+      "guid": "2269877",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "杨议演出时骂观众 当地文旅仍在核查",
+      "wdMissing": false
+    },
+    {
+      "stableId": "278c1e86d1e28036c0c4037d969ac5ccfd83502cbaee2c97fe99f6e293670fca",
+      "sourceId": "baidu-aishort",
+      "guid": "2269876",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "河南奶奶用废品做墩墩卖到美国",
+      "wdMissing": false
+    },
+    {
+      "stableId": "aabf326c59cc3d80420767d2adefd8a1e59c5d7d381ffc60114dd721e5b5d894",
+      "sourceId": "baidu-aishort",
+      "guid": "2269875",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "中概股集体走强 百度大涨超4%",
+      "wdMissing": false
+    },
+    {
+      "stableId": "bdc8124dc3fc3cb18737d95650892a65a52af7141c75ea8d10e5b2a18221e7e5",
+      "sourceId": "baidu-aishort",
+      "guid": "2269874",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "陈建平教授逝世享年63岁",
+      "wdMissing": false
+    },
+    {
+      "stableId": "6e94a4a0f0bd646fd88040be6503d891f6eb66e5db77844a268e1adea6ece665",
+      "sourceId": "baidu-aishort",
+      "guid": "2269873",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "红果超越豆包",
+      "wdMissing": false
+    },
+    {
+      "stableId": "10438d5bcac7099be3635c9cf09af2976d053fd9b053ce69bd7e033cdb27db38",
+      "sourceId": "baidu-aishort",
+      "guid": "2269872",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "“社恐”到这种程度 可能是生病了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "3ee2d9537527192670e980356b6ea05d902aaedfee16a91ab4b6f90b110d4a5d",
+      "sourceId": "baidu-aishort",
+      "guid": "2269871",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "央视曝光新型兼职骗局",
+      "wdMissing": false
+    },
+    {
+      "stableId": "4cb25ba24dcf4f7ff43d1f642c58df451de98a38447d3605dbfee2a1710864f7",
+      "sourceId": "baidu-aishort",
+      "guid": "2269870",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "“如果这钱能提出来 我警察不当了”",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a1feb69fea08e2f5ed7149758e411149f330c09ac3c3263c37b4a75ef423fafa",
+      "sourceId": "baidu-aishort",
+      "guid": "2269869",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "不断开创黄河保护治理工作新局面",
+      "wdMissing": false
+    },
+    {
+      "stableId": "368eb9e0b4bcab8615fc91daee2351a55da9deb436fe50ba8e2bf17dc17720ec",
+      "sourceId": "baidu-aishort",
+      "guid": "2269533",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "《智能体发展自律公约》来了",
+      "wdMissing": false
+    },
+    {
+      "stableId": "453f17c2ea27d2482338cb6bf47ed62f73d5eaa8e94b6310ac16116b85e92b17",
+      "sourceId": "baidu-aishort",
+      "guid": "2269532",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "横店变竖店 又要变“AI店”了吗",
+      "wdMissing": false
+    },
+    {
+      "stableId": "7ad919da8f59fbbaa0849736aea3cb2370e31335112d3377105780d7cb30a41c",
+      "sourceId": "baidu-aishort",
+      "guid": "2269530",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "美终止军援以色列 有何考量",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9abc19ff9a220d7c15d70f6721d1b96c2e2e17f1d8efd32fec6e2dc60539a3d5",
+      "sourceId": "baidu-aishort",
+      "guid": "2269517",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "截图≠铁证！微信电子证据怎么留存",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c7a08980c07c964f7b59fab520a81e6e77ba3e971b8e389992a6fae79e69b7eb",
+      "sourceId": "baidu-aishort",
+      "guid": "2269515",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "刘念工作室声明",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9a4276b38c459991bcbfc13149644eb05ab2552b5382f7cc0df5f2942050c05d",
+      "sourceId": "baidu-aishort",
+      "guid": "2269513",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "外国小伙体验打糍粑一出手把木杵打断",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c6cad6a49ea26d11470a7f41727ffd9500c59a2015463f18cb49a5ae2a90d663",
+      "sourceId": "baidu-aishort",
+      "guid": "2269510",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "河南一地免费挖荠菜爆火",
+      "wdMissing": false
+    },
+    {
+      "stableId": "9c32e69f469f2c2cf71e0464523c259878867ab467493ae31d2ffe79ba060423",
+      "sourceId": "baidu-aishort",
+      "guid": "2269508",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "魏大勋父亲公司成被执行人",
+      "wdMissing": false
+    },
+    {
+      "stableId": "020ad7bbe7c3df83f416045c13028dbb6551c4947e0bfbfaf300a564127e54b0",
+      "sourceId": "baidu-aishort",
+      "guid": "2269506",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "英特尔正面硬刚台积电",
+      "wdMissing": false
+    },
+    {
+      "stableId": "c17685f0397e642162c221e7fea873a45394aa1b751f4f9afcacf3713af2133a",
+      "sourceId": "baidu-aishort",
+      "guid": "2269504",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "国际金价 直线拉升",
+      "wdMissing": false
+    },
+    {
+      "stableId": "eaa722b92f6ad2ec01590ce585ef4079a840dc7197b1b1acc19794933e7af3c3",
+      "sourceId": "baidu-aishort",
+      "guid": "2269502",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "手指麻木可能是你的颈椎在求救",
+      "wdMissing": false
+    },
+    {
+      "stableId": "1b548dda972db87a75a1851728fe2d4071a699772057dd1f15b2097aa5d89431",
+      "sourceId": "baidu-aishort",
+      "guid": "2269501",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "机器狗泰山运货步履蹒跚",
+      "wdMissing": false
+    },
+    {
+      "stableId": "b2baf0c43000d24f89fa7e4fb41aa9b295a7193201de8bcfc56ad0a3594dbdac",
+      "sourceId": "baidu-aishort",
+      "guid": "2269498",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "杨坤自曝患抑郁症20年",
+      "wdMissing": false
+    },
+    {
+      "stableId": "360e835ec74c75c1889e703ec77af626821ac4cb27d7824e80b9d6af43fc7d46",
+      "sourceId": "baidu-aishort",
+      "guid": "2269496",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "卫龙老板的35岁表弟接过出海难题",
+      "wdMissing": false
+    },
+    {
+      "stableId": "a0923b9f1b9d64afd158b638853d728c8e784c9e06f965bcf0223844b5f48eb1",
+      "sourceId": "baidu-aishort",
+      "guid": "2269495",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "王永礼被免去福建省副省长职务",
+      "wdMissing": false
+    },
+    {
+      "stableId": "17be8a78278f5377eab3e68b56da4d5999e6bd0bb0d5ea228e6911d2688a858f",
+      "sourceId": "baidu-aishort",
+      "guid": "2269493",
+      "firstSeenAt": "2026-11-05T05:08:38.411Z",
+      "wdFingerprint": "大学生手搓纸壳机器人还会摸头笑",
+      "wdMissing": false
+    },
+    {
+      "stableId": "839d953083434be46cd8d96b3dfcd2918831be2cb4d050fc0bbe0cf5a1fc6e9f",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726524.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "59ca72e9fc4de58bfc09b3f3edd7ddc0b0053307587ece23376a8e71407c8879",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726522.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d7c89f40ece5469f6d1a665f8f1bcbc8bcab43de91743ca8494ce10a95eaee00",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726508.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d890dfbe6ebc329bdcc4349a8f3c29586bdadbcaadce01bf079918c504767dce",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726501.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "5adddef2e10cef4c86f609cf2065004f55be2767dbe8a40d10ba29420175e88f",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726497.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3b0eb4f5e0e0cf33860f8548acee1849068fa49bdbe597dd796d540e79b45483",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726500.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "e8028e6df636d68e1d96a7becb8a48259477a5d7e51b39bd6eae14b2c846603d",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726476.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d726af3ba8cce91457bc9ea3d909dd58362cde9b51531fce5f61fc43ffd419e2",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726477.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "6055a9bfc5b6a5a29b6f49ec39af0eb5794af4f0ffb1e5e38d10c3617e9fedd7",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726475.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3bcaf75cf463842c0a53470f97d26743261bae47e4fda93a833df9c76ea2994c",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726481.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "c381844c856a789a3d2e81d573159c5ac2c33744830916d6c748b832f9b24ee1",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726468.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "c62bf91eedaacf3bc79cab9d4ef0e0bb01399e7bedfc6edfaa58c6b1faf8e14b",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726464.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "452cd68781ceb1f087e7cffbf818fa26533a66f09faccbf4f212e97ea2ac3d16",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726463.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3e5e3478f3aee37c0f3ee2c25066d6b62a82faee402b1f3d4b5ddd66eb1150c0",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726457.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d2b12c6cf2c5679d49bc2d506d982123eaceedd2ca530d12e3789f6e840148dc",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726451.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "5a9bada19e201fff2b367cebd120054ac2ef52724c302ac4bd0674d247d8ff01",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726433.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a183123c584dc9286d46702f93761f2e6abb92c55355fdc4f3fe8ee4f4cdd4cd",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726415.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "da745d235415b94ff76935a1de0e0f175d79b611d4f6aaa0db0825ac5724a0ff",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726408.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "2b5bbd236045c65f83cbbc16fa6f8c5a886981ef170a5f97bf01dede99dbe7a8",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726397.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "bb23d4143e45ebdfac214c5398b5ac5538bd6843d6eac9c8afc2ce421a146a84",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726393.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "e9336db0236e25c26d8508dd59d197187d540d48ded08d9717ee7fd10d8a9420",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726383.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "4ec835e0de5c2e6a0cbe32b7c0a39643fc2a88a020d0176d7c06f2586899a202",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726382.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a9f57af3a5e7177151ec62c85884b588b58f9426defe549e6f9ed9b0404715f7",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726387.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d6a6afd231d9a18616370842f09dd1c99963af52577ffa9945c1be3f51eb8c0a",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726375.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "6e0effd1802e481cf17cc95d7011b9669b5a19e51b691b5e956b131dde09beb3",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726369.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3e9d679853a69ce5f12e040a46e05a398f95edb5e1ef0a2ec73bdb490ac0c028",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726363.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "595052719423b2ca299f5eb91a1450e45591e690d3eab6b2fb9b82bd39ac23d6",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726362.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "284fa66525166182605e02b1f5b4a0393f864024c97aefca5e2bdcce67ce7ab0",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726361.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "ce96385d939fcfddc8eb6b3179ca64d347b2c072cf227f3f8785c5aa7c7f782d",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726359.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3525c7ad5474d4c9a6d21fb2ee951ac0ed5fe0ee24f3d3ef48a37f3f1f9757ad",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-05/10726358.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.163Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "6069f66d5ffb192ff69a890cb3d676b9ace86b248fc57dd65c3f031022cf9981",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726490.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "0f50591f59837d52aee075d812ac6685d45d86a6a6cc2cb215f2c6903bc28677",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726499.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "7bbe3d4b393c4344edd7511637028403f7defc2d731bbe329108ef1767009b04",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726448.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "42f46296c4bfb0c01ba092339011f0ba8707af2e8542c8a2c44059968d8bde53",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726507.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "c778f2eeff13fa88be2dfe347bd3e5d7b07c8d9500c154748c667c4946e19b3b",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726441.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d160563d9a1c8c420fbeac321c7d03bceb79318bdc8c2be1a85d60389736a360",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726438.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "ccf575b4a07d304afdf6710c37c0aede614511bed8bc7bdaf5a98d9577117c21",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726432.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "953187ba4596fe264c7b7fd8191d30cce02a4c920972b627fd265ce42289f637",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726355.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "1a4725e949bd261cf9c3d35b60fd4ffeb0fb626d3a58ebce2add3aff67644f6d",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726411.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "614a5d498f204997e58206f71a376b11b862b9f1bbb42eff263cdee101adfae9",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726395.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "eb5720a2e9756e81b37e463695c3b72d82ded7edfa9c4097176e892c0fa53964",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726366.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "f1d19a2aa5b57e670f428ab78e35157871340f8d586ea0d046d6fe0e5a22d581",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726349.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a0d0671b60ff38baf249f6fbb20caea66a8c3dd80c61d05bede2a83792c3431a",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726337.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "6a8fbe4493377fa6f5b2ddcf0a58cd36c85cbb32170e123a1b8e3f472ea2f78d",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726336.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "6c6aafae88161dd33ae6c2746351258ad7a4a34ad30d19a94c73bc63008b14aa",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726343.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "1818737ce5ba3b5bb1b0478191ad31bdb4123522c7c18033e9fde1d63bb03af3",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726335.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3b9d88e8dabe71b10edcf7175297ab3991e616993d1ac58fe4374f8fdbb166c7",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726340.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "8a4efbf0ee7b91a7ef6ea67403ab28bcb35c98e65aa786fbec62535b54fcba18",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-05/10726334.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "8367cfb8d80135dc23dd4fffb4aea4db35c597b898acb4669c605381cb70ff47",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726324.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "c91c03a01494e42cce26e188b3d0c299630620ff9214ee8df32871d17a35d5c4",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726317.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a57b429931bfd62c3440fd34fbe945c7eb1f19e612ab074674535bd6b21180d4",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726296.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "235ee373cfd0704413f78280acd72c64bafa081c1f5a3c4dadfba1a2f05b19b7",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726271.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "30df9e3cdfa5072b4cbf348dcad577ef1144605302d9b29eeba7b8a612d0d195",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726265.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "7a11cabb5c920b91936f69f56829575f8fe3f4911b449b018c3e3d44237bf5be",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726258.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "19fbeba7376d59935ea899e3bb8b92024c94d8496887e9c1c8968831fcc082b7",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726251.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "37afb40bb7ab6618d259f1c9b86def58c9a7eb794b9444abfd09500701c05e2e",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726229.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "6e9f3127095b05f2c88d89da996b636cbf747a385f429202927d2de5e2f10c94",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726222.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "ec9995b9bf1db1eea7b12fdccd482c078694751d6790fb47c733ba68ae411108",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726240.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "af7e15848351bdc7c7bef1b73f4b47e68442a146c4bb1f8863bb05e1f3812e29",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726191.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "59516b8e92e7fb1c8aea65981fdb817c3d379cecfff4ed14f7aa44eb77c0ea75",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-04/10726163.shtml",
+      "firstSeenAt": "2026-11-05T05:08:39.381Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "621b3dfc7966d56fa15f7cf42a47d1ff5fb0cfc12c7fbe43c7f614943252244d",
+      "sourceId": "chinanews-dxw",
+      "guid": "url:https://www.chinanews.com.cn/dxw/2026/11-04/10725989.shtml",
+      "firstSeenAt": "2026-11-05T05:08:40.011Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "82896564595d5b527d75a79b8a08bba3e52742b003ce10e00b9e7f6d98140d85",
+      "sourceId": "chinanews-dxw",
+      "guid": "url:https://www.chinanews.com.cn/dxw/2026/11-04/10725988.shtml",
+      "firstSeenAt": "2026-11-05T05:08:40.011Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "1e6ab9d472283a433144d155072da869e708390de4a0d6f7125f7a583ede7b04",
+      "sourceId": "geekpark",
+      "guid": "url:http://www.geekpark.net/news/373494",
+      "firstSeenAt": "2026-11-05T05:08:42.630Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "67396da9a77603d94b7e9c9a181af688f8613095c074593f41dd1b9a7d571981",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85799",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "95c6565418d56f92b43be2c956b608cfdcef2f9cb3a198ab51f793cd995d3546",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85798",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "fc92801b294a2231c452bfeb1cdf74f164fcbfb80cac1c80871b0327b493c45c",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85797",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a50bbb99d1b640a35485582237e7d20248655146d1c4b5d68071e5e2e8441a83",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85796",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "b76c14204ad37a3df02cbd6f26944628d86b4b3e1f7015ee982989f25402e8e3",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85795",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "46501a263f9e1076b2e049d3998a6d78f2736e89721ec5ef1fab92737ec2b9d6",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85794",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "bf15663cf60c1f37dad64de6c3618e75cd7bb8b70d09b0536f28d84e60753ca4",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85793",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "766b6fb9150e1198f474612af021e1a6b8d84fb4af7ca6836ca2cc3025ac2cca",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85792",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "b0958357900bf801a1c5e3dbb1e2f795ef7023f1f84ce0931513aa76214fab4b",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85791",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a0e77ae069ea3de9f546136b34c013590205485302aae99ca7b9dbd1925a7bf5",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85790",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3e97864a357034f74bafe1cba757ea806d2bdc287c0572567e6f91e9be29ad9d",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85789",
+      "firstSeenAt": "2026-11-05T05:08:43.984Z",
+      "wdFingerprint": "",
+      "wdMissing": true
     }
   ],
   "quarantined": [],
   "sources": [
     {
       "sourceId": "baidu-aishort",
-      "lastAttemptedAt": "2026-11-04T04:51:37.012Z",
-      "lastSucceededAt": "2026-11-04T04:51:37.371Z",
+      "lastAttemptedAt": "2026-11-05T05:08:38.188Z",
+      "lastSucceededAt": "2026-11-05T05:08:38.411Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     },
     {
       "sourceId": "chinanews-dxw",
-      "lastAttemptedAt": "2026-11-04T04:51:38.286Z",
-      "lastSucceededAt": "2026-11-04T04:51:38.542Z",
+      "lastAttemptedAt": "2026-11-05T05:08:39.431Z",
+      "lastSucceededAt": "2026-11-05T05:08:40.011Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     },
     {
       "sourceId": "chinanews-society",
-      "lastAttemptedAt": "2026-11-04T04:51:37.412Z",
-      "lastSucceededAt": "2026-11-04T04:51:38.108Z",
+      "lastAttemptedAt": "2026-11-05T05:08:38.494Z",
+      "lastSucceededAt": "2026-11-05T05:08:39.163Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     },
     {
       "sourceId": "chinanews-world",
-      "lastAttemptedAt": "2026-11-04T04:51:38.147Z",
-      "lastSucceededAt": "2026-11-04T04:51:38.251Z",
+      "lastAttemptedAt": "2026-11-05T05:08:39.220Z",
+      "lastSucceededAt": "2026-11-05T05:08:39.381Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     },
     {
       "sourceId": "geekpark",
-      "lastAttemptedAt": "2026-11-04T04:51:38.575Z",
-      "lastSucceededAt": "2026-11-04T04:51:41.102Z",
+      "lastAttemptedAt": "2026-11-05T05:08:40.059Z",
+      "lastSucceededAt": "2026-11-05T05:08:42.630Z",
       "lastFailureAt": "2026-10-28T04:00:28.787Z",
       "lastFailureReason": "获取失败：读取响应体超时（30000ms 内未完成）"
     },
     {
       "sourceId": "solidot",
-      "lastAttemptedAt": "2026-11-04T04:51:41.138Z",
-      "lastSucceededAt": "2026-11-04T04:51:42.444Z",
+      "lastAttemptedAt": "2026-11-05T05:08:42.679Z",
+      "lastSucceededAt": "2026-11-05T05:08:43.984Z",
       "lastFailureAt": "2026-10-22T03:21:55.999Z",
       "lastFailureReason": "获取失败：网络错误（fetch failed）"
     }
