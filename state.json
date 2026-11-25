@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "stateTakenAt": "2026-11-24T08:25:10.496Z",
-  "publicContentVersion": 229,
-  "publicContentDigest": "d84f4c612e0f4bed7ed2aa8f8a2d35bf903208077389acdc915174c1c22acf66",
+  "stateTakenAt": "2026-11-25T07:01:10.086Z",
+  "publicContentVersion": 234,
+  "publicContentDigest": "21f282f74482405ffd14112a3281b0abee45781006378216a3f8b4c09b667702",
   "identities": [
     {
       "stableId": "51ef84820b12549c057fd31599464c2bc962db5d5955e7e78ac2a2da188bc496",
@@ -59475,49 +59475,601 @@
       "firstSeenAt": "2026-11-24T08:25:10.496Z",
       "wdFingerprint": "",
       "wdMissing": true
+    },
+    {
+      "stableId": "83326b792de6c95fc1b402b431660df4198da0419cb824463678c148150db584",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737525.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "b2c9ad7f9b821e9633dad7f47ac2e8221061c18f336de725fcfe7fd4b55e2c4b",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737522.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "f53f5427fc7595b4185012c75a851998b755b833042f19b7cd2d07c05f33dce5",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737520.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a215dbff7b755b821d87ffa3c7505cae1bd2b79ce0f3b93d8941bc82193362bf",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737521.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "6d696e80aa265c75155f31f59243af91fffdf8f049ddb802f238250ac0d21354",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737517.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "cdd7e909438b9d78409ccda5bd3a0eb44d8bdae599bae31b70641e4b2484cb85",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737505.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "6849aecb719fe7481a14f497bb25596236f467dcf08ba85109d73127363286e8",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737509.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "8825ea16d51f4e81849d2011f2a05f8cfbb7ac82c05dba4352ee8ed5503d2197",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737494.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d0a6e515c68076b8c6ccfa9260360a1fe7cd4a2b0a6529c3ec8e81fe43bc8e3e",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737477.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "5916c64e3efc5cc04396c16d146112215ff9347837176e8eebee1c83a4578d8c",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737487.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "9417558263f15430ee450bc97f800064d9e889fe201bc4db5b26522d92fd5cb9",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737479.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "8edce1993caa2a13d69e51c834d593bf78396346aec8e364678687b8eac21dc9",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737472.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "e312b8ed9562a7f57633b49915184f8f7b943dc47c64ffc9818c7c17bbacbd81",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737440.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "e28b25cdc9ba2dfcfa31c8af5b2b411053df626d6278af562a0632ca115ebe42",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737430.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "b40bf33e2d4751a02823967ba3e98f4a9d1826127f82dabc65c14131074ad577",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737437.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "4f3189d6f0e5dd242ba08cbd3eb677432d3f498a614039fbf1076b4ef24c5efb",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737433.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "064b506f27d4cbe62fd8c04f15cb2f3b03191d84f0b8cb1bf6e5796f71e6bf80",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737427.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "677c4903bf4f8e59aabee19d60df1e903911215cf2b5319138295b61bcd53095",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737387.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "2f20dac7faa1e5d3e978b400636729070a238acb17f2f2dfb76dc567f0565150",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737385.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "fd514d17dc5fe6768a1022d0b9b4a697d05fa9110cf204cceaaf218dcdc9e757",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737408.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "dd4ef5261e851f7f80ff51e58e042bae91346da91a709cec2dcfa3449a31e806",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737405.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "97044e73272f070e22e648f2254ff3ee580d6564b75e33583f60561d3dda2398",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737379.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "97464e62f3ede11fa7414959162714c4337855628deb187c237e7674ebf9a8e5",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737368.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "2311dab1f519cf4a7f677800b15f6a12ada6f80e44e8ae3243e4f3ccc0dc766b",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737351.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "8a51bd3c9a23623288436f5deb1d4e074b8a2f4a429423deb6e659088feea8b8",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737355.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "329c0a1ceafc6767ad2b9f06690e870ce58d75901d9976e5b78dd904f11a5df2",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737350.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "962ac2252fd1faca34d123aa9716847cb9aaac747df6c14667e3e1d7feea797f",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737344.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a9d60f7b806feefba7288910ca113a4531236f6ac0252378ad03a0577ed7ad60",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737341.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "f8d47ed97c8f74c16ef6a14f73df030459c6ee64c579b2299f2547df3f02498e",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737333.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "5525fc6a98f8b7a6349bdeb705b5112bde9f996c5868d6f802e91e361b7c485b",
+      "sourceId": "chinanews-society",
+      "guid": "url:https://www.chinanews.com.cn/sh/2026/11-25/10737329.shtml",
+      "firstSeenAt": "2026-11-25T07:00:07.928Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "5727f8d08ecd48d9695691a0af5108bab906113bd16d892607d57514c6fcb3d8",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737528.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "e72d885a91beedff0aa7ead9bdf076dafb551744b69217d77208d04742ffc5a1",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737475.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "680c611d33884ae34b8c63766484669cede9542f51cd244a50461f8f1bd2e695",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737460.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "8d0288e5841267dfed465be8e33edd84dd9f60405b74c3103b0d008693070721",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737442.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "31662d2e9c96dc3db757a22fbf34615dd4fb116c1b4ec8a2dfe7dbfb07785950",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737420.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "ceab1e936437b624ec611e1e8fb6ebc71140b30dd0c93ecc787a63215892226d",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737419.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "98beea51b7e6dd41136fadf7464b403356e7bfcb02b732b8e9de888c4fa585c8",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737418.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "fcb2a35a20ed960bc654f799d0d2a42e96f12f74a4b8f485092fbb0a5d29a38a",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737417.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3fbfea0164311d6636a880484a71ea0a8fc398804830327c0ecc3d5f8c0a16bd",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737415.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "1d5870e9881c033b89a0343ad6573bcc674b053dad98885c7f2397a09eaee4b8",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737404.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "20a552099402ad8bac543b37c1d04b43ad61bbe256dfc2aacb702b023329aab6",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737399.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "c6862cfd8bf3b8363a5cc149ead6648bd856cfeb0d0135865a7cda15ba535c9c",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737388.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "7a2ce4c0c3fea583ee64e6fdc67da8001086275aef7c66cf7c198c3127dd168b",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737382.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "8959498cd1fe139b6922524d5ec92a26e8abc3b4929f8721f46b2de2b7f10ea5",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737403.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "5a0d413feca68e8d9895de30ff658880c6f503cf54bdf3c4f9f1851268ef21ca",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737398.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "f7d127f7566c7784c1ffbb7e0c02368bfa693eba39009f8aa877bc4ec4c730f5",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737354.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "f2e38b2c4a7ec11530d8a5f15ea4d741280286ae42b1eea0a52b5009f92ad409",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737352.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "c437f03205a96bba1e86e33df4b79295372cb50c117102e83ae24279a4fa3119",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737349.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "887a7c20b0cecdabe0ec0cd95fb8f81ec92446d64444b78ddd7e3cabbc72f8c2",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737346.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "838f04be3113a651f898c081180d7ae255c15dfcf7037e251579c22b69695682",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737337.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "e0663294d7622662e829c2e8d3d67e3fdcd9494a1da0aaa106cf1a42c8e4dc7a",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737299.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "3cb28f81fbeeb45e5aebbcb4f614c7394d7c4e0b9431e7f6ac98ba1c1b92077d",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737298.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "867a79e3ce1a16d37ce6134c1afad5847a924ada548e8991d9454b199aa2bf1d",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737297.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "43e698afd7ef7937347450cfd90d2fda7073fd9140d0a106ae10e19622e47d3e",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737296.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "33895f850e10378152485369992add78a0e6f0fe28d8129ea581ec529486877c",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737295.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "915e0a1ca81fbf108291ea52a707a217506490eccb89f32e08f30badf803b816",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737285.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "2d9820b0a2242e2596dc287f72875b7a48c6697b72b6107a3a0fd41367330bd0",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737284.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a77ba1452522a01170def78307d2f592520fb9f38634d14e43b9e5a9a5f4d13a",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737281.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "ea0f0d6d515c8648a24ada8a2a925edc4a9e007c32cb9157aa4241a0818dc259",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737280.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "a7db282edd055020a2e18e8a742bf87841f7f062ddd8561e8b6d0e3e3631b454",
+      "sourceId": "chinanews-world",
+      "guid": "url:https://www.chinanews.com.cn/gj/2026/11-25/10737279.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.034Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "32c2b50b8f196bbf67c77566332b2503c9b6cffd5b2400ae1c59c79ff577b55d",
+      "sourceId": "chinanews-dxw",
+      "guid": "url:https://www.chinanews.com.cn/dxw/2026/11-24/10736995.shtml",
+      "firstSeenAt": "2026-11-25T07:00:08.379Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d0a3eda76bea0fa8f4da8a7ea13eb2472a2745657334cf5289a36f0d19ce13e6",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85982",
+      "firstSeenAt": "2026-11-25T07:01:10.086Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "2354e9ded44c96798298a15a8f662a67926d558267b3ed90b77465a1beff85c2",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85981",
+      "firstSeenAt": "2026-11-25T07:01:10.086Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "776a6b5f5598446b82c19f8b9ffb91ec55bdce78d59d102c02c04550f8c85aed",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85980",
+      "firstSeenAt": "2026-11-25T07:01:10.086Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "21428e62998ec6b9040aeedb33b983f760bf626e3197f5712157e760d2215892",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85979",
+      "firstSeenAt": "2026-11-25T07:01:10.086Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "7768ce2fee3fe377eddfc8e5c80b786c86218f7d2a8047992369ac96a45b7cb6",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85978",
+      "firstSeenAt": "2026-11-25T07:01:10.086Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "e150379e0010eaf0bf8063e6352d5f5d40bff2fff4d14554fcfca73a99baf228",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85977",
+      "firstSeenAt": "2026-11-25T07:01:10.086Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "d1ccc2291ad23a72d87a18dafc16c85b8a6d0e7c1b9922e3e5a0b1c1e0dc3945",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85976",
+      "firstSeenAt": "2026-11-25T07:01:10.086Z",
+      "wdFingerprint": "",
+      "wdMissing": true
+    },
+    {
+      "stableId": "7f0aadbd07fc153a5822f9d12a34ab300f77a68ad84cdf7b1072458ece0c98ee",
+      "sourceId": "solidot",
+      "guid": "url:https://www.solidot.org/story?sid=85974",
+      "firstSeenAt": "2026-11-25T07:01:10.086Z",
+      "wdFingerprint": "",
+      "wdMissing": true
     }
   ],
   "quarantined": [],
   "sources": [
     {
       "sourceId": "baidu-aishort",
-      "lastAttemptedAt": "2026-11-24T08:25:04.952Z",
-      "lastSucceededAt": "2026-11-24T08:25:05.162Z",
+      "lastAttemptedAt": "2026-11-25T07:00:06.784Z",
+      "lastSucceededAt": "2026-11-25T07:00:07.091Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     },
     {
       "sourceId": "chinanews-dxw",
-      "lastAttemptedAt": "2026-11-24T08:25:05.873Z",
-      "lastSucceededAt": "2026-11-24T08:25:05.928Z",
+      "lastAttemptedAt": "2026-11-25T07:00:08.088Z",
+      "lastSucceededAt": "2026-11-25T07:00:08.379Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     },
     {
       "sourceId": "chinanews-society",
-      "lastAttemptedAt": "2026-11-24T08:25:05.216Z",
-      "lastSucceededAt": "2026-11-24T08:25:05.575Z",
+      "lastAttemptedAt": "2026-11-25T07:00:07.169Z",
+      "lastSucceededAt": "2026-11-25T07:00:07.928Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     },
     {
       "sourceId": "chinanews-world",
-      "lastAttemptedAt": "2026-11-24T08:25:05.618Z",
-      "lastSucceededAt": "2026-11-24T08:25:05.833Z",
+      "lastAttemptedAt": "2026-11-25T07:00:07.989Z",
+      "lastSucceededAt": "2026-11-25T07:00:08.034Z",
       "lastFailureAt": null,
       "lastFailureReason": null
     },
     {
       "sourceId": "geekpark",
-      "lastAttemptedAt": "2026-11-24T08:25:05.967Z",
+      "lastAttemptedAt": "2026-11-25T07:00:08.436Z",
       "lastSucceededAt": "2026-11-24T08:25:08.061Z",
-      "lastFailureAt": "2026-11-18T05:55:01.382Z",
-      "lastFailureReason": "获取失败：网络错误（fetch failed）"
+      "lastFailureAt": "2026-11-25T07:00:08.436Z",
+      "lastFailureReason": "获取失败：读取响应体超时（30000ms 内未完成）"
     },
     {
       "sourceId": "solidot",
-      "lastAttemptedAt": "2026-11-24T08:25:08.104Z",
-      "lastSucceededAt": "2026-11-24T08:25:10.496Z",
+      "lastAttemptedAt": "2026-11-25T07:01:08.759Z",
+      "lastSucceededAt": "2026-11-25T07:01:10.086Z",
       "lastFailureAt": "2026-10-22T03:21:55.999Z",
       "lastFailureReason": "获取失败：网络错误（fetch failed）"
     }
